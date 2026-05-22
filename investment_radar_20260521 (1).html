@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>2026.05.21 全球財經情報 × 投資機會雷達</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg0:#04040d;--bg1:#08081a;--bg2:#0e0e22;--bg3:#13132c;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);--t1:#e0e4f4;--t2:#8890c0;--t3:#454878;--amber:#f5a623;--amber2:rgba(245,166,35,.14);--amber3:rgba(245,166,35,.06);--green:#3ecf8e;--green2:rgba(62,207,142,.15);--red:#f26666;--red2:rgba(242,102,102,.15);--blue:#5b9cf6;--blue2:rgba(91,156,246,.15);--purple:#a78bfa;--purple2:rgba(167,139,250,.15);--teal:#2dd4bf;--teal2:rgba(45,212,191,.15);--mono:'IBM Plex Mono',monospace;--sans:'Inter',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg0);color:var(--t1);font-family:var(--sans);font-size:14px;line-height:1.6;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 10% 5%,rgba(62,207,142,.05) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 90% 90%,rgba(245,166,35,.05) 0%,transparent 60%);pointer-events:none;z-index:0}
+
+/* TICKER */
+.tkbar{background:#03030b;border-bottom:1px solid var(--border);height:34px;display:flex;align-items:center;position:sticky;top:0;z-index:200;overflow:hidden}
+.tk-badge{background:var(--green);color:#000;font-family:var(--mono);font-size:9px;font-weight:700;padding:0 10px;height:100%;display:flex;align-items:center;white-space:nowrap;letter-spacing:.1em;flex-shrink:0;gap:5px}
+.tk-scroll{display:flex;animation:tkscroll 90s linear infinite}
+.tk-item{font-family:var(--mono);font-size:11px;padding:0 18px;white-space:nowrap;display:flex;align-items:center;gap:7px;border-right:1px solid var(--border)}
+.tk-sym{color:var(--t3);font-size:10px}
+.up{color:var(--green)!important}.dn{color:var(--red)!important}.na{color:var(--t3)!important}
+@keyframes tkscroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* HEADER */
+header{padding:24px 36px 16px;position:relative;z-index:1}
+.hdr-row{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
+.badge-row{display:flex;align-items:center;gap:7px;margin-bottom:10px;flex-wrap:wrap}
+.badge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;padding:3px 9px;border-radius:2px;border:1px solid}
+.b-green{border-color:var(--green);color:var(--green);background:var(--green2)}
+.b-amber{border-color:var(--amber);color:var(--amber);background:var(--amber2)}
+.b-blue{border-color:var(--blue);color:var(--blue);background:var(--blue2)}
+.b-red{border-color:var(--red);color:var(--red);background:var(--red2)}
+h1{font-family:var(--mono);font-size:clamp(15px,2.4vw,23px);font-weight:700;letter-spacing:-.02em;line-height:1.25}
+h1 em{color:var(--green);font-style:normal}
+.hdr-right{text-align:right}
+.hdr-date{font-family:var(--mono);font-size:11px;color:var(--t3)}
+.hdr-pills{margin-top:8px;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.pill{font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:2px;white-space:nowrap}
+.p-green{background:var(--green2);color:var(--green)}.p-amber{background:var(--amber2);color:var(--amber)}
+.p-blue{background:var(--blue2);color:var(--blue)}.p-red{background:var(--red2);color:var(--red)}
+
+/* MAIN */
+main{padding:0 36px 60px;position:relative;z-index:1}
+.sec{margin-bottom:36px}
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-num{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.1em}
+.sec-lbl{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:.15em;text-transform:uppercase}
+.sec-line{flex:1;height:1px;background:linear-gradient(to right,var(--amber2),transparent)}
+.sec-note{font-family:var(--mono);font-size:9px;color:var(--t3)}
+
+/* NVDA HERO BANNER */
+.nvda-banner{background:linear-gradient(135deg,rgba(62,207,142,.08) 0%,rgba(62,207,142,.03) 100%);border:1px solid var(--green2);border-radius:4px;padding:20px 24px;margin-bottom:28px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;position:relative;overflow:hidden}
+.nvda-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--green),transparent)}
+.nvda-metric{text-align:center}
+.nvda-lbl{font-size:10px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.nvda-val{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--green);line-height:1}
+.nvda-sub{font-size:11px;color:var(--t2);margin-top:4px}
+.nvda-title{grid-column:1/-1;display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.nvda-headline{font-size:15px;font-weight:600;color:var(--green)}
+.nvda-tag{font-family:var(--mono);font-size:10px;background:var(--green2);color:var(--green);padding:3px 10px;border-radius:2px}
+.nvda-warn{font-family:var(--mono);font-size:10px;color:var(--amber);background:var(--amber2);padding:3px 10px;border-radius:2px}
+
+/* VERIFY */
+.verify{background:var(--bg2);border:1px solid var(--teal2);border-radius:3px;padding:12px 16px;margin-bottom:24px}
+.verify-t{font-family:var(--mono);font-size:9px;color:var(--teal);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.verify-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px}
+.vck{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:var(--t2)}
+.vck::before{content:'✓';color:var(--green);font-family:var(--mono);flex-shrink:0}
+.vwn{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:var(--t2)}
+.vwn::before{content:'⚠';color:var(--amber);flex-shrink:0}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:10px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:16px 18px;position:relative;overflow:hidden;transition:border-color .2s}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ac,var(--amber))}
+.kpi:hover{border-color:var(--border2)}
+.kpi-lbl{font-size:10px;color:var(--t2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.kpi-val{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;margin-bottom:5px}
+.kpi-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.kpi-chg{font-family:var(--mono);font-size:12px;font-weight:700}
+.kpi-ctx{font-size:11px;color:var(--t2)}
+.kpi-note{font-size:11px;color:var(--t2);margin-top:5px}
+
+/* CHARTS */
+.ch2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ch3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:18px}
+.ct{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+.cs{font-size:11px;color:var(--t3);margin-bottom:14px}
+.leg{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
+.ld{width:8px;height:8px;border-radius:1px;flex-shrink:0}
+
+/* EARNINGS CALENDAR */
+.ec-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ec-col-hdr{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.ec-sum{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:10px 14px;margin-bottom:12px;font-family:var(--mono);font-size:11px;color:var(--t2);display:flex;flex-wrap:wrap;gap:14px}
+.ec-sum strong{color:var(--amber)}
+.ec-card{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:13px 14px;margin-bottom:8px;position:relative;overflow:hidden;transition:all .15s}
+.ec-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--ec-ac,var(--border))}
+.ec-card.urgent{--ec-ac:var(--red)}.ec-card.near{--ec-ac:var(--amber)}.ec-card.later{--ec-ac:var(--teal)}.ec-card.done{--ec-ac:var(--green);border-color:rgba(62,207,142,.25)}
+.ec-card.tbd{opacity:.6}
+.ec-card:hover{border-color:var(--border2);background:var(--bg3)}
+.ec-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.ec-date{font-family:var(--mono);font-size:10px;color:var(--t3)}
+.ec-timing{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:2px}
+.t-bmo{background:var(--blue2);color:var(--blue)}.t-amc{background:var(--purple2);color:var(--purple)}.t-tbd{background:rgba(255,255,255,.06);color:var(--t3)}.t-done{background:var(--green2);color:var(--green)}
+.ec-nr{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.ec-star{color:var(--amber);font-size:14px}.ec-watch{color:var(--teal);font-size:12px}
+.ec-name{font-size:14px;font-weight:600}
+.ec-tick{font-family:var(--mono);font-size:10px;color:var(--t3);background:rgba(255,255,255,.05);border:1px solid var(--border);padding:2px 6px;border-radius:2px}
+.ec-mets{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:6px}
+.ec-m{font-size:11px;color:var(--t2)}
+.ec-m span{font-family:var(--mono);color:var(--t1)}
+.ec-beat{color:var(--green)!important}.ec-miss{color:var(--red)!important}
+.ec-focus{font-size:11px;color:var(--t2);border-left:2px solid var(--border);padding-left:8px;line-height:1.45}
+.ec-focus strong{color:var(--amber)}
+
+/* NEWS TABS */
+.tab-row{display:flex;border-bottom:1px solid var(--border);margin-bottom:18px;flex-wrap:wrap}
+.tab{font-family:var(--mono);font-size:10px;padding:8px 15px;cursor:pointer;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab.on{color:var(--amber);border-bottom-color:var(--amber)}
+.npanel{display:none}.npanel.on{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ni{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:15px;transition:all .15s}
+.ni:hover{border-color:var(--border2);background:var(--bg3)}
+.ntag{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:2px;display:inline-block;margin-bottom:8px}
+.tg-macro{background:var(--blue2);color:var(--blue)}.tg-tw{background:var(--amber2);color:var(--amber)}
+.tg-geo{background:var(--red2);color:var(--red)}.tg-ai{background:var(--green2);color:var(--green)}
+.tg-risk{background:var(--purple2);color:var(--purple)}.tg-nvda{background:rgba(62,207,142,.2);color:#5fffb8}
+.ntitle{font-size:13px;font-weight:500;margin-bottom:5px;line-height:1.4}
+.nbody{font-size:12px;color:var(--t2);line-height:1.55}
+.ntime{font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:8px}
+
+/* RISK TABLE */
+.rtable{width:100%;border-collapse:collapse}
+.rtable th{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.rtable td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--t2);vertical-align:middle}
+.rtable tr:last-child td{border-bottom:none}
+.rtable tr:hover td{background:rgba(255,255,255,.015)}
+.rdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.pbar{background:rgba(255,255,255,.06);border-radius:1px;height:5px;margin-top:4px;width:80px}
+.pfill{height:100%;border-radius:1px}
+
+/* OPP */
+.opp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.opp{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:16px;position:relative;overflow:hidden;transition:all .15s}
+.opp::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(to right,var(--oac,var(--amber)),transparent)}
+.opp:hover{background:var(--bg3);transform:translateY(-1px)}
+.opp-rk{font-family:var(--mono);font-size:40px;font-weight:700;color:rgba(255,255,255,.04);position:absolute;top:8px;right:10px;line-height:1}
+.opp-theme{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.opp-name{font-size:15px;font-weight:600;margin-bottom:8px}
+.opp-tix{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.ot{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.05);border:1px solid var(--border);padding:2px 6px;border-radius:2px;color:var(--t2)}
+.opp-desc{font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:12px}
+.opp-sig{display:flex;align-items:center;gap:6px;padding-top:10px;border-top:1px solid var(--border)}
+.sdot{width:7px;height:7px;border-radius:50%}
+.stxt{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.04em}
+.sstr{font-family:var(--mono);font-size:9px;margin-left:auto;padding:2px 7px;border-radius:2px}
+.s-buy{background:var(--green2);color:var(--green)}.s-mid{background:var(--amber2);color:var(--amber)}
+.s-watch{background:var(--blue2);color:var(--blue)}.s-wait{background:var(--red2);color:var(--red)}
+
+/* SUMMARY */
+.sum-card{background:var(--bg2);border:1px solid var(--green2);border-radius:3px;padding:24px;position:relative;overflow:hidden}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--green),transparent)}
+.sum-quote{font-size:13px;color:var(--t2);line-height:1.8;border-left:2px solid var(--green);padding-left:16px;margin-bottom:20px}
+.sum-quote strong{color:var(--t1)}
+.sum-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.sum-col{padding:14px;border:1px solid var(--border);border-radius:3px}
+.sum-col-t{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.tc-buy{color:var(--green)}.tc-watch{color:var(--amber)}.tc-hedge{color:var(--red)}
+.sum-li{display:flex;gap:7px;margin-bottom:9px;font-size:12px;color:var(--t2);line-height:1.5}
+.sum-li::before{content:'›';color:var(--green);font-family:var(--mono);flex-shrink:0}
+
+footer{padding:16px 36px;border-top:1px solid var(--border);text-align:center;font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.05em;line-height:1.8}
+::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:var(--bg0)}::-webkit-scrollbar-thumb{background:var(--bg3)}
+
+@media(max-width:768px){
+  header,main{padding-left:16px;padding-right:16px}
+  .ch2,.ch3,.ec-wrap,.sum-3{grid-template-columns:1fr}
+  .npanel.on{grid-template-columns:1fr}
+  .nvda-banner{grid-template-columns:1fr 1fr}
+  h1{font-size:15px}.kpi-val{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="tkbar">
+  <div class="tk-badge">🚀 NVDA 超預期</div>
+  <div style="overflow:hidden;flex:1"><div class="tk-scroll" id="tkr"></div></div>
+</div>
+
+<header>
+  <div class="hdr-row">
+    <div>
+      <div class="badge-row">
+        <span class="badge b-green">🚀 NVDA $81.6B 大超預期 · Q2 指引 $91B</span>
+        <span class="badge b-amber">🇹🇼 台股連4黑後反彈機會</span>
+        <span class="badge b-blue">☮️ 伊朗停火訊號升溫</span>
+      </div>
+      <h1>2026.05.21 &nbsp;<em>全球財經情報 × 投資機會雷達</em></h1>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-date">THU · 2026/05/21 · TWN</div>
+      <div class="hdr-pills">
+        <span class="pill p-green">✅ NVDA Q1 FY27：$81.6B 營收 / $91B Q2指引</span>
+        <span class="pill p-green">✅ 股利 25 倍大增：$0.01→$0.25/季</span>
+        <span class="pill p-amber">🟡 台股連4黑 · TSMC 2,185 跌破2,200</span>
+        <span class="pill p-blue">🔵 WMT 今日盤前財報 · EPS beat $0.61</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- NVDA HERO -->
+<div class="nvda-banner">
+  <div class="nvda-title">
+    <span class="nvda-tag">🔥 NVDA Q1 FY27 財報揭曉</span>
+    <span class="nvda-headline">超預期全壘打：營收、EPS、Q2指引三連勝 · 股利25倍暴增</span>
+    <span class="nvda-warn">⚠️ 盤後 −1.5%（典型「賣消息」）· 今日正盤方向為關鍵觀察</span>
+  </div>
+  <div class="nvda-metric">
+    <div class="nvda-lbl">Q1 營收</div>
+    <div class="nvda-val">$81.6B</div>
+    <div class="nvda-sub">共識 $78.8B ▲ Beat +3.6%</div>
+  </div>
+  <div class="nvda-metric">
+    <div class="nvda-lbl">Q1 EPS</div>
+    <div class="nvda-val">$1.87</div>
+    <div class="nvda-sub">共識 $1.70 ▲ Beat +10%</div>
+  </div>
+  <div class="nvda-metric">
+    <div class="nvda-lbl">Q2 FY27 指引</div>
+    <div class="nvda-val">$91B</div>
+    <div class="nvda-sub">共識 $86B ▲ 大超 +5.8%</div>
+  </div>
+  <div class="nvda-metric">
+    <div class="nvda-lbl">季度股利</div>
+    <div class="nvda-val">$0.25</div>
+    <div class="nvda-sub">前值 $0.01 ▲ 25x 暴增</div>
+  </div>
+</div>
+
+<!-- VERIFY -->
+<div class="verify">
+  <div class="verify-t">📋 數據完整性核對 · Data Integrity Check</div>
+  <div class="verify-grid">
+    <div class="vck">NVDA Q1 FY27 財報（StockTitan / Shacknews 5/20 AMC）</div>
+    <div class="vck">美股 5/20 收盤（TheStreet / Trading Economics）</div>
+    <div class="vck">台股 5/19 三大法人（UDN聯合新聞 確認）</div>
+    <div class="vck">台股 5/20 收盤 40,020 / TSMC 2,185（UDN 確認）</div>
+    <div class="vck">伊朗停火訊號：川普 5/20 聲明（Trading Economics）</div>
+    <div class="vck">WMT EPS $0.61 beat（Stock Market Live 5/15 確認）</div>
+    <div class="vwn">5/21 台股盤中：⚠️ 盤中進行中，以最近可查為準</div>
+    <div class="vwn">NVDA 今日正盤反應：⚠️ 盤後 −1.5%，正盤方向待確認</div>
+  </div>
+</div>
+
+<!-- KPI -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">01</span><span class="sec-lbl">核心指標看板</span><div class="sec-line"></div><span class="sec-note">5/20 CLOSE · 5/21 盤中監測</span></div>
+  <div class="kpi-grid">
+    <div class="kpi" style="--ac:var(--green)">
+      <div class="kpi-lbl">S&P 500 · 5/20 收盤</div>
+      <div class="kpi-val up">~7,520</div>
+      <div class="kpi-row"><span class="kpi-chg up">▲ +1.08%</span><span class="kpi-ctx">Nasdaq +1.54%</span></div>
+      <div class="kpi-note">道瓊重奪 50,000 · 科技+2.11% / 非必需+2.39% 領漲</div>
+    </div>
+    <div class="kpi" style="--ac:var(--red)">
+      <div class="kpi-lbl">台股 TAIEX · 5/20 收盤</div>
+      <div class="kpi-val dn">40,021</div>
+      <div class="kpi-row"><span class="kpi-chg dn">▼ −154 / −0.39%</span><span class="kpi-ctx">連4黑</span></div>
+      <div class="kpi-note">台積電跌破 2,200 收 2,185 · NVDA 財報後台指期夜盤 +81點</div>
+    </div>
+    <div class="kpi" style="--ac:var(--amber)">
+      <div class="kpi-lbl">WTI 原油 · 伊朗停火希望</div>
+      <div class="kpi-val" style="color:var(--amber)">~$103</div>
+      <div class="kpi-row"><span class="kpi-chg up">▼ 回落中</span><span class="kpi-ctx">Brent ~$107</span></div>
+      <div class="kpi-note">川普 5/20 稱伊朗停火「可能很快達成」· 3艘超大油輪離開霍爾木茲</div>
+    </div>
+    <div class="kpi" style="--ac:var(--teal)">
+      <div class="kpi-lbl">NVDA 市值 · 財報後</div>
+      <div class="kpi-val" style="color:var(--green)">$5.7T</div>
+      <div class="kpi-row"><span class="kpi-chg dn">盤後 −1.5%</span><span class="kpi-ctx">~$223</span></div>
+      <div class="kpi-note">全球最高市值公司 · Q1 FCF $48.6B · $80B 回購授權</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">02</span><span class="sec-lbl">視覺化數據中心</span><div class="sec-line"></div></div>
+  <div class="ch2" style="margin-bottom:12px">
+    <div class="chart-card">
+      <div class="ct">美股板塊表現</div>
+      <div class="cs">5/20（週三）· 各板塊漲跌幅 %</div>
+      <div style="height:230px"><canvas id="sectorChart" role="img" aria-label="美股板塊漲跌幅"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="ct">台股三大法人動向</div>
+      <div class="cs">2026/05/19 盤後確認（億元）</div>
+      <div style="height:230px"><canvas id="instChart" role="img" aria-label="台股三大法人買賣超"></canvas></div>
+    </div>
+  </div>
+  <div class="ch3">
+    <div class="chart-card">
+      <div class="ct">投資機會雷達</div>
+      <div class="cs">NVDA 財報後重新評分（0–10）</div>
+      <div style="height:210px"><canvas id="radarChart" role="img" aria-label="投資機會雷達圖"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="ct">市場情緒分佈</div>
+      <div class="cs">NVDA 超預期後情緒轉樂觀</div>
+      <div style="height:210px"><canvas id="sentChart" role="img" aria-label="市場情緒圓餅圖"></canvas></div>
+      <div class="leg">
+        <div class="li"><div class="ld" style="background:#3ecf8e"></div>貪婪 48%</div>
+        <div class="li"><div class="ld" style="background:#f5a623"></div>中性 32%</div>
+        <div class="li"><div class="ld" style="background:#f26666"></div>恐慌 20%</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="ct">NVDA 各指標 vs 共識</div>
+      <div class="cs">Q1 FY27 實際 vs 市場預期</div>
+      <div style="height:210px"><canvas id="nvdaChart" role="img" aria-label="NVDA財報實際vs預期比較"></canvas></div>
+      <div class="leg">
+        <div class="li"><div class="ld" style="background:#5b9cf6"></div>市場共識</div>
+        <div class="li"><div class="ld" style="background:#3ecf8e"></div>實際結果</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EARNINGS CALENDAR -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">03</span><span class="sec-lbl">財報雷達日曆</span><div class="sec-line"></div><span class="sec-note">5/21 – 6/3 · 未來 14 天</span></div>
+  <div class="ec-sum">
+    <span>本週最大事件：<strong>NVDA 已公布 ✅</strong></span>
+    <span>今日：<strong>WMT 5/21 BMO 🔴</strong></span>
+    <span>本週剩餘：<strong>Intuit 5/21 AMC</strong></span>
+    <span>下週焦點：<strong>SpaceX S-1 招股書 ~5/20+</strong></span>
+    <span>台股：<strong>MSCI 生效 6/1</strong></span>
+  </div>
+  <div class="ec-wrap">
+    <div>
+      <div class="ec-col-hdr">🇺🇸 美股財報 · US EARNINGS</div>
+
+      <!-- NVDA done -->
+      <div class="ec-card done">
+        <div class="ec-top"><div class="ec-date">✅ 2026/05/20（昨日完成）</div><span class="ec-timing t-done">✅ 已公布</span></div>
+        <div class="ec-nr"><span class="ec-star">★</span><span class="ec-name">NVIDIA</span><span class="ec-tick">NVDA</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">實際 EPS：<span class="ec-beat">$1.87 ↑ Beat $1.70</span></div>
+          <div class="ec-m">實際營收：<span class="ec-beat">$81.6B ↑ Beat $78.8B</span></div>
+          <div class="ec-m">Q2 指引：<span class="ec-beat">$91B ↑ 共識 $86B</span></div>
+          <div class="ec-m">股利：<span class="ec-beat">$0.25/季 (25x↑)</span></div>
+        </div>
+        <div class="ec-focus">結果：<strong>三連勝全壘打</strong>——盤後小跌 −1.5%（典型「賣消息」），觀察今日正盤是否出現 Buy-the-dip 機會</div>
+      </div>
+
+      <!-- WMT today -->
+      <div class="ec-card urgent">
+        <div class="ec-top"><div class="ec-date">🔴 2026/05/21（今日）</div><span class="ec-timing t-bmo">BMO 盤前</span></div>
+        <div class="ec-nr"><span class="ec-star">★</span><span class="ec-name">Walmart</span><span class="ec-tick">WMT</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">實際 EPS：<span class="ec-beat">$0.61 ✓ Beat</span></div>
+          <div class="ec-m">預期 EPS：<span>$0.66（已確認）</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>消費者支出韌性</strong>、同店銷售、伊朗戰爭對食品成本影響、廣告/會員收入佔比</div>
+      </div>
+
+      <!-- Intuit -->
+      <div class="ec-card urgent">
+        <div class="ec-top"><div class="ec-date">🔴 2026/05/21（今日）</div><span class="ec-timing t-amc">AMC 盤後</span></div>
+        <div class="ec-nr"><span class="ec-name">Intuit</span><span class="ec-tick">INTU</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">預期 EPS：<span>$10.07</span></div>
+          <div class="ec-m">類型：<span>AI 財務軟體</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>AI 輔助報稅滲透率</strong>、TurboTax 訂閱成長、Copilot 功能收費模式</div>
+      </div>
+
+      <!-- Lowe's -->
+      <div class="ec-card near">
+        <div class="ec-top"><div class="ec-date">🟡 2026/05/21（今日）</div><span class="ec-timing t-bmo">BMO 盤前</span></div>
+        <div class="ec-nr"><span class="ec-name">Lowe's</span><span class="ec-tick">LOW</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">預期 EPS：<span>~$3.40</span></div>
+          <div class="ec-m">類型：<span>家居裝修</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>消費者裝修支出</strong>能否抵抗通膨壓力，與 Home Depot 共同組成房屋改善景氣溫度計</div>
+      </div>
+
+      <!-- SpaceX -->
+      <div class="ec-card near" style="border:1px solid var(--blue2)">
+        <div class="ec-top"><div class="ec-date">🔵 ~5/20–5/22（進行中）</div><span class="ec-timing t-tbd">⚠️ 待官方確認</span></div>
+        <div class="ec-nr"><span class="ec-name" style="color:var(--blue)">SpaceX S-1 招股書</span><span class="ec-tick">SPCX</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">目標估值：<span>$1.75–2T</span></div>
+          <div class="ec-m">募資：<span>$75–80B（史上最大）</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>Starlink 毛利率</strong>、xAI 合併後 AI 資本支出、Musk 雙重投票結構；路演 6/4，上市 6/12</div>
+      </div>
+
+      <div class="ec-card later">
+        <div class="ec-top"><div class="ec-date">⬜ 下週 ~5/27</div><span class="ec-timing t-amc">AMC 盤後</span></div>
+        <div class="ec-nr"><span class="ec-watch">◎</span><span class="ec-name">Salesforce</span><span class="ec-tick">CRM</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">預期 EPS：<span>~$2.75</span></div>
+          <div class="ec-m">類型：<span>企業 AI SaaS</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>Agentforce AI 代理</strong>導入速度與 ARR 成長，企業 AI 支出後 NVDA 時代的下游信號</div>
+      </div>
+
+      <div class="ec-card later">
+        <div class="ec-top"><div class="ec-date">⬜ ~5/28–6/3</div><span class="ec-timing t-amc">AMC 盤後</span></div>
+        <div class="ec-nr"><span class="ec-watch">◎</span><span class="ec-name">Broadcom</span><span class="ec-tick">AVGO</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">預期 EPS：<span>~$1.45</span></div>
+          <div class="ec-m">類型：<span>AI ASIC + 半導體</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>AI ASIC 自定義晶片需求</strong>（Google TPU、Meta 等）能否與 NVDA Blackwell 互補成長</div>
+      </div>
+    </div>
+
+    <!-- TW -->
+    <div>
+      <div class="ec-col-hdr">🇹🇼 台股財報與事件</div>
+
+      <div class="ec-card urgent">
+        <div class="ec-top"><div class="ec-date">🔴 2026/05/21（今日）</div><span class="ec-timing t-tbd">⚠️ 盤中</span></div>
+        <div class="ec-nr"><span class="ec-star">★</span><span class="ec-name">台積電</span><span class="ec-tick">2330</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">5/20 收盤：<span class="ec-miss">2,185 元（−0.91%）</span></div>
+          <div class="ec-m">台指期夜盤：<span class="ec-beat">+81 點（NVDA 利多）</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>NVDA $91B Q2指引</strong>帶動 TSMC ADR 回升 → 今日正盤能否收復 2,200 月線；MSCI 6/1 生效前買盤催化</div>
+      </div>
+
+      <div class="ec-card urgent">
+        <div class="ec-top"><div class="ec-date">🔴 今日反彈觀察</div><span class="ec-timing t-tbd">⚠️ 盤中</span></div>
+        <div class="ec-nr"><span class="ec-watch">◎</span><span class="ec-name">AI伺服器鏈</span><span class="ec-tick">2317 · 2382 · 2345</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">鴻海 2317：<span>~NT$248</span></div>
+          <div class="ec-m">廣達 2382：<span>~NT$340</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>NVDA GB200/GB300 指引強勁</strong>，台灣伺服器組裝廠訂單能見度提升；鴻海、廣達今日跟漲力道</div>
+      </div>
+
+      <div class="ec-card near">
+        <div class="ec-top"><div class="ec-date">🟡 5/29 生效</div><span class="ec-timing t-done">MSCI 調整</span></div>
+        <div class="ec-nr"><span class="ec-star">★</span><span class="ec-name">MSCI 台股權重提升</span><span class="ec-tick">0050</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">台股 EM 權重：<span class="ec-beat">+0.30% → 23.76%</span></div>
+          <div class="ec-m">旺矽（6223）：<span class="ec-beat">新增成分股</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>被動資金回補時間窗口 5/21–5/29</strong>，台積電、MSCI 新增成分股將受到指數基金買盤支撐</div>
+      </div>
+
+      <div class="ec-card later">
+        <div class="ec-top"><div class="ec-date">⬜ ~5/26–6/3</div><span class="ec-timing t-tbd">⚠️ 預估</span></div>
+        <div class="ec-nr"><span class="ec-watch">◎</span><span class="ec-name">聯發科</span><span class="ec-tick">2454</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">5/19 重挫：<span class="ec-miss">3,155元（−7.21%）</span></div>
+          <div class="ec-m">類型：<span>端側 AI 晶片</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>Dimensity 9500 端側 AI</strong> 接單狀況；遭處置後反彈動能及本益比修復</div>
+      </div>
+
+      <div class="ec-card later">
+        <div class="ec-top"><div class="ec-date">⬜ ~5/26–6/3</div><span class="ec-timing t-tbd">⚠️ 預估</span></div>
+        <div class="ec-nr"><span class="ec-name">台達電</span><span class="ec-tick">2308</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">電源/散熱：<span>市值超越聯發科</span></div>
+          <div class="ec-m">類型：<span>AI 電源管理</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>液冷訂單能見度</strong>、NVDA GB300 Ultra 配套電源規格，台達電 AI DC 訂單是否持續提升</div>
+      </div>
+
+      <div class="ec-card later">
+        <div class="ec-top"><div class="ec-date">⬜ 6/4–6/12 路演</div><span class="ec-timing t-blue t-tbd">SPCX IPO</span></div>
+        <div class="ec-nr"><span class="ec-name" style="color:var(--blue)">SpaceX 台灣投資人可行</span><span class="ec-tick">IBKR</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">平台：<span>IBKR 美股帳戶可參與</span></div>
+          <div class="ec-m">上市：<span>6/12 Nasdaq SPCX</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>S-1 招股書 Starlink 毛利率</strong>揭露；台灣投資人透過 IBKR 可在 6/12 開盤買入（非 IPO 配售）</div>
+      </div>
+
+      <!-- Computex -->
+      <div class="ec-card near">
+        <div class="ec-top"><div class="ec-date">🟡 6/3–6/7</div><span class="ec-timing t-done">產業展覽</span></div>
+        <div class="ec-nr"><span class="ec-name" style="color:var(--amber)">Computex 台北 2026</span></div>
+        <div class="ec-mets">
+          <div class="ec-m">NVDA 主題演講：<span>Jensen Huang</span></div>
+          <div class="ec-m">AI PC / 機器人 ：<span>重點展示</span></div>
+        </div>
+        <div class="ec-focus">觀察重點：<strong>Vera Rubin 完整規格發表</strong>、AI PC 晶片 Blackwell 新品、台灣 AI 供應鏈廠商新訂單</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEWS -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">04</span><span class="sec-lbl">財經新聞中心</span><div class="sec-line"></div></div>
+  <div class="tab-row">
+    <div class="tab on" onclick="stab('nvda',this)">🚀 NVDA 財報深析</div>
+    <div class="tab" onclick="stab('tw',this)">🇹🇼 台灣市場</div>
+    <div class="tab" onclick="stab('geo',this)">☮️ 地緣政治</div>
+    <div class="tab" onclick="stab('risk',this)">⚠️ 風險矩陣</div>
+  </div>
+
+  <div class="npanel on" id="p-nvda">
+    <div class="ni">
+      <div class="ntag tg-nvda">NVDA · 財報</div>
+      <div class="ntitle">Q1 FY27 三連勝：$81.6B 營收、$1.87 EPS、Q2 指引 $91B 全面大超</div>
+      <div class="nbody">NVDA 5/20 AMC 公布史上最強單季成績：營收 $81.6B（+85% YoY，共識 $78.8B）、非 GAAP EPS $1.87（共識 $1.70）、資料中心 $75.2B（共識 $73B）。Q2 FY27 指引 $91B ±2%（共識 $86B，超越 $5B）。GAAP 毛利率 74.9%，接近指引高端。Q1 自由現金流 $48.6B，全季返還股東 $20B（回購 + 股利）。</div>
+      <div class="ntime">📅 5/20 AMC · StockTitan / Shacknews · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-nvda">NVDA · 股利 25 倍</div>
+      <div class="ntitle">季度股利從 $0.01 暴增至 $0.25（25 倍）：NVDA 進入「成熟成長股」新時代</div>
+      <div class="nbody">此舉是 NVDA 公司性格的根本轉變訊號——從「純成長股」走向「成長 + 股東回報」。同時追加 $80B 回購授權。分析師指出，季度股利 $0.25 帶來的年化殖利率雖仍低，但代表董事會對持續高 FCF 有高度確信。長期投資人現在持有 NVDA 同時享有增長潛力與現金回報。</div>
+      <div class="ntime">📅 5/20 AMC · IndMoney / StockTitan · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-nvda">NVDA · 盤後反應</div>
+      <div class="ntitle">盤後 −1.5%：「賣消息」出現——但 $91B Q2 指引是今日正盤的定海神針</div>
+      <div class="nbody">NVDA 過去 5 次財報：4 次 beat 後股價收跌，市場習慣「先賣後看指引」。但本次 Q2 指引 $91B 超共識 $5B（+5.8%），遠高於任何歷史先例。資料中心 Blackwell GPU 供不應求，Vera Rubin 樣品已出貨，H200 中國出口獲許可但無重大中國收入。今日正盤能否「買指引」是關鍵觀察。台指期夜盤已先漲 81 點反映樂觀情緒。</div>
+      <div class="ntime">📅 5/20 盤後 · Shacknews / IndMoney · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-ai">AI · 需求</div>
+      <div class="ntitle">Hyperscaler 2026 資本支出超 $7,000 億，NVDA 一家佔 S&P 500 今年漲幅的 1/5</div>
+      <div class="nbody">四大超大規模雲端（AWS、Azure、GCP、Meta）合計 2026 資本支出指引超 $700B，主要流向 NVDA GPU 與 TSMC 晶圓廠。分析師估計 NVDA 一家貢獻 S&P 500 本年約 20% 的總漲幅。GB300 Ultra 已從樣品轉入量產規劃，H2 FY27 是下一個成長觸媒。Jensen Huang 於 6/3 Computex 主題演講預計有 Vera Rubin 完整規格發表。</div>
+      <div class="ntime">📅 5/20 · IndMoney / BitMEX Research · 來源：已確認</div>
+    </div>
+  </div>
+
+  <div class="npanel" id="p-tw">
+    <div class="ni">
+      <div class="ntag tg-tw">台股 · 反彈機會</div>
+      <div class="ntitle">連4黑後 NVDA 大超預期——台指期夜盤 +81 點，今日是否出現 V 型反彈？</div>
+      <div class="nbody">台股 5/20 收 40,020（連4黑），台積電跌破 2,200。但昨夜 NVDA $91B Q2 指引激勵台指期夜盤上漲 81 點。法人分析：「520後10個交易日上漲機率100%」（近10年統計）。今日關鍵：台積電能否守 2,185、收復 2,200，以及外資法人動向是否由連3賣轉買。</div>
+      <div class="ntime">📅 5/20–21 · UDN 聯合新聞 · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-tw">台積電 · 2330</div>
+      <div class="ntitle">台積電跌破 2,200 收 2,185，NVDA 財報後 ADR 止跌是關鍵催化劑</div>
+      <div class="nbody">5/20 台積電最後一盤出現 8,121 張賣單，以當日最低 2,185 收盤（月線失守）。三大法人 5/19 合計賣超 784 億：外資連3賣 632 億，投信逆勢買超 71 億。NVDA Q2 指引 $91B 直接強化台積電 AI 晶圓代工需求能見度，MSCI 6/1 生效帶動被動資金回補。分析師目標均值 $2,515（上行 +15%）。</div>
+      <div class="ntime">📅 5/20 · UDN 聯合新聞 · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-tw">台股籌碼</div>
+      <div class="ntitle">5/19 三大法人賣超 784 億創近期最大，但投信連買是最重要的逆向指標</div>
+      <div class="nbody">5/19 三大法人合計賣超 784.09 億：外資賣超 632.35 億（連3日提款 1,189 億）、自營商賣超 223.52 億（避險部位 189 億），但投信逆勢買超 71.77 億。外資大賣 + 投信強撐，籌碼分歧達極值，歷史經驗顯示此類型態後短線常出現「反向均值回歸」。今日台積電投信是否持續護盤是關鍵指標。</div>
+      <div class="ntime">📅 5/19 盤後 · UDN · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-tw">AI 伺服器鏈</div>
+      <div class="ntitle">NVDA Q2 $91B 指引直接利多鴻海、廣達、智邦——GB300 Ultra 量產在即</div>
+      <div class="nbody">NVDA 確認 GB300 Ultra 將於本季末開始量產，液冷 GB200 NVL72 機架需求持續旺盛。直接受惠鏈：鴻海（2317，ODM）、廣達（2382，AI伺服器）、智邦（2345，InfiniBand 交換器）、台達電（2308，電源）、奇鋐（3017，散熱）。今日此族群若隨大盤反彈，是短線加碼窗口。</div>
+      <div class="ntime">📅 5/21 · 法人分析 + NVDA 財報電話紀錄</div>
+    </div>
+  </div>
+
+  <div class="npanel" id="p-geo">
+    <div class="ni">
+      <div class="ntag tg-geo">伊朗 · 停火</div>
+      <div class="ntitle">川普稱伊朗協議「可能很快達成」，3艘超大油輪離開霍爾木茲——油價回落訊號</div>
+      <div class="nbody">5/20 美股盤中：三艘超大型原油輪（VLCC）載滿貨物駛離霍爾木茲海峽，川普表示伊朗協議「could come soon」，WTI 和 Brent 同步回落。若停火協議成真，油價可能急跌 15–25%，通膨數據迅速冷卻，聯準會升息壓力大幅下降，利率敏感型科技股將直接受惠。這是本週最大的「正面尾部風險」。</div>
+      <div class="ntime">📅 5/20 · Trading Economics / CNBC · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-geo">SpaceX IPO</div>
+      <div class="ntitle">SpaceX S-1 招股書已進入發布倒數，路演 6/4、上市 6/12，估值 $1.75–2T</div>
+      <div class="nbody">S-1 招股書原定 ~5/20 公開，路演 6/4 啟動，定價 6/11，上市 6/12（Nasdaq SPCX）。SpaceX 已完成 5-for-1 股票分割（5/22 完成）。xAI 已全面合入，估值 $1.75–2T，募資 $75–80B（史上最大 IPO）。台灣投資人透過 IBKR 可在 6/12 開盤後直接市場買入，但 IPO 配售通常只有機構投資人可參與。</div>
+      <div class="ntime">📅 5/18–21 · Reuters / TECHi · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-geo">OpenAI · IPO</div>
+      <div class="ntitle">OpenAI 計畫「數週內」提交 IPO 文件，估值或超 $1 兆，緊跟 SpaceX IPO 浪潮</div>
+      <div class="nbody">Bloomberg 報導：OpenAI 正計畫在未來數週內提交 IPO 文件，可能估值超 $1T+。時機點緊跟 SpaceX SPCX 上市，形成 2026 年「AI 超級 IPO 年」的雙高峰。這意味著 6–9 月市場將有大量流動性被 IPO 虹吸效應吸收，中小型成長股在此期間可能面臨相對壓力。</div>
+      <div class="ntime">📅 5/20 · TheStreet · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-geo">Fed · Warsh</div>
+      <div class="ntitle">FOMC 會議紀錄（Powell 末次）昨日公布：鷹派分歧程度超預期，Warsh 面臨壓力</div>
+      <div class="nbody">5/20 FOMC 會議紀錄公布顯示 Powell 卸任前委員分歧明顯——部分成員認為通膨黏性需要維持高利率更久。新主席 Warsh 的「Trimmed Mean」框架雖給降息更多空間，但市場已完全定價 2026 年無降息。10Y 殖利率近 4.60%、30Y 5.1% 的高位，若伊朗停火後油價急跌，Warsh 將面臨一個罕見的「通膨迅速下降、降息壓力驟增」的政策轉折窗口。</div>
+      <div class="ntime">📅 5/20 · Fed / JP Morgan 分析 · 來源：已確認</div>
+    </div>
+  </div>
+
+  <div class="npanel" id="p-risk">
+    <div class="ni" style="grid-column:1/-1">
+      <div class="ntag tg-risk">風險矩陣 · RISK MATRIX · 5/21 更新版</div>
+      <table class="rtable">
+        <thead><tr><th>風險 / 機會事件</th><th>機率</th><th>衝擊</th><th>受影響資產</th><th>對策</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="rdot" style="background:var(--green)"></span>NVDA 正盤 Buy-the-Dip（Q2 $91B 消化）</td>
+            <td><div style="font-family:var(--mono);font-size:11px;color:var(--green)">60%</div><div class="pbar"><div class="pfill" style="width:60%;background:var(--green)"></div></div></td>
+            <td style="color:var(--green)">大利多</td>
+            <td>NVDA、SMH、台積電 ADR</td>
+            <td>$220–225 支撐分批加碼</td>
+          </tr>
+          <tr>
+            <td><span class="rdot" style="background:var(--green)"></span>伊朗停火（油價急跌 −15%）</td>
+            <td><div style="font-family:var(--mono);font-size:11px;color:var(--green)">35%</div><div class="pbar"><div class="pfill" style="width:35%;background:var(--green)"></div></div></td>
+            <td style="color:var(--green)">極大利多</td>
+            <td>全部股市 · 消費股 · 債市</td>
+            <td>停火訊號出現後快速加碼 QQQ / 0050</td>
+          </tr>
+          <tr>
+            <td><span class="rdot" style="background:var(--amber)"></span>台股連4黑後技術反彈後再破底</td>
+            <td><div style="font-family:var(--mono);font-size:11px;color:var(--amber)">25%</div><div class="pbar"><div class="pfill" style="width:25%;background:var(--amber)"></div></div></td>
+            <td style="color:var(--amber)">中高</td>
+            <td>台股 ETF、台積電</td>
+            <td>台積電跌破 2,150 觸發停損</td>
+          </tr>
+          <tr>
+            <td><span class="rdot" style="background:var(--red)"></span>10Y 殖利率突破 4.7%（升息定價強化）</td>
+            <td><div style="font-family:var(--mono);font-size:11px;color:var(--amber)">20%</div><div class="pbar"><div class="pfill" style="width:20%;background:var(--amber)"></div></div></td>
+            <td style="color:var(--red)">高</td>
+            <td>科技成長股、QQQ、Nasdaq</td>
+            <td>減持成長股、增加 BIL 短債</td>
+          </tr>
+          <tr>
+            <td><span class="rdot" style="background:var(--red)"></span>SpaceX / OpenAI IPO 流動性虹吸</td>
+            <td><div style="font-family:var(--mono);font-size:11px;color:var(--amber)">45%</div><div class="pbar"><div class="pfill" style="width:45%;background:var(--amber)"></div></div></td>
+            <td style="color:var(--amber)">中</td>
+            <td>中小型科技、ARK 類基金</td>
+            <td>6月降低槓桿，保留現金參與 IPO</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- OPP -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">05</span><span class="sec-lbl">投資主題機會分析</span><div class="sec-line"></div></div>
+  <div class="opp-grid">
+    <div class="opp" style="--oac:var(--green)">
+      <div class="opp-rk">01</div>
+      <div class="opp-theme">財報後 · 核心催化</div>
+      <div class="opp-name">NVDA 盤後修正買點</div>
+      <div class="opp-tix"><span class="ot">NVDA</span><span class="ot">SMH</span><span class="ot">AMAT</span></div>
+      <div class="opp-desc">Q2 指引 $91B 遠超共識 $86B（+5.8%），這是「超預期」中的「超超預期」。盤後 −1.5% 的典型「賣消息」是歷史規律，但本次基本面強度遠超過去4次下跌時的情境。今日正盤 $220–225 若有支撐，是 6–12 個月持有的極佳進場點。Computex 6/3 Vera Rubin 發表是下一個催化劑。</div>
+      <div class="opp-sig"><div class="sdot" style="background:var(--green)"></div><span class="stxt">正盤守支撐後加碼</span><span class="sstr s-buy">強買進</span></div>
+    </div>
+    <div class="opp" style="--oac:var(--amber)">
+      <div class="opp-rk">02</div>
+      <div class="opp-theme">MSCI 資金回補</div>
+      <div class="opp-name">台積電 MSCI 窗口</div>
+      <div class="opp-tix"><span class="ot">2330</span><span class="ot">TSM</span><span class="ot">0050</span></div>
+      <div class="opp-desc">MSCI 6/1 生效（但提前 5/29 盤後），被動資金回補窗口 5/21–5/29。NVDA $91B 指引直接強化 TSMC AI 晶圓需求，分析師目標均值 $2,515（+15%）。今日若收復 2,200，月線重新翻上為短線反攻確認訊號。第一批進場區：$2,180–2,210，分批建倉。</div>
+      <div class="opp-sig"><div class="sdot" style="background:var(--amber)"></div><span class="stxt">MSCI 生效前 · 分批布局</span><span class="sstr s-mid">伺機買進</span></div>
+    </div>
+    <div class="opp" style="--oac:var(--blue)">
+      <div class="opp-rk">03</div>
+      <div class="opp-theme">IPO 世紀事件</div>
+      <div class="opp-name">SpaceX SPCX 研究布局</div>
+      <div class="opp-tix"><span class="ot">SPCX*</span><span class="ot">SpaceXAI</span></div>
+      <div class="opp-desc">S-1 招股書即將公開（本週），是評估投資論點的唯一官方依據。重點閱讀：Starlink ARPU 毛利率、xAI 合併後 AI 收入比重、Musk 投票控制結構、鎖定期安排。估值 $1.75–2T 意味著 109–116x 2025 年營收，需要持續完美執行。台灣投資人透過 IBKR 可在 6/12 開盤後買入。</div>
+      <div class="opp-sig"><div class="sdot" style="background:var(--blue)"></div><span class="stxt">等 S-1 公開後評估</span><span class="sstr s-watch">密切追蹤</span></div>
+    </div>
+    <div class="opp" style="--oac:var(--teal)">
+      <div class="opp-rk">04</div>
+      <div class="opp-theme">地緣下行風險</div>
+      <div class="opp-name">伊朗停火 · 非線性利多</div>
+      <div class="opp-tix"><span class="ot">QQQ</span><span class="ot">0050</span><span class="ot">XLY</span></div>
+      <div class="opp-desc">若伊朗停火成真（機率 35%），油價急跌 −15–25%，CPI 可能在 2 個月內從 3.8% 降至 2.5% 以下，Fed 降息預期迅速重燃。這是當前最大的「正面尾部事件」，一旦訊號確認（停火協議簽署），需要快速加碼大盤 ETF（0050 / QQQ）。當前已有油輪離開霍爾木茲的前導訊號。</div>
+      <div class="opp-sig"><div class="sdot" style="background:var(--teal)"></div><span class="stxt">停火訊號確認後快速行動</span><span class="sstr s-mid">事件交易</span></div>
+    </div>
+    <div class="opp" style="--oac:var(--red)">
+      <div class="opp-rk">05</div>
+      <div class="opp-theme">通膨 · 防禦配置</div>
+      <div class="opp-name">黃金 + 短天期美債</div>
+      <div class="opp-tix"><span class="ot">IAUM</span><span class="ot">GLD</span><span class="ot">BIL</span></div>
+      <div class="opp-desc">通膨 3.8%、30Y 殖利率 5.1%，高利率環境短期未變。BIL（0–3 月美債）殖利率約 5.3%，無久期風險，是現金替代品。IAUM（實物黃金）維持 8% 組合配置。若伊朗停火後油價急跌，需視情況調降黃金比例、提高風險資產配置。</div>
+      <div class="opp-sig"><div class="sdot" style="background:var(--red)"></div><span class="stxt">組合保護 · 10% 配置</span><span class="sstr s-mid">維持持有</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">06</span><span class="sec-lbl">大師策略總結</span><div class="sec-line"></div></div>
+  <div class="sum-card">
+    <div class="sum-quote">
+      今日市場性格：<strong>「財報驗證 + 地緣轉機 = 多頭重燃時刻」</strong>——NVDA $91B Q2 指引是 AI 基礎設施需求最強的單一確認訊號，打破了「賣指引」的慣性預期。台股連4黑後，今日是<strong>技術面修復的啟動點</strong>（台指期夜盤 +81 點已先行定價）。伊朗停火若在本週確認，將是油價 / 通膨 / 利率的<strong>三重非線性正向衝擊</strong>，一旦發生需要快速反應。今日核心操作：<strong>守 NVDA $220、台積電 2,185，確認後分批加碼</strong>；保留 15% 現金等待伊朗停火二次催化。
+    </div>
+    <div class="sum-3">
+      <div class="sum-col">
+        <div class="sum-col-t tc-buy">▲ 加碼方向</div>
+        <div class="sum-li">NVDA 正盤若守 $220–225 支撐，加碼第二批（三批策略第二批）</div>
+        <div class="sum-li">SMH 跟隨 NVDA 方向，NVDA 財報後維持核心持倉，不輕易賣出</div>
+        <div class="sum-li">台積電 2,180–2,210 啟動第一批建倉，MSCI 6/1 前完成佈局</div>
+        <div class="sum-li">AI 伺服器鏈（鴻海 2317、廣達 2382）今日跟漲可加碼</div>
+        <div class="sum-li">SpaceX S-1 公開後閱讀，評估 6/12 開盤日是否透過 IBKR 參與</div>
+      </div>
+      <div class="sum-col">
+        <div class="sum-col-t tc-watch">◎ 重點觀察</div>
+        <div class="sum-li">NVDA 今日正盤開盤方向：守 $220 = 確認 buy-the-dip；跌破 $210 = 觀望</div>
+        <div class="sum-li">台積電今日能否收復 2,200 月線 = 台股反攻訊號確認</div>
+        <div class="sum-li">伊朗停火：任何「協議草案簽署」新聞出現 → 立即加碼大盤 ETF</div>
+        <div class="sum-li">WMT 5/21 BMO 財報後美股期指反應（消費者信心溫度計）</div>
+        <div class="sum-li">Computex 6/3–6/7 前台股 AI 供應鏈題材持續發酵</div>
+      </div>
+      <div class="sum-col">
+        <div class="sum-col-t tc-hedge">▼ 避險思路</div>
+        <div class="sum-li">NVDA 若盤後跌勢延續 > 5% → 不追殺，等待交易日二支撐</div>
+        <div class="sum-li">台積電跌破 2,150 = 月線系統性失守，觸發停損減碼</div>
+        <div class="sum-li">SpaceX / OpenAI IPO 6 月流動性虹吸：提前降低非核心持倉槓桿</div>
+        <div class="sum-li">10Y 殖利率 > 4.7% 觸發：減持 QQQ 30%，換入 BIL 短債</div>
+        <div class="sum-li">組合總停損線：個股 −10%，整體 −15%；鐵紀律不因行情妥協</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  ⚡ 2026.05.21（THU）· 資料來源：NVDA IR / StockTitan / TheStreet / Trading Economics / UDN 聯合新聞 / Reuters / TECHi<br>
+  ★ = 持倉標的 · ◎ = Watchlist · ⚠️ = 預估數據 · 本頁資訊僅供研究參考，不構成投資建議，所有投資均有風險
+</footer>
+
+<script>
+const tkData=[
+  {s:'S&P 500',v:'~7,520',c:'+1.08%',u:true},{s:'NASDAQ',v:'26,600+',c:'+1.54%',u:true},
+  {s:'DOW',v:'50,000+',c:'+1.31%',u:true},{s:'台股 TAIEX',v:'40,021',c:'-0.39% 連4黑',u:false},
+  {s:'TSMC 2330',v:'NT$2,185',c:'-0.91% 月線失守',u:false},{s:'NVDA Q1',v:'$81.6B',c:'Beat $78.8B ↑',u:true},
+  {s:'NVDA Q2指引',v:'$91B',c:'共識$86B ↑+5.8%',u:true},{s:'NVDA EPS',v:'$1.87',c:'Beat $1.70 ↑',u:true},
+  {s:'NVDA 股利',v:'$0.25/季',c:'25倍大增',u:true},{s:'NVDA 盤後',v:'~$221',c:'-1.5%「賣消息」',u:false},
+  {s:'WTI',v:'~$103',c:'伊朗停火希望回落',u:true},{s:'BRENT',v:'~$107',c:'',u:true},
+  {s:'10Y UST',v:'4.60%',c:'52W高點',u:false},{s:'30Y UST',v:'5.10%',c:'2007最高',u:false},
+  {s:'GOLD',v:'~$4,545',c:'',u:null},{s:'SPCX IPO',v:'6/12',c:'$1.75–2T',u:true},
+  {s:'OpenAI IPO',v:'$1T+',c:'數週內申報',u:true},{s:'台指期夜盤',v:'+81點',c:'NVDA利多',u:true},
+];
+const tkEl=document.getElementById('tkr');
+const items=[...tkData,...tkData].map(d=>{
+  const cls=d.u===true?'up':d.u===false?'dn':'na';
+  return`<div class="tk-item"><span class="tk-sym">${d.s}</span><span class="tk-val">${d.v}</span><span class="${cls}" style="font-size:10px">${d.c}</span></div>`;
+}).join('');
+tkEl.innerHTML=items;
+
+function stab(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.npanel').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('p-'+id).classList.add('on');
+}
+
+Chart.defaults.color='#454878';
+Chart.defaults.font.family="'IBM Plex Mono',monospace";
+Chart.defaults.font.size=10;
+
+// 板塊
+new Chart(document.getElementById('sectorChart'),{
+  type:'bar',
+  data:{
+    labels:['非必需消費','科技','工業','材料','通信','金融','醫療','必需消費','能源'],
+    datasets:[{label:'%',
+      data:[2.39,2.11,1.2,0.8,0.6,0.3,-0.07,-0.52,-2.08],
+      backgroundColor:d=>d.raw>=0?'rgba(62,207,142,.6)':'rgba(242,102,102,.6)',
+      borderColor:d=>d.raw>=0?'rgba(62,207,142,1)':'rgba(242,102,102,1)',
+      borderWidth:1,borderRadius:2}]
+  },
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#454878',callback:v=>v+'%'}},
+      y:{grid:{display:false},ticks:{color:'#8890c0',font:{size:9}}}}}
+});
+
+// 法人
+new Chart(document.getElementById('instChart'),{
+  type:'bar',
+  data:{
+    labels:['外資（連3賣）','投信（逆勢買）','自營商（避險賣）'],
+    datasets:[{label:'億元',
+      data:[-632.35,71.77,-223.52],
+      backgroundColor:['rgba(242,102,102,.6)','rgba(62,207,142,.6)','rgba(242,102,102,.6)'],
+      borderColor:['rgba(242,102,102,1)','rgba(62,207,142,1)','rgba(242,102,102,1)'],
+      borderWidth:1,borderRadius:2}]
+  },
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw.toFixed(1)}億`}}},
+    scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#454878',callback:v=>v+'億'}},
+      y:{grid:{display:false},ticks:{color:'#8890c0',font:{size:9}}}}}
+});
+
+// 雷達
+new Chart(document.getElementById('radarChart'),{
+  type:'radar',
+  data:{
+    labels:['NVDA財報後加碼','台積電MSCI','伊朗停火機會','SpaceX IPO','黃金防禦','Computex題材'],
+    datasets:[{label:'評分',
+      data:[9.5,8.5,7.5,7.0,6.5,8.0],
+      backgroundColor:'rgba(62,207,142,.12)',
+      borderColor:'rgba(62,207,142,.9)',
+      borderWidth:2,pointBackgroundColor:'rgba(62,207,142,1)',pointRadius:3}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{r:{min:0,max:10,
+      grid:{color:'rgba(255,255,255,.07)'},angleLines:{color:'rgba(255,255,255,.07)'},
+      ticks:{display:false},pointLabels:{color:'#6677aa',font:{size:9}}}}}
+});
+
+// 情緒
+new Chart(document.getElementById('sentChart'),{
+  type:'doughnut',
+  data:{
+    labels:['貪婪','中性','恐慌'],
+    datasets:[{data:[48,32,20],
+      backgroundColor:['rgba(62,207,142,.75)','rgba(245,166,35,.75)','rgba(242,102,102,.75)'],
+      borderColor:['rgba(62,207,142,1)','rgba(245,166,35,1)','rgba(242,102,102,1)'],
+      borderWidth:1,hoverOffset:4}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>` ${d.label}: ${d.raw}%`}}},
+    cutout:'60%'}
+});
+
+// NVDA 比較
+new Chart(document.getElementById('nvdaChart'),{
+  type:'bar',
+  data:{
+    labels:['Q1 營收(B)','Q1 EPS','Q2 指引(B)','資料中心(B)'],
+    datasets:[
+      {label:'市場共識',data:[78.8,1.70,86,73],backgroundColor:'rgba(91,156,246,.55)',borderColor:'rgba(91,156,246,1)',borderWidth:1,borderRadius:2},
+      {label:'實際/指引',data:[81.6,1.87,91,75.2],backgroundColor:'rgba(62,207,142,.65)',borderColor:'rgba(62,207,142,1)',borderWidth:1,borderRadius:2}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#454878',font:{size:9}}},
+      y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#454878',font:{size:9}}}}}
+});
+</script>
+</body>
+</html>
