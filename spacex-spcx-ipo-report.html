@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SpaceX SPCX｜IPO 完整研究報告｜2026-06-11</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#080b18;--bg2:#0c101f;--bg3:#101528;--bg4:#141830;
+  --border:#1c2242;--border2:#252d50;
+  --t1:#f0f2fc;--t2:#c8d0ec;--t3:#8890c0;--t4:#5a6288;--t5:#3a4268;
+  --blue:#60a5fa;--purple:#a78bfa;--cyan:#22d3ee;--orange:#fb923c;
+  --green:#4ade80;--green2:#86efac;--red:#f43f5e;--red2:#f87171;--yellow:#fbbf24;
+  --mono:'IBM Plex Mono',monospace;--sans:'Inter',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--t1);font-family:var(--sans);line-height:1.6;font-size:14px;}
+
+/* ── NAV ── */
+.nav{position:sticky;top:0;z-index:100;background:rgba(8,11,24,.96);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);height:50px;display:flex;align-items:center;padding:0 24px;gap:16px;}
+.nav-ticker{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--cyan);}
+.nav-price{font-family:var(--mono);font-size:13px;color:var(--t2);}
+.nav-tag{font-size:10.5px;color:var(--red2);background:#1e0812;border:1px solid #f4375e30;
+  padding:3px 8px;border-radius:5px;font-weight:600;}
+.nav-links{display:flex;gap:18px;margin-left:auto;}
+.nav-links a{color:var(--t4);text-decoration:none;font-size:11.5px;font-weight:500;transition:color .15s;}
+.nav-links a:hover{color:var(--t1);}
+@media(max-width:700px){.nav-links{display:none;}.nav-price{display:none;}}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1080px;margin:0 auto;padding:32px 20px;}
+.sec{margin-bottom:52px;}
+.sec-label{font-family:var(--mono);font-size:10px;color:var(--t5);letter-spacing:.15em;text-transform:uppercase;margin-bottom:4px;}
+.sec-title{font-size:17px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.sec-title::before{content:'';display:inline-block;width:3px;height:20px;border-radius:2px;
+  background:linear-gradient(180deg,var(--cyan),var(--purple));flex-shrink:0;}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px;}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.kpi-label{font-size:10px;color:var(--t5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
+.kpi-value{font-family:var(--mono);font-size:21px;font-weight:800;margin-bottom:3px;}
+.kpi-sub{font-size:10.5px;color:var(--t5);line-height:1.4;}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{padding:8px 11px;color:var(--t4);font-weight:600;font-size:10px;text-transform:uppercase;
+  letter-spacing:.08em;border-bottom:1px solid var(--border);font-family:var(--mono);white-space:nowrap;}
+th.r{text-align:right;}
+td{padding:8px 11px;border-bottom:1px solid var(--bg4);color:var(--t2);line-height:1.4;}
+td.r{text-align:right;}
+td.mono{font-family:var(--mono);}
+.pos{color:var(--green);font-weight:700;}
+.neg{color:var(--red2);font-weight:700;}
+.warn{color:var(--yellow);font-weight:700;}
+.dim{color:var(--t4);}
+
+/* ── BADGES ── */
+.b{display:inline-block;padding:1px 6px;border-radius:3px;font-size:8.5px;font-family:var(--mono);font-weight:700;letter-spacing:.05em;vertical-align:middle;margin-left:3px;}
+.bf{background:#1a3040;color:#22d3ee;border:1px solid #22d3ee30;}
+.bg{background:#1a3020;color:#4ade80;border:1px solid #4ade8030;}
+.be{background:#2a2030;color:#a78bfa;border:1px solid #a78bfa30;}
+.bi{background:#302010;color:#fbbf24;border:1px solid #fbbf2430;}
+.bw{background:#2a1020;color:#f87171;border:1px solid #f8717130;}
+
+/* ── INFO BOXES ── */
+.box-info{background:#0d1428;border:1px solid #1e3060;border-left:3px solid var(--cyan);border-radius:8px;padding:13px 16px;margin-bottom:16px;}
+.box-info p{font-size:12.5px;color:var(--t2);line-height:1.65;}
+.box-warn{background:#1a1208;border:1px solid #fbbf2430;border-left:3px solid var(--yellow);border-radius:8px;padding:13px 16px;margin-bottom:16px;}
+.box-warn p{font-size:12.5px;color:var(--t2);line-height:1.65;}
+.box-red{background:#180810;border:1px solid #f4375e30;border-left:3px solid var(--red);border-radius:8px;padding:13px 16px;margin-bottom:16px;}
+.box-red p{font-size:12.5px;color:var(--t2);line-height:1.65;}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:700px){.g2,.g3{grid-template-columns:1fr;}}
+
+/* ── SCENARIO CARDS ── */
+.sc-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.sc-card.bull{border-top:2px solid var(--green);}
+.sc-card.base{border-top:2px solid var(--yellow);}
+.sc-card.bear{border-top:2px solid var(--red2);}
+
+/* ── TIMELINE ── */
+.tl{display:flex;margin-bottom:20px;border-radius:10px;overflow:hidden;}
+.tl-item{flex:1;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-left:none;}
+.tl-item:first-child{border-left:1px solid var(--border);}
+.tl-phase{font-size:9.5px;color:var(--t5);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;}
+.tl-period{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:5px;}
+.tl-desc{font-size:11px;color:var(--t3);line-height:1.5;}
+@media(max-width:700px){.tl{flex-direction:column;}.tl-item{border-left:1px solid var(--border);border-top:none;}.tl-item:first-child{border-top:1px solid var(--border);}}
+
+/* ── STRATEGY ROWS ── */
+.sr{display:flex;gap:14px;padding:12px 16px;border-radius:8px;margin-bottom:8px;align-items:center;}
+.sr.go{background:#0a1e12;border:1px solid #4ade8028;}
+.sr.caution{background:#1a1508;border:1px solid #fbbf2428;}
+.sr.stop{background:#180810;border:1px solid #f4375e28;}
+.sr-icon{font-size:18px;flex-shrink:0;}
+.sr-title{font-size:12.5px;font-weight:700;margin-bottom:3px;}
+.sr-desc{font-size:11.5px;color:var(--t3);line-height:1.5;}
+
+/* ── RISK ITEMS ── */
+.ri{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--bg4);align-items:flex-start;}
+.ri:last-child{border-bottom:none;}
+.ri-icon{font-size:17px;flex-shrink:0;margin-top:1px;}
+.ri-title{font-size:12.5px;font-weight:600;color:var(--t1);margin-bottom:3px;}
+.ri-desc{font-size:11.5px;color:var(--t3);line-height:1.5;}
+
+/* ── CHART CONTAINERS ── */
+.ch{position:relative;}
+.ch-sm{height:230px;}
+.ch-md{height:300px;}
+.ch-lg{height:380px;}
+
+/* ── TOGGLE BUTTONS ── */
+.tg-group{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+.tg-btn{padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;border:1px solid;
+  font-family:var(--sans);transition:all .15s;background:transparent;}
+
+/* ── TIMELINE (vertical) ── */
+.vtl{position:relative;padding-left:22px;}
+.vtl::before{content:'';position:absolute;left:5px;top:6px;bottom:6px;width:2px;
+  background:linear-gradient(180deg,var(--cyan),var(--purple),var(--red));border-radius:2px;}
+.vtl-item{position:relative;margin-bottom:18px;}
+.vtl-dot{position:absolute;left:-17px;top:4px;width:10px;height:10px;border-radius:50%;border:2px solid var(--bg2);}
+.vtl-date{font-family:var(--mono);font-size:10px;color:var(--t5);}
+.vtl-title{font-size:13px;font-weight:700;margin-bottom:2px;}
+.vtl-desc{font-size:11.5px;color:var(--t3);}
+
+/* ── DIVIDER ── */
+hr{border:none;border-top:1px solid var(--border);margin:44px 0;}
+
+/* ── FOOTER ── */
+.footer{border-top:1px solid var(--border);padding:24px 20px;font-size:11px;color:var(--t5);line-height:1.8;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <span class="nav-ticker">SPCX</span>
+  <span class="nav-price">IPO $135.00 ／ Est. $1.77兆</span>
+  <span class="nav-tag">明日開盤 2026-06-12</span>
+  <div class="nav-links">
+    <a href="#s-val">估值</a>
+    <a href="#s-fin">財務</a>
+    <a href="#s-mech">指數機制</a>
+    <a href="#s-hist">歷史對標</a>
+    <a href="#s-sc">情境</a>
+    <a href="#s-strat">操作策略</a>
+    <a href="#s-risk">風險</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- ══ HERO ══ -->
+<div class="sec" style="padding-top:6px;">
+  <div style="display:flex;gap:14px;margin-bottom:22px;align-items:flex-start;">
+    <div style="width:4px;min-height:56px;flex-shrink:0;margin-top:3px;
+      background:linear-gradient(180deg,#22d3ee,#a78bfa,#f43f5e);border-radius:2px;"></div>
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t5);letter-spacing:.15em;text-transform:uppercase;margin-bottom:5px;">
+        投資研究報告 ／ 2026-06-11 ／ Jason 專屬
+      </div>
+      <h1 style="font-size:24px;font-weight:900;line-height:1.2;margin-bottom:6px;">
+        SpaceX (SPCX)｜史上最大 IPO 全面解析
+      </h1>
+      <p style="font-size:12.5px;color:var(--t3);">
+        估值分析 ／ S-1 財務解析 ／ Nasdaq-100 指數機制 ／ 歷史 IPO 對標 ／ 三情境預測 ／ 短線＆核心倉位操作策略
+      </p>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi" style="border-top:2px solid var(--cyan);">
+      <div class="kpi-label">IPO 定價</div>
+      <div class="kpi-value" style="color:var(--cyan);">$135</div>
+      <div class="kpi-sub">每股 ／ 總募資 $750億 <span class="b bf">F</span></div>
+    </div>
+    <div class="kpi" style="border-top:2px solid var(--blue);">
+      <div class="kpi-label">IPO 估值</div>
+      <div class="kpi-value" style="color:var(--blue);">$1.77兆</div>
+      <div class="kpi-sub">Nasdaq 第七大公司 <span class="b bf">F</span></div>
+    </div>
+    <div class="kpi" style="border-top:2px solid var(--purple);">
+      <div class="kpi-label">Damodaran 公允價</div>
+      <div class="kpi-value" style="color:var(--purple);">$1.22兆</div>
+      <div class="kpi-sub">~$94/股 ／ -31% <span class="b bf">F</span></div>
+    </div>
+    <div class="kpi" style="border-top:2px solid var(--red2);">
+      <div class="kpi-label">Morningstar 公允價</div>
+      <div class="kpi-value" style="color:var(--red2);">$780億</div>
+      <div class="kpi-sub">~$60/股 ／ -56% <span class="b bf">F</span></div>
+    </div>
+    <div class="kpi" style="border-top:2px solid var(--green);">
+      <div class="kpi-label">Starlink 訂戶</div>
+      <div class="kpi-value" style="color:var(--green);">1,030萬</div>
+      <div class="kpi-sub">Q1 2026 ／ 155 國 <span class="b bf">F</span></div>
+    </div>
+    <div class="kpi" style="border-top:2px solid var(--red2);">
+      <div class="kpi-label">Q1 2026 淨虧損</div>
+      <div class="kpi-value" style="color:var(--red2);">-$42.8億</div>
+      <div class="kpi-sub">主因：xAI 燒錢 <span class="b bf">F</span></div>
+    </div>
+  </div>
+
+  <div class="box-info">
+    <p><strong style="color:var(--cyan);">研究結論 <span class="b bi">I</span>：</strong>
+    SpaceX 是偉大的公司，但 <strong>$135/股 = 用 2026 年的價格，購買 2032 年的夢想</strong>。
+    基本面公允價 <strong>$80–100/股（$1.0–1.3兆）</strong>。
+    短期 Nasdaq-100 快速納入（~D+15，7/6）製造 <strong>$220–270億機械買盤</strong>，可能短暫推升至 $160–200。
+    最聰明的做法：讓流動性機制做功，等 Q2 財報（~7/30）後再做核心倉位決策。</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══ S1: VALUATION ══ -->
+<div class="sec" id="s-val">
+  <div class="sec-label">Section 01</div>
+  <div class="sec-title">估值分析 — 誰的價格是對的？</div>
+
+  <div class="g2" style="margin-bottom:16px;">
+    <div class="card">
+      <div style="font-size:11.5px;color:var(--t3);margin-bottom:12px;font-weight:600;">各方估值比較（美元兆）</div>
+      <div class="ch ch-md"><canvas id="valChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div style="font-size:11.5px;color:var(--t3);margin-bottom:12px;font-weight:600;">估值明細</div>
+      <table>
+        <thead><tr><th>來源</th><th class="r">每股</th><th class="r">總估值</th><th class="r">vs IPO</th></tr></thead>
+        <tbody>
+          <tr><td><span style="color:var(--red2);font-weight:600;">Morningstar</span></td><td class="r mono">~$60</td><td class="r mono">$780億</td><td class="r"><span class="neg">-56%</span></td></tr>
+          <tr><td><span style="color:var(--orange);font-weight:600;">Seeking Alpha</span></td><td class="r mono">$80–91</td><td class="r mono">~$1.0兆</td><td class="r"><span class="neg">-33~40%</span></td></tr>
+          <tr><td><span style="color:var(--purple);font-weight:600;">Damodaran (NYU)</span></td><td class="r mono">~$94</td><td class="r mono">$1.22兆</td><td class="r"><span class="neg">-31%</span></td></tr>
+          <tr><td><span style="color:var(--cyan);font-weight:600;">IPO 定價</span></td><td class="r mono">$135</td><td class="r mono">$1.77兆</td><td class="r dim">基準</td></tr>
+          <tr><td><span style="color:var(--green);font-weight:600;">Polymarket 押注</span></td><td class="r mono">~$177</td><td class="r mono">~$2.3兆</td><td class="r"><span class="pos">+31%</span></td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;font-size:11px;color:var(--t5);line-height:1.7;">
+        ⚠ Damodaran：xAI TAM $26兆「超出合理範圍」<br>
+        ⚠ Morningstar：部分 S-1 假設「接近不誠實」<br>
+        ⚠ Musk 控制 <strong style="color:var(--red2);">85% 投票權</strong>（雙重股權結構）
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:11.5px;color:var(--t3);margin-bottom:12px;font-weight:600;">估值倍數比較</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>指標</th><th class="r">SpaceX (IPO)</th><th class="r">Apple</th><th class="r">Nvidia</th><th class="r">Tesla</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td>P/S（市銷率）</td><td class="r mono"><span class="warn">94x</span></td><td class="r mono">8x</td><td class="r mono">28x</td><td class="r mono">12x</td><td style="font-size:11px;" class="dim">史無前例 <span class="b bf">F</span></td></tr>
+        <tr><td>EV/Revenue 2027E</td><td class="r mono"><span class="warn">~36x</span></td><td class="r mono">7x</td><td class="r mono">18x</td><td class="r mono">8x</td><td style="font-size:11px;" class="dim"><span class="b be">E</span></td></tr>
+        <tr><td>EV/EBITDA 2027E</td><td class="r mono"><span class="warn">~122x</span></td><td class="r mono">22x</td><td class="r mono">38x</td><td class="r mono">30x</td><td style="font-size:11px;" class="dim"><span class="b be">E</span></td></tr>
+        <tr><td>2025 淨利/虧損</td><td class="r mono"><span class="neg">-$49.4億</span></td><td class="r mono">$934億</td><td class="r mono">$733億</td><td class="r mono">$71億</td><td style="font-size:11px;" class="dim"><span class="b bf">F</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══ S2: FINANCIALS ══ -->
+<div class="sec" id="s-fin">
+  <div class="sec-label">Section 02</div>
+  <div class="sec-title">S-1 財務解析 — 三個業務，一個核心問題</div>
+
+  <div class="box-warn">
+    <p><strong style="color:var(--yellow);">⚠ 核心矛盾：</strong>
+    Starlink 是<strong>唯一獲利業務</strong>，但 xAI 燒錢速度正在吞噬所有利潤。
+    2024 年 SpaceX 淨利 <span class="pos">+$7.9億</span>；合併 xAI 後，2025 年轉虧 <span class="neg">-$49.4億</span>；
+    Q1 2026 單季虧損 <span class="neg">-$42.8億</span>，且加速惡化。
+    xAI 2025 年 capex <span class="warn">$127億</span> = 集團總 capex 的 <span class="warn">61%</span>。<span class="b bf">F</span></p>
+  </div>
+
+  <div class="g2" style="margin-bottom:16px;">
+    <div class="card">
+      <div style="font-size:11.5px;color:var(--t3);margin-bottom:12px;font-weight:600;">Q1 2026 分部表現（億美元）<span class="b bf">F</span></div>
+      <div class="ch ch-md"><canvas id="segChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div style="font-size:11.5px;color:var(--t3);margin-bottom:12px;font-weight:600;">Q1 2026 分部明細</div>
+      <table>
+        <thead><tr><th>業務</th><th class="r">營收</th><th class="r">營業損益</th><th class="r">資本支出</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;"></span><strong style="color:var(--green);">Starlink</strong></td>
+            <td class="r mono">$32.6億</td><td class="r"><span class="pos">+$11.9億</span></td><td class="r mono">$13億</td>
+          </tr>
+          <tr>
+            <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);margin-right:6px;"></span><strong style="color:var(--yellow);">火箭 (Space)</strong></td>
+            <td class="r mono">$6.1億</td><td class="r"><span class="neg">-$6.6億</span></td><td class="r mono">$10億</td>
+          </tr>
+          <tr>
+            <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:6px;"></span><strong style="color:var(--red2);">xAI (AI)</strong></td>
+            <td class="r mono">$8.2億</td><td class="r"><span class="neg">-$24.7億</span></td><td class="r mono"><span class="warn">$77.2億</span></td>
+          </tr>
+          <tr style="background:var(--bg3);">
+            <td><strong>合計</strong></td>
+            <td class="r mono"><strong>$46.9億</strong></td><td class="r"><span class="neg"><strong>-$19.4億</strong></span></td><td class="r mono"><span class="warn"><strong>$101億</strong></span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;padding:10px;background:var(--bg3);border-radius:6px;font-size:11.5px;color:var(--t3);line-height:1.65;">
+        💡 xAI Q1 capex $77.2億 = 集團的 <strong style="color:var(--red2);">76%</strong><br>
+        💡 xAI 單季 capex > xAI <strong>全年</strong> 2025 總營收（$32億）<br>
+        💡 累積虧損（Accumulated Deficit）<strong style="color:var(--red2);">$413億</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:11.5px;color:var(--t3);margin-bottom:12px;font-weight:600;">年度財務趨勢（2023–2026年化）<span class="b bf">F</span></div>
+    <div class="ch ch-md"><canvas id="annChart"></canvas></div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══ S3: INDEX MECHANICS ══ -->
+<div class="sec" id="s-mech">
+  <div class="sec-label">Section 03</div>
+  <div class="sec-title">Nasdaq-100 指數納入機制 — 短線最大催化劑</div>
+
+  <div class="box-info" style="border-left-color:var(--yellow);">
+    <p><strong style="color:var(--yellow);">⚡ 關鍵機制：</strong>
+    Nasdaq 2026/05/01 生效新規：市值前40大新上市公司 <strong>D+15</strong> 即可快速納入 Nasdaq-100，
+    同時取消流通量最低門檻。SpaceX 流通股僅占總股本 <strong>3–5%</strong>，
+    被動基金被迫在極度稀薄的流通盤中搶購 <strong>$220–270億</strong>。
+    S&P 500 因虧損條件不符，<strong>拒絕快速納入</strong>，$500億+最大買盤缺席。<span class="b bf">F</span></p>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div style="font-size:11.5px;color:var(--t3);margin-bottom:16px;font-weight:600;">關鍵日期時間軸</div>
+      <div class="vtl">
+        <div class="vtl-item">
+          <div class="vtl-dot" style="background:var(--cyan);"></div>
+          <div class="vtl-date">2026-06-11（今日）</div>
+          <div class="vtl-title" style="color:var(--cyan);">IPO 定價 $135/股</div>
+          <div class="vtl-desc">555.6M 股，募資 $750億</div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot" style="background:var(--blue);"></div>
+          <div class="vtl-date">2026-06-12（明日）</div>
+          <div class="vtl-title">🚀 SPCX 首日交易</div>
+          <div class="vtl-desc">情緒高峰 ／ 最危險的追入時機</div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot" style="background:var(--yellow);"></div>
+          <div class="vtl-date">2026-06-17</div>
+          <div class="vtl-title" style="color:var(--yellow);">⚠ FOMC 利率決策</div>
+          <div class="vtl-desc">Warsh 首次主持 ／ 短線倉必須有出場計畫</div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot" style="background:var(--purple);"></div>
+          <div class="vtl-date">~2026-07-06（D+15）</div>
+          <div class="vtl-title" style="color:var(--purple);">📊 Nasdaq-100 正式納入</div>
+          <div class="vtl-desc">QQQ/QQQM 強制買入 $220–270億</div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot" style="background:var(--green);"></div>
+          <div class="vtl-date">~2026-07-30</div>
+          <div class="vtl-title" style="color:var(--green);">🎯 Q2 財報（最大影響事件）</div>
+          <div class="vtl-desc">xAI 虧損趨勢 ＋ Starlink ARPU ＝ 核心倉位決策點</div>
+        </div>
+        <div class="vtl-item" style="margin-bottom:0;">
+          <div class="vtl-dot" style="background:var(--red2);"></div>
+          <div class="vtl-date">~2027-06-12（D+366）</div>
+          <div class="vtl-title" style="color:var(--red2);">🔓 創辦人鎖倉到期</div>
+          <div class="vtl-desc">Musk 持股解禁 ／ 最大潛在賣壓</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:11.5px;color:var(--t3);margin-bottom:12px;font-weight:600;">指數被動買盤分析</div>
+      <table>
+        <thead><tr><th>指數 / ETF</th><th class="r">納入時間</th><th class="r">估計買盤</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600;">QQQ（$4,960億 AUM）</td><td class="r mono">D+15</td><td class="r"><span class="pos">~$170億</span></td></tr>
+          <tr><td style="font-weight:600;">QQQM（$985億 AUM）</td><td class="r mono">D+15</td><td class="r"><span class="pos">~$34億</span></td></tr>
+          <tr><td style="font-weight:600;">Russell 1000</td><td class="r mono">D+15~</td><td class="r"><span class="pos">~$20億</span></td></tr>
+          <tr><td style="font-weight:600;color:var(--red2);">S&amp;P 500（SPY/VOO）</td><td class="r mono" style="color:var(--red2);">暫緩</td><td class="r"><span class="neg">$0（虧損排除）</span></td></tr>
+          <tr style="background:var(--bg3);"><td><strong>近期合計強制買盤</strong></td><td></td><td class="r mono"><strong class="pos">$220–270億</strong></td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:14px;">
+        <div style="font-size:11.5px;color:var(--t3);font-weight:600;margin-bottom:8px;">其他資金流</div>
+        <table>
+          <thead><tr><th>來源</th><th class="r">規模</th></tr></thead>
+          <tbody>
+            <tr><td style="font-size:11.5px;">訂單簿需求</td><td class="r mono"><span class="pos">$1,500億</span></td></tr>
+            <tr><td style="font-size:11.5px;">零售配售（~30%）</td><td class="r mono"><span class="pos">~$225億</span></td></tr>
+            <tr><td style="font-size:11.5px;">S&amp;P 500 延後買盤</td><td class="r mono"><span class="warn">$500億+（最快2027）</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:var(--bg3);border-radius:6px;font-size:11.5px;color:var(--t3);line-height:1.65;">
+        💡 <strong style="color:var(--t2);">薄浮動 × 被動機械買盤</strong>：3–5% 流通盤遇到 $220億強制買盤，
+        類似「把大象放進小房間」，短期價格可能嚴重偏離基本面。<br>
+        ⚠ 機械買盤完成後，缺乏新的結構性買家，可能急速回落。
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══ S4: HISTORICAL ══ -->
+<div class="sec" id="s-hist">
+  <div class="sec-label">Section 04</div>
+  <div class="sec-title">歷史前10大 IPO 對標 — 上市後股價走勢</div>
+
+  <div style="font-size:11.5px;color:var(--t4);margin-bottom:12px;">
+    縱軸 = 相對 IPO 定價漲跌幅(%) ／ 橫軸 = 上市後天數（非等距）／ D+1★ = 媒體確認數據；其他點為依90日報酬回推估算值（誤差 ±5%）
+  </div>
+
+  <div class="card" style="margin-bottom:14px;">
+    <div class="tg-group" id="ipoTg"></div>
+    <div class="ch ch-lg"><canvas id="ipoChart"></canvas></div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px;">
+    <div style="font-size:11.5px;color:var(--t3);margin-bottom:12px;font-weight:600;">數據明細（% vs. IPO定價，按D+60排序）</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>公司</th><th class="r">年份</th><th class="r">募資</th><th class="r">D+1★</th><th class="r">D+3</th><th class="r">D+7</th><th class="r">D+14</th><th class="r">D+30</th><th class="r">D+60</th></tr></thead>
+      <tbody id="ipoTbody"></tbody>
+    </table></div>
+    <div style="margin-top:6px;font-size:10px;color:var(--t5);">★ 首日收盤數據已確認 ／ D+3~D+60 為估算值 ／ 資料來源：媒體報導 + Motley Fool（2026/06）</div>
+  </div>
+
+  <div class="g2">
+    <div class="card" style="border-left:2px solid var(--green);">
+      <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:10px;">📈 60日強者共同點</div>
+      <div class="ri" style="padding-top:0;"><div class="ri-icon">💳</div><div><div class="ri-title">Visa（+91%）</div><div class="ri-desc">金融危機期間反而受益——無信用風險，結算網路剛需</div></div></div>
+      <div class="ri"><div class="ri-icon">🛒</div><div><div class="ri-title">Alibaba（+69%）</div><div class="ri-desc">D+1 即彈 38%，2014 Q4 中概科技牛市全力助攻</div></div></div>
+      <div class="ri" style="border:none;padding-bottom:0;"><div class="ri-icon">🏦</div><div><div class="ri-title">ICBC（+44%）</div><div class="ri-desc">2006 中港雙掛牌，恰逢中國最強多頭市場</div></div></div>
+    </div>
+    <div class="card" style="border-left:2px solid var(--red2);">
+      <div style="font-size:12px;font-weight:700;color:var(--red2);margin-bottom:10px;">📉 60日弱者共同點</div>
+      <div class="ri" style="padding-top:0;"><div class="ri-icon">📱</div><div><div class="ri-title">Meta/FB（-34%）</div><div class="ri-desc">估值過高 × NASDAQ 系統當機 × 無手機變現邏輯</div></div></div>
+      <div class="ri"><div class="ri-icon">📡</div><div><div class="ri-title">SoftBank（-9%）</div><div class="ri-desc">上市當日全國網路大規模斷線，信心崩潰</div></div></div>
+      <div class="ri" style="border:none;padding-bottom:0;"><div class="ri-icon">🛢️</div><div><div class="ri-title">Saudi Aramco（+2%）</div><div class="ri-desc">D+3 觸頂 +18%，隨後 COVID + 油價戰雙重衝擊</div></div></div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══ S5: SCENARIOS ══ -->
+<div class="sec" id="s-sc">
+  <div class="sec-label">Section 05</div>
+  <div class="sec-title">上市後走勢情境分析（三階段）</div>
+
+  <!-- Timeline -->
+  <div class="tl" style="margin-bottom:20px;">
+    <div class="tl-item">
+      <div class="tl-phase">Phase 1</div>
+      <div class="tl-period" style="color:var(--cyan);">D+1 → D+15</div>
+      <div style="font-size:11.5px;font-weight:600;color:var(--t3);margin-bottom:5px;">流動性衝擊期</div>
+      <div class="tl-desc">薄浮動 × 被動機械買盤。價格由情緒和流動性驅動，非基本面。最危險的追入時機。</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-phase">Phase 2</div>
+      <div class="tl-period" style="color:var(--yellow);">D+15 → D+90</div>
+      <div style="font-size:11.5px;font-weight:600;color:var(--t3);margin-bottom:5px;">價格發現期</div>
+      <div class="tl-desc">被動買盤完成後真正定價。Q2 財報（~7/30）是最大錨定事件。xAI 虧損趨勢決定方向。</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-phase">Phase 3</div>
+      <div class="tl-period" style="color:var(--red2);">D+180 → D+366</div>
+      <div style="font-size:11.5px;font-weight:600;color:var(--t3);margin-bottom:5px;">鎖倉壓力期</div>
+      <div class="tl-desc">創辦人鎖倉到期（~2027/6/12）前後賣壓測試。xAI 是否收窄虧損決定長期走向。</div>
+    </div>
+  </div>
+
+  <!-- Phase 1 scenarios -->
+  <div style="font-size:12px;font-weight:600;color:var(--t3);margin-bottom:10px;">Phase 1：D+1 到 D+15 情境 <span class="b bi">I</span></div>
+  <div class="g3" style="margin-bottom:20px;">
+    <div class="sc-card bull">
+      <div style="font-size:10px;color:var(--green);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">🟢 Bull — 機率 25%</div>
+      <div style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--green);margin-bottom:6px;">$175–200</div>
+      <div style="font-size:11.5px;color:var(--t3);line-height:1.6;">薄浮動 × 被動基金強搶 × 市場情緒回暖。指數納入前大漲，零售 FOMO 加劇。</div>
+    </div>
+    <div class="sc-card base">
+      <div style="font-size:10px;color:var(--yellow);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">🟡 Base — 機率 50%</div>
+      <div style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--yellow);margin-bottom:6px;">$148–162</div>
+      <div style="font-size:11.5px;color:var(--t3);line-height:1.6;">秩序性開盤 +10–20%，指數買盤穩健支撐，市場平穩消化供給。</div>
+    </div>
+    <div class="sc-card bear">
+      <div style="font-size:10px;color:var(--red2);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">🔴 Bear — 機率 25%</div>
+      <div style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--red2);margin-bottom:6px;">$115–128</div>
+      <div style="font-size:11.5px;color:var(--t3);line-height:1.6;">Fed 鷹派（6/17 FOMC）× 市場走跌 × 破發動搖信心，薄浮動放大跌幅 2–3 倍。</div>
+    </div>
+  </div>
+
+  <!-- Phase 2 scenarios -->
+  <div style="font-size:12px;font-weight:600;color:var(--t3);margin-bottom:10px;">Phase 2：Q2 財報（~7/30）後 D+90 目標區間 <span class="b bi">I</span></div>
+  <div class="card" style="margin-bottom:20px;">
+    <table>
+      <thead><tr><th>情境</th><th>觸發條件</th><th class="r">D+90 目標</th><th class="r">機率</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="pos">🟢 Bull</span></td>
+          <td style="font-size:11.5px;color:var(--t3);">xAI 虧損 &lt;$15億 ＋ Starlink 訂戶 &gt;1,200萬 ＋ ARPU 回升</td>
+          <td class="r mono"><span class="pos">$160–200</span></td><td class="r mono">25%</td>
+        </tr>
+        <tr>
+          <td><span class="warn">🟡 Base</span></td>
+          <td style="font-size:11.5px;color:var(--t3);">xAI 虧損 $15–25億，Starlink 穩定成長，風險偏好維持</td>
+          <td class="r mono"><span class="warn">$110–150</span></td><td class="r mono">50%</td>
+        </tr>
+        <tr>
+          <td><span class="neg">🔴 Bear</span></td>
+          <td style="font-size:11.5px;color:var(--t3);">xAI 虧損 &gt;$30億 或 Starlink ARPU 持續下滑 + 宏觀走弱</td>
+          <td class="r mono"><span class="neg">$75–105</span></td><td class="r mono">25%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Chart -->
+  <div class="card">
+    <div style="font-size:11.5px;color:var(--t3);margin-bottom:12px;font-weight:600;">三情境股價走勢示意圖 <span class="b bi">I</span></div>
+    <div class="ch ch-md"><canvas id="scChart"></canvas></div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══ S6: STRATEGY ══ -->
+<div class="sec" id="s-strat">
+  <div class="sec-label">Section 06</div>
+  <div class="sec-title">操作策略 — IBKR 台灣帳戶</div>
+
+  <div class="box-warn">
+    <p><strong style="color:var(--yellow);">⚠ 策略偏差提醒：</strong>
+    短線操作與你「等 RSI 冷卻、等財報確認、等量能確認」的核心框架有所偏差。
+    以下策略建立在「指數納入機制具結構性邏輯」的前提上，但勝率仍只有 <strong>45–55%</strong>，
+    屬機會型而非高確信度交易。<strong>短線上限 1.5%，總倉位上限 3–4%。</strong></p>
+  </div>
+
+  <!-- Short-term -->
+  <div style="font-size:13px;font-weight:700;color:var(--cyan);margin-bottom:14px;">📌 短線策略：指數納入流量交易（D+3 進 → D+12~16 出）</div>
+
+  <div class="sr stop" style="margin-bottom:14px;">
+    <div class="sr-icon">🚫</div>
+    <div>
+      <div class="sr-title" style="color:var(--red2);">明天開盤（2026-06-12）— 零操作</div>
+      <div class="sr-desc">開盤價 = FOMO 溢價峰值。歷史上 73% 大型 IPO 在一年內跑輸指數，「買開盤、2–4週內賣出」期望值約 -5% ~ -8%。</div>
+    </div>
+  </div>
+
+  <div style="font-size:11.5px;color:var(--t4);font-weight:600;margin-bottom:10px;">進場窗口：D+3 到 D+7（等情緒冷卻後回調）</div>
+
+  <div class="sr go">
+    <div class="sr-icon">✅</div>
+    <div style="flex:1;">
+      <div class="sr-title" style="color:var(--green);">最佳進場：$128–142（IPO價以下/持平）</div>
+      <div class="sr-desc">有安全邊際，直接折扣進場。倉位 1.5–2%</div>
+    </div>
+    <div style="text-align:right;font-family:var(--mono);flex-shrink:0;">
+      <div style="font-size:10px;color:var(--t5);">停損</div>
+      <div style="font-size:13px;color:var(--red2);font-weight:700;">$115（-10%）</div>
+    </div>
+  </div>
+  <div class="sr caution">
+    <div class="sr-icon">⚠️</div>
+    <div style="flex:1;">
+      <div class="sr-title" style="color:var(--yellow);">可接受進場：$142–158（+5%~+17%）</div>
+      <div class="sr-desc">仍有指數買盤空間，但 R/R 開始收窄。倉位 1%</div>
+    </div>
+    <div style="text-align:right;font-family:var(--mono);flex-shrink:0;">
+      <div style="font-size:10px;color:var(--t5);">停損</div>
+      <div style="font-size:13px;color:var(--red2);font-weight:700;">$128（-10%）</div>
+    </div>
+  </div>
+  <div class="sr stop" style="margin-bottom:20px;">
+    <div class="sr-icon">❌</div>
+    <div>
+      <div class="sr-title" style="color:var(--red2);">不進場：>$168（+25% 以上）</div>
+      <div class="sr-desc">Risk/reward 不對稱。歷史大型 IPO 60日報酬中位數僅 +4%，追高賠率極差。</div>
+    </div>
+  </div>
+
+  <div style="font-size:11.5px;color:var(--t4);font-weight:600;margin-bottom:10px;">出場目標：D+12 到 D+16（Nasdaq-100 納入前後）</div>
+  <div class="card" style="margin-bottom:14px;">
+    <table>
+      <thead><tr><th>情境</th><th class="r">出場價（從 $140 進場）</th><th class="r">報酬</th><th>行動</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pos">🟢 Bull</span></td><td class="r mono">$175–200</td><td class="r"><span class="pos">+25~43%</span></td><td style="font-size:11.5px;color:var(--t3);">薄浮動衝高，分批獲利了結</td></tr>
+        <tr><td><span class="warn">🟡 Base</span></td><td class="r mono">$155–170</td><td class="r"><span class="pos">+11~21%</span></td><td style="font-size:11.5px;color:var(--t3);">指數納入日前後分批出場</td></tr>
+        <tr><td><span class="neg">🔴 Bear</span></td><td class="r mono">停損 $115–128</td><td class="r"><span class="neg">-8~-18%</span></td><td style="font-size:11.5px;color:var(--t3);">-10% 強制出場，不戀戰</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box-red">
+    <p><strong style="color:var(--red2);">⚡ FOMC 強制出場規則（2026-06-17）</strong><br>
+    6/17 FOMC（Warsh 首次）前必須有明確計畫。若抱倉跨越 FOMC 且有未實現獲利，
+    應在 <strong>6/16 收盤前出場至少 50% 倉位</strong>。Greenspan 1987 類比：意外鷹派 + 薄浮動 = 跌幅放大 2–3 倍。</p>
+  </div>
+
+  <!-- Core position -->
+  <div style="font-size:13px;font-weight:700;color:var(--green);margin-top:24px;margin-bottom:14px;">📌 核心倉位策略：Q2 財報後（~7/30 後）</div>
+  <div class="card">
+    <table>
+      <thead><tr><th>進場條件（需同時滿足）</th><th class="r">倉位</th><th class="r">目標</th><th class="r">停損</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>
+            <div style="font-size:12px;color:var(--t2);line-height:1.9;">
+              ✅ xAI 單季虧損 &lt;$20億（趨勢向好）<span class="b bf">F</span><br>
+              ✅ Starlink 訂戶 ≥ 1,100萬<span class="b bf">F</span><br>
+              ✅ Starlink ARPU 穩定或回升<span class="b bf">F</span><br>
+              ✅ 股價位於 $100–130 區間（基本面折扣）<span class="b bi">I</span>
+            </div>
+          </td>
+          <td class="r mono" style="vertical-align:top;padding-top:14px;">2–3%</td>
+          <td class="r mono" style="vertical-align:top;padding-top:14px;"><span class="pos">$160–180</span></td>
+          <td class="r mono" style="vertical-align:top;padding-top:14px;"><span class="neg">-10%</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;padding:10px 12px;background:var(--bg3);border-radius:6px;font-size:12px;color:var(--t3);line-height:1.65;">
+      💡 <strong style="color:var(--t2);">總倉位上限 3–4%</strong>（短線 + 核心合計）。
+      考量 AI/半導體集中度已達 ~68%，SpaceX xAI 部分與現有持倉重疊，
+      建議實際上限設為 <strong style="color:var(--t2);">3%</strong> 而非滿倉 5%。
+      個股停損 -10% 規則適用，廣基 ETF（0050）不設停損規則不延伸至此。
+    </div>
+  </div>
+
+  <!-- Position sizing summary -->
+  <div class="card" style="margin-top:14px;border-left:2px solid var(--cyan);">
+    <div style="font-size:11.5px;color:var(--t3);margin-bottom:12px;font-weight:600;">倉位規劃總表</div>
+    <table>
+      <thead><tr><th>階段</th><th>時間</th><th class="r">進場條件</th><th class="r">倉位</th><th class="r">停損</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--t4);">開盤觀望</td><td style="font-size:11.5px;color:var(--t4);">6/12</td><td class="r" style="color:var(--t4);">無條件不動</td><td class="r mono dim">0%</td><td class="r mono dim">—</td></tr>
+        <tr><td style="color:var(--yellow);">短線第一檔</td><td style="font-size:11.5px;color:var(--yellow);">D+3~D+7</td><td class="r" style="font-size:11.5px;color:var(--yellow);">回調至 $128–158</td><td class="r mono" style="color:var(--yellow);">1~2%</td><td class="r mono"><span class="neg">-10%</span></td></tr>
+        <tr><td style="color:var(--green);">核心第二檔</td><td style="font-size:11.5px;color:var(--green);">~7/30 後</td><td class="r" style="font-size:11.5px;color:var(--green);">4項條件全滿足</td><td class="r mono" style="color:var(--green);">2~3%</td><td class="r mono"><span class="neg">-10%</span></td></tr>
+        <tr style="background:var(--bg3);"><td><strong>合計上限</strong></td><td></td><td></td><td class="r mono"><strong style="color:var(--cyan);">≤ 3–4%</strong></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══ S7: RISKS ══ -->
+<div class="sec" id="s-risk">
+  <div class="sec-label">Section 07</div>
+  <div class="sec-title">關鍵風險 ＆ 監控指標</div>
+
+  <div class="g2">
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;color:var(--red2);margin-bottom:12px;">⚠ 主要風險（優先順序）</div>
+      <div class="ri" style="padding-top:0;">
+        <div class="ri-icon">🔥</div>
+        <div><div class="ri-title">xAI 虧損加速（最高風險）<span class="b bf">F</span></div>
+        <div class="ri-desc">Q1 2026 年化燒錢 $100億+，capex 佔集團 76%。若不收窄，Starlink 利潤無法支撐整體估值。</div></div>
+      </div>
+      <div class="ri">
+        <div class="ri-icon">⚖️</div>
+        <div><div class="ri-title">Musk 治理風險<span class="b bf">F</span></div>
+        <div class="ri-desc">85% 投票權，可在不通知少數股東下調整資產配置（SpaceX ↔ Tesla ↔ xAI）。</div></div>
+      </div>
+      <div class="ri">
+        <div class="ri-icon">📉</div>
+        <div><div class="ri-title">S&P 500 持續排除<span class="b bf">F</span></div>
+        <div class="ri-desc">因虧損條件不符，SPY/VOO 等 $6兆+資金缺席，最大買盤延後至少 1–2 年。</div></div>
+      </div>
+      <div class="ri">
+        <div class="ri-icon">🔓</div>
+        <div><div class="ri-title">鎖倉到期賣壓（~2027/6）<span class="b bf">F</span></div>
+        <div class="ri-desc">創辦人及早期員工股份 D+366 解禁，若基本面未改善，潛在賣壓極大。</div></div>
+      </div>
+      <div class="ri">
+        <div class="ri-icon">📡</div>
+        <div><div class="ri-title">Starlink ARPU 下滑風險<span class="b bi">I</span></div>
+        <div class="ri-desc">新興市場用戶佔比上升，每用戶收入稀釋，影響 Starlink 獨立估值錨點。</div></div>
+      </div>
+      <div class="ri" style="border:none;padding-bottom:0;">
+        <div class="ri-icon">🏦</div>
+        <div><div class="ri-title">Fed 政策風險（6/17 FOMC）<span class="b bi">I</span></div>
+        <div class="ri-desc">Warsh 意外鷹派 + 薄浮動 = Greenspan 1987 類比。最危險的短線宏觀變數。</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:12px;">📊 關鍵監控指標（每季追蹤）</div>
+      <table>
+        <thead><tr><th>指標</th><th>多頭閾值</th><th>空頭警戒</th></tr></thead>
+        <tbody>
+          <tr><td style="font-size:12px;font-weight:600;">xAI 單季虧損</td><td style="font-size:11.5px;" class="pos">&lt;$15億</td><td style="font-size:11.5px;" class="neg">&gt;$30億</td></tr>
+          <tr><td style="font-size:12px;font-weight:600;">Starlink 訂戶</td><td style="font-size:11.5px;" class="pos">&gt;1,100萬（Q2）</td><td style="font-size:11.5px;" class="neg">&lt;1,050萬</td></tr>
+          <tr><td style="font-size:12px;font-weight:600;">Starlink ARPU</td><td style="font-size:11.5px;" class="pos">季環比持平或升</td><td style="font-size:11.5px;" class="neg">連續兩季下滑</td></tr>
+          <tr><td style="font-size:12px;font-weight:600;">Starlink 季度營收</td><td style="font-size:11.5px;" class="pos">&gt;$35億（Q2）</td><td style="font-size:11.5px;" class="neg">&lt;$30億</td></tr>
+          <tr><td style="font-size:12px;font-weight:600;">集團 Adj. EBITDA</td><td style="font-size:11.5px;" class="pos">轉正趨勢</td><td style="font-size:11.5px;" class="neg">連續惡化</td></tr>
+          <tr><td style="font-size:12px;font-weight:600;">Nasdaq-100 納入</td><td style="font-size:11.5px;" class="pos">如期 D+15（~7/6）</td><td style="font-size:11.5px;" class="neg">延遲或規則再修</td></tr>
+          <tr><td style="font-size:12px;font-weight:600;">Starship 商業化</td><td style="font-size:11.5px;" class="pos">首筆商業合約</td><td style="font-size:11.5px;" class="neg">再次延期</td></tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:16px;">
+        <div style="font-size:11.5px;font-weight:600;color:var(--t3);margin-bottom:8px;">資料標籤系統</div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--t3);"><span class="b bf">F</span>確認事實</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--t3);"><span class="b bg">G</span>官方指引</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--t3);"><span class="b be">E</span>分析師估計</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--t3);"><span class="b bi">I</span>個人推論</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--t3);"><span class="b bw">W</span>數據不足</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<div class="footer">
+  <div style="max-width:1080px;margin:0 auto;padding:0 20px;">
+    <strong style="color:var(--t4);">資料來源 ＆ 免責聲明</strong><br>
+    本報告彙整至 2026-06-11。財務數據引自：SpaceX S-1 招股書（2026-05-20）、Morningstar（2026-06-03）、
+    Damodaran NYU／WSJ Podcast、Seeking Alpha、Bloomberg Intelligence、CME Group、ETF.com、
+    TradingKey、The Motley Fool（2026-06）、FinanceFeeds、SpotGamma。
+    歷史 IPO 對標：D+1 數據為媒體確認收盤價；D+3~D+60 為依 90 日報酬回推之估算值（誤差 ±5%）。
+    情境分析及操作策略均標示 <span class="b bi">I</span>（個人推論），非投資建議。
+    所有投資均有風險，請自行評估風險承受能力後決策。<br>
+    製作：Claude（Anthropic）× Jason 研究框架 ／ 2026-06-11
+  </div>
+</div>
+
+<script>
+// ─── Common chart defaults ────────────────────────────────────────────────
+Chart.defaults.color = '#8890c0';
+Chart.defaults.borderColor = '#1c2242';
+Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+
+// ─── 1. Valuation bar chart ───────────────────────────────────────────────
+new Chart(document.getElementById('valChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Morningstar','Seeking Alpha','Damodaran (NYU)','IPO 定價','Polymarket 押注'],
+    datasets: [{
+      data: [0.78, 1.0, 1.22, 1.77, 2.3],
+      backgroundColor: ['#f8717150','#fb923c50','#a78bfa50','#22d3ee50','#4ade8050'],
+      borderColor:     ['#f87171',  '#fb923c',  '#a78bfa',  '#22d3ee',  '#4ade80'],
+      borderWidth: 1.5, borderRadius: 5,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: c => ` $${c.raw}兆 USD` } }
+    },
+    scales: {
+      x: { grid: { color: '#1c2242' }, ticks: { callback: v => `$${v}兆`, font: { family: 'IBM Plex Mono, monospace', size: 11 } }, min: 0, max: 2.8 },
+      y: { grid: { display: false }, ticks: { font: { size: 11.5 } } }
+    }
+  }
+});
+
+// ─── 2. Segment bar chart ─────────────────────────────────────────────────
+new Chart(document.getElementById('segChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Starlink', '火箭 (Space)', 'xAI (AI)'],
+    datasets: [
+      { label: '營收',    data: [32.6, 6.1, 8.2],  backgroundColor: ['#4ade8040','#fbbf2440','#f4375e40'], borderColor: ['#4ade80','#fbbf24','#f43f5e'], borderWidth: 1.5, borderRadius: 4 },
+      { label: '營業損益', data: [11.9,-6.6,-24.7], backgroundColor: ['#4ade8070','#f8717140','#f4375e70'], borderColor: ['#4ade80','#f87171','#f43f5e'], borderWidth: 2, borderRadius: 4 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#8890c0', font: { size: 11 }, boxWidth: 12, padding: 12 } },
+      tooltip: { callbacks: { label: c => ` ${c.dataset.label}: $${c.raw}億` } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+      y: { grid: { color: '#1c2242' }, ticks: { callback: v => `$${v}億`, font: { family: 'IBM Plex Mono, monospace', size: 11 } } }
+    }
+  }
+});
+
+// ─── 3. Annual chart ──────────────────────────────────────────────────────
+new Chart(document.getElementById('annChart'), {
+  type: 'bar',
+  data: {
+    labels: ['2023', '2024', '2025', 'Q1 2026 ×4（年化）'],
+    datasets: [
+      { label: '總營收 ($億)', data: [88, 141, 187, 188], backgroundColor: '#60a5fa40', borderColor: '#60a5fa', borderWidth: 1.5, borderRadius: 4, yAxisID: 'y' },
+      { label: '淨利 / 虧損 ($億)', data: [22, 7.9, -49.4, -171], backgroundColor: ['#4ade8050','#4ade8050','#f4375e50','#f4375e50'], borderColor: ['#4ade80','#4ade80','#f43f5e','#f43f5e'], borderWidth: 1.5, borderRadius: 4, yAxisID: 'y2' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#8890c0', font: { size: 11 }, boxWidth: 12 } },
+      tooltip: { callbacks: { label: c => ` ${c.dataset.label}: $${c.raw}億` } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+      y:  { position: 'left',  grid: { color: '#1c2242' }, ticks: { callback: v => `$${v}億`, font: { family: 'IBM Plex Mono, monospace', size: 11 } }, title: { display: true, text: '營收', color: '#5a6288', font: { size: 11 } } },
+      y2: { position: 'right', grid: { display: false }, ticks: { callback: v => `$${v}億`, font: { family: 'IBM Plex Mono, monospace', size: 11 } }, title: { display: true, text: '淨利', color: '#5a6288', font: { size: 11 } } }
+    }
+  }
+});
+
+// ─── 4. Historical IPO line chart ─────────────────────────────────────────
+const IPOS = [
+  { name: 'Visa (2008)',          year:2008, raised:'179億', color:'#60a5fa', returns:[28,36,48,59,82,91],  d1v:true  },
+  { name: 'Alibaba (2014)',       year:2014, raised:'218億', color:'#fb923c', returns:[38,34,29,28,44,69],  d1v:true  },
+  { name: 'ICBC (2006)',          year:2006, raised:'219億', color:'#a78bfa', returns:[15,17,20,25,34,44],  d1v:false },
+  { name: 'AIA Group (2010)',     year:2010, raised:'205億', color:'#34d399', returns:[ 4, 5, 7,10,16,24],  d1v:true  },
+  { name: 'GM (2010)',            year:2010, raised:'158億', color:'#4ade80', returns:[ 4, 4, 5, 7, 8,12],  d1v:true  },
+  { name: 'ENEL (1999)',          year:1999, raised:'165億', color:'#fbbf24', returns:[13,12,10, 8, 4,-2],  d1v:false },
+  { name: 'Saudi Aramco (2019)',  year:2019, raised:'256億', color:'#22d3ee', returns:[10,18,12, 8, 5, 2],  d1v:true  },
+  { name: 'NTT DoCoMo (1998)',    year:1998, raised:'184億', color:'#c084fc', returns:[-8,-6,-3, 0, 4,-4],  d1v:false },
+  { name: 'SoftBank (2018)',      year:2018, raised:'213億', color:'#f87171', returns:[-14,-12,-10,-9,-8,-9],d1v:true  },
+  { name: 'Meta/FB (2012)',       year:2012, raised:'160億', color:'#f43f5e', returns:[ 1,-11,-18,-25,-30,-34],d1v:true},
+];
+const PDS = ['D+1 ★','D+3','D+7','D+14','D+30','D+60'];
+
+const ipoDS = IPOS.map(c => ({
+  label: c.name, data: c.returns,
+  borderColor: c.color, backgroundColor: c.color + '18',
+  borderWidth: 2.5, tension: 0.35, pointRadius: 4, pointHoverRadius: 6,
+  pointBackgroundColor: c.color, hidden: false,
+}));
+
+const ipoChart = new Chart(document.getElementById('ipoChart'), {
+  type: 'line',
+  data: { labels: PDS, datasets: ipoDS },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#0c101f', borderColor: '#252d50', borderWidth: 1,
+        titleColor: '#8890c0', bodyColor: '#c8d0ec', padding: 12,
+        callbacks: { label: c => ` ${c.dataset.label}: ${c.raw >= 0 ? '+' : ''}${c.raw}%` }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#141830' }, ticks: { font: { family: 'IBM Plex Mono, monospace', size: 12 } } },
+      y: { grid: { color: '#141830' }, min: -45, max: 100,
+           ticks: { callback: v => `${v > 0 ? '+' : ''}${v}%`, font: { family: 'IBM Plex Mono, monospace', size: 11 } } }
+    }
+  }
+});
+
+// Toggle buttons
+const tg = document.getElementById('ipoTg');
+[
+  { label: '全顯示', color: '#5a6288', action: () => { ipoDS.forEach((_,i) => ipoChart.data.datasets[i].hidden=false); ipoChart.update(); } },
+  { label: '✅ 60日獲利', color: '#4ade80', action: () => { IPOS.forEach((c,i) => ipoChart.data.datasets[i].hidden = c.returns[5]<=0); ipoChart.update(); } },
+  { label: '❌ 60日虧損', color: '#f43f5e', action: () => { IPOS.forEach((c,i) => ipoChart.data.datasets[i].hidden = c.returns[5]>0);  ipoChart.update(); } },
+].forEach(cfg => {
+  const b = document.createElement('button');
+  b.className = 'tg-btn';
+  b.textContent = cfg.label;
+  b.style.cssText = `border-color:${cfg.color}80;color:${cfg.color};background:${cfg.color}15;`;
+  b.onclick = cfg.action;
+  tg.appendChild(b);
+});
+
+IPOS.forEach((c, i) => {
+  const b = document.createElement('button');
+  b.className = 'tg-btn';
+  b.textContent = c.name.split(' ')[0];
+  b.style.cssText = `border-color:${c.color}60;color:${c.color};background:${c.color}15;`;
+  b.onclick = () => {
+    const ds = ipoChart.data.datasets[i];
+    ds.hidden = !ds.hidden;
+    b.style.background = ds.hidden ? 'transparent' : `${c.color}15`;
+    b.style.color = ds.hidden ? '#3a4268' : c.color;
+    b.style.borderColor = ds.hidden ? '#1c2242' : `${c.color}60`;
+    ipoChart.update();
+  };
+  tg.appendChild(b);
+});
+
+// Table
+const tb = document.getElementById('ipoTbody');
+[...IPOS].sort((a,b) => b.returns[5]-a.returns[5]).forEach(c => {
+  const tr = document.createElement('tr');
+  const retCells = c.returns.map((r,i) => {
+    const col = r > 10 ? '#4ade80' : r > 0 ? '#86efac' : r > -10 ? '#fca5a5' : '#f87171';
+    const star = i===0 && c.d1v ? '<span style="color:#fbbf24;font-size:9px;margin-left:2px;">★</span>' : '';
+    const bg   = i===5 ? `background:${r>=0?'#4ade8012':'#f4375e12'};` : '';
+    return `<td class="r mono" style="color:${col};font-weight:700;${bg}">${r>=0?'+':''}${r}%${star}</td>`;
+  }).join('');
+  tr.innerHTML = `
+    <td style="white-space:nowrap;">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c.color};margin-right:7px;"></span>
+      <span style="color:${c.color};font-weight:600;">${c.name}</span>
+    </td>
+    <td class="r mono dim">${c.year}</td>
+    <td class="r mono dim">${c.raised}</td>
+    ${retCells}
+  `;
+  tb.appendChild(tr);
+});
+
+// ─── 5. Scenario chart ────────────────────────────────────────────────────
+const scLabels = ['IPO 定價', 'D+7', 'D+15（指數納入）', 'Q2財報（~7/30）', 'D+90', 'D+180', 'D+366（解禁）'];
+new Chart(document.getElementById('scChart'), {
+  type: 'line',
+  data: {
+    labels: scLabels,
+    datasets: [
+      { label: '🟢 Bull（+25%）',  data: [135,165,195,185,185,200,220], borderColor: '#4ade80', backgroundColor: '#4ade8015', borderWidth: 2.5, tension: 0.4, pointRadius: 5, pointBackgroundColor: '#4ade80', borderDash: [] },
+      { label: '🟡 Base（+0~10%）', data: [135,150,162,145,135,140,150], borderColor: '#fbbf24', backgroundColor: '#fbbf2415', borderWidth: 2.5, tension: 0.4, pointRadius: 5, pointBackgroundColor: '#fbbf24', borderDash: [] },
+      { label: '🔴 Bear（-25%）',  data: [135,128,120,105, 95, 90, 85], borderColor: '#f43f5e', backgroundColor: '#f4375e15', borderWidth: 2.5, tension: 0.4, pointRadius: 5, pointBackgroundColor: '#f43f5e', borderDash: [5,4] },
+      { label: '── 基本面公允價', data: [92, 92, 92, 92, 92, 92, 92], borderColor: '#a78bfa', backgroundColor: 'transparent', borderWidth: 1.5, tension: 0, pointRadius: 0, borderDash: [8,4] },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#8890c0', font: { size: 11 }, boxWidth: 16, padding: 14 } },
+      tooltip: { backgroundColor: '#0c101f', borderColor: '#252d50', borderWidth: 1, callbacks: { label: c => ` ${c.dataset.label}: $${c.raw}` } }
+    },
+    scales: {
+      x: { grid: { color: '#141830' }, ticks: { font: { size: 11 } } },
+      y: { grid: { color: '#141830' }, min: 60, max: 240,
+           ticks: { callback: v => `$${v}`, font: { family: 'IBM Plex Mono, monospace', size: 11 } } }
+    }
+  }
+});
+</script>
+</body>
+</html>
