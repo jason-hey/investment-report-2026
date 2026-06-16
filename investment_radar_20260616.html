@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>2026.06.16 全球財經情報 × 投資機會雷達</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<style>
+:root{
+  --bg0:#04040d;--bg1:#08081a;--bg2:#0e0e22;--bg3:#13132c;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
+  --t1:#f0f2fc;--t2:#c8d0ec;--t3:#8890c0;
+  --amber:#f5a623;--amber2:rgba(245,166,35,.14);--amber3:rgba(245,166,35,.06);
+  --green:#3ecf8e;--green2:rgba(62,207,142,.15);
+  --red:#f26666;--red2:rgba(242,102,102,.15);
+  --blue:#5b9cf6;--blue2:rgba(91,156,246,.15);
+  --purple:#a78bfa;--purple2:rgba(167,139,250,.15);
+  --teal:#2dd4bf;--teal2:rgba(45,212,191,.15);
+  --mono:'IBM Plex Mono',monospace;--sans:'Inter',sans-serif
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg0);color:var(--t1);font-family:var(--sans);font-size:14px;line-height:1.6;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 10% 5%,rgba(62,207,142,.06) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 90% 90%,rgba(45,212,191,.04) 0%,transparent 60%);pointer-events:none;z-index:0}
+
+.tkbar{background:#03030b;border-bottom:1px solid var(--border);height:34px;display:flex;align-items:center;position:sticky;top:0;z-index:200;overflow:hidden}
+.tk-badge{background:var(--teal);color:#000;font-family:var(--mono);font-size:9px;font-weight:700;padding:0 10px;height:100%;display:flex;align-items:center;white-space:nowrap;letter-spacing:.1em;flex-shrink:0;gap:5px}
+.tk-scroll{display:flex;animation:tkscroll 90s linear infinite}
+.tk-item{font-family:var(--mono);font-size:11px;padding:0 18px;white-space:nowrap;display:flex;align-items:center;gap:7px;border-right:1px solid var(--border)}
+.tk-sym{color:var(--t3);font-size:10px}
+.up{color:var(--green)!important}.dn{color:var(--red)!important}.na{color:var(--t3)!important}
+@keyframes tkscroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+header{padding:24px 36px 16px;position:relative;z-index:1}
+.hdr-row{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
+.badge-row{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
+.badge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;padding:3px 9px;border-radius:2px;border:1px solid}
+.b-green{border-color:var(--green);color:var(--green);background:var(--green2)}
+.b-amber{border-color:var(--amber);color:var(--amber);background:var(--amber2)}
+.b-blue{border-color:var(--blue);color:var(--blue);background:var(--blue2)}
+.b-red{border-color:var(--red);color:var(--red);background:var(--red2)}
+.b-teal{border-color:var(--teal);color:var(--teal);background:var(--teal2)}
+h1{font-family:var(--mono);font-size:clamp(15px,2.4vw,23px);font-weight:700;letter-spacing:-.02em;line-height:1.25}
+h1 em{color:var(--teal);font-style:normal}
+.hdr-right{text-align:right}
+.hdr-date{font-family:var(--mono);font-size:11px;color:var(--t3)}
+.hdr-pills{margin-top:8px;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.pill{font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:2px;white-space:nowrap}
+.p-green{background:var(--green2);color:var(--green)}.p-amber{background:var(--amber2);color:var(--amber)}
+.p-blue{background:var(--blue2);color:var(--blue)}.p-teal{background:var(--teal2);color:var(--teal)}
+
+main{padding:0 36px 60px;position:relative;z-index:1}
+.sec{margin-bottom:36px}
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-num{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.1em}
+.sec-lbl{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:.15em;text-transform:uppercase}
+.sec-line{flex:1;height:1px;background:linear-gradient(to right,var(--amber2),transparent)}
+.sec-note{font-family:var(--mono);font-size:9px;color:var(--t3)}
+
+/* IRAN DEAL MEGA BANNER */
+.iran-deal{background:linear-gradient(135deg,rgba(45,212,191,.09),rgba(45,212,191,.03));border:1px solid var(--teal2);border-radius:4px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden}
+.iran-deal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(to right,transparent,var(--teal),transparent)}
+.iran-tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;background:var(--teal2);color:var(--teal);padding:3px 10px;border-radius:2px;display:inline-block;margin-bottom:10px}
+.iran-hl{font-size:17px;font-weight:700;margin-bottom:14px;line-height:1.3;color:var(--t1)}
+.iran-hl span{color:var(--teal)}
+.iran-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.im{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:12px 14px;text-align:center}
+.im-lbl{font-size:10px;color:var(--t2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em}
+.im-val{font-family:var(--mono);font-size:20px;font-weight:700;line-height:1}
+.im-sub{font-size:10px;color:var(--t2);margin-top:3px}
+
+/* FOMC BANNER */
+.fomc-banner{background:linear-gradient(135deg,rgba(91,156,246,.08),rgba(91,156,246,.03));border:1px solid var(--blue2);border-radius:3px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.fomc-text .fomc-title{font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:700;letter-spacing:.06em;margin-bottom:4px}
+.fomc-text .fomc-body{font-size:12px;color:var(--t2)}
+.fomc-prob{text-align:right}
+.fomc-prob-lbl{font-size:10px;color:var(--t2);margin-bottom:2px}
+.fomc-prob-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--blue)}
+
+/* 5 KEY INDICATORS */
+.alert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:14px}
+.alert-card{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:14px 16px;position:relative;overflow:hidden;transition:all .2s}
+.alert-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ac-color,var(--border))}
+.alert-card:hover{border-color:var(--border2);background:var(--bg3)}
+.ac-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.ac-num{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.08em}
+.ac-badge{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:2px;font-weight:700}
+.ac-safe{background:rgba(62,207,142,.2);color:var(--green)}
+.ac-warn{background:rgba(245,166,35,.2);color:var(--amber)}
+.ac-danger{background:rgba(242,102,102,.2);color:var(--red)}
+.ac-name{font-size:13px;font-weight:600;margin-bottom:4px}
+.ac-line{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.ac-val{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1}
+.ac-thresh{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:2px;background:rgba(255,255,255,.06);color:var(--t2);border:1px solid var(--border)}
+.ac-desc{font-size:11px;color:var(--t2);line-height:1.45;border-top:1px solid var(--border);padding-top:8px;margin-top:2px}
+.ac-bar-wrap{background:rgba(255,255,255,.05);border-radius:2px;height:4px;margin-bottom:8px;overflow:hidden;position:relative}
+.ac-bar-fill{height:100%;border-radius:2px}
+.ac-bar-thresh{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.25)}
+.alert-verdict{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start}
+.av-icon{font-size:24px;flex-shrink:0;margin-top:2px}
+.av-title{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--amber);text-transform:uppercase;margin-bottom:6px}
+.av-body{font-size:12px;color:var(--t2);line-height:1.6}.av-body strong{color:var(--t1)}
+.av-status{margin-top:10px;font-family:var(--mono);font-size:11px;padding:6px 12px;border-radius:3px;display:inline-block}
+.av-all-clear{background:rgba(62,207,142,.15);color:var(--green);border:1px solid rgba(62,207,142,.3)}
+.av-caution{background:rgba(245,166,35,.15);color:var(--amber);border:1px solid rgba(245,166,35,.3)}
+.av-alert{background:rgba(242,102,102,.15);color:var(--red);border:1px solid rgba(242,102,102,.3)}
+
+/* VERIFY */
+.verify{background:var(--bg2);border:1px solid var(--teal2);border-radius:3px;padding:12px 16px;margin-bottom:24px}
+.verify-t{font-family:var(--mono);font-size:9px;color:var(--teal);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.verify-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px}
+.vck{display:flex;gap:6px;font-size:11px;color:var(--t2)}.vck::before{content:'✓';color:var(--green);font-family:var(--mono);flex-shrink:0}
+.vwn{display:flex;gap:6px;font-size:11px;color:var(--t2)}.vwn::before{content:'⚠';color:var(--amber);flex-shrink:0}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:10px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:16px 18px;position:relative;overflow:hidden;transition:border-color .2s}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ac,var(--amber))}
+.kpi:hover{border-color:var(--border2)}
+.kpi-lbl{font-size:10px;color:var(--t2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.kpi-val{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;margin-bottom:5px}
+.kpi-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.kpi-chg{font-family:var(--mono);font-size:12px;font-weight:700}
+.kpi-ctx{font-size:11px;color:var(--t2)}
+.kpi-note{font-size:11px;color:var(--t2);margin-top:5px}
+
+/* CHARTS */
+.ch2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ch3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:18px}
+.ct{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+.cs{font-size:11px;color:var(--t2);margin-bottom:14px}
+.leg{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
+.ld{width:8px;height:8px;border-radius:1px;flex-shrink:0}
+
+/* EARNINGS */
+.ef-btn{font-family:var(--mono);font-size:10px;padding:5px 12px;border-radius:2px;border:1px solid var(--border);background:var(--bg2);color:var(--t2);cursor:pointer;transition:all .15s;letter-spacing:.06em}
+.ef-btn:hover{border-color:var(--border2);color:var(--t1)}.ef-on{border-color:var(--amber);color:var(--amber);background:var(--amber3)}
+.ec-li{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:11px 13px;position:relative;overflow:hidden;transition:all .15s}
+.ec-li::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--li-ac,var(--border))}
+.ec-li:hover{border-color:var(--border2);background:var(--bg3)}
+.ec-li-date{font-family:var(--mono);font-size:9px;color:var(--t3);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.ec-li-name{font-size:13px;font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.ec-li-tick{font-family:var(--mono);font-size:9px;color:var(--t3);background:rgba(255,255,255,.05);border:1px solid var(--border);padding:1px 5px;border-radius:2px}
+.ec-li-meta{font-size:11px;color:var(--t2);margin-bottom:4px}
+.ec-li-focus{font-size:11px;color:var(--t2);border-left:2px solid var(--border);padding-left:7px;line-height:1.4}
+.ec-li-timing{font-family:var(--mono);font-size:9px;padding:2px 5px;border-radius:2px}
+.t-amc{background:var(--purple2);color:var(--purple)}.t-bmo{background:var(--blue2);color:var(--blue)}
+.t-tbd{background:rgba(255,255,255,.07);color:var(--t2)}.t-done{background:var(--green2);color:var(--green)}
+.t-event{background:var(--amber2);color:var(--amber)}.li-star{color:var(--amber)}
+
+/* NEWS */
+.tab-row{display:flex;border-bottom:1px solid var(--border);margin-bottom:18px;flex-wrap:wrap}
+.tab{font-family:var(--mono);font-size:10px;padding:8px 15px;cursor:pointer;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab.on{color:var(--amber);border-bottom-color:var(--amber)}
+.npanel{display:none}.npanel.on{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ni{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:15px;transition:all .15s}
+.ni:hover{border-color:var(--border2);background:var(--bg3)}
+.ntag{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:2px;display:inline-block;margin-bottom:8px}
+.tg-iran{background:var(--teal2);color:var(--teal)}.tg-fed{background:var(--blue2);color:#90c8ff}
+.tg-tw{background:var(--amber2);color:var(--amber)}.tg-spcx{background:var(--blue2);color:#7eb8ff}
+.tg-risk{background:rgba(255,255,255,.08);color:var(--t2)}.tg-macro{background:var(--blue2);color:var(--blue)}
+.ntitle{font-size:13px;font-weight:500;margin-bottom:5px;line-height:1.4}
+.nbody{font-size:12px;color:var(--t2);line-height:1.55}
+.ntime{font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:8px}
+
+/* RISK */
+.rtable{width:100%;border-collapse:collapse}
+.rtable th{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.rtable td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--t2);vertical-align:middle}
+.rtable tr:last-child td{border-bottom:none}.rtable tr:hover td{background:rgba(255,255,255,.015)}
+.rdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.pbar{background:rgba(255,255,255,.06);border-radius:1px;height:5px;margin-top:4px;width:80px}
+.pfill{height:100%;border-radius:1px}
+
+/* OPP */
+.opp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.opp{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:16px;position:relative;overflow:hidden;transition:all .15s}
+.opp::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(to right,var(--oac,var(--amber)),transparent)}
+.opp:hover{background:var(--bg3);transform:translateY(-1px)}
+.opp-rk{font-family:var(--mono);font-size:40px;font-weight:700;color:rgba(255,255,255,.04);position:absolute;top:8px;right:10px;line-height:1}
+.opp-theme{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.opp-name{font-size:15px;font-weight:600;margin-bottom:8px}
+.opp-tix{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.ot{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.05);border:1px solid var(--border);padding:2px 6px;border-radius:2px;color:var(--t2)}
+.opp-desc{font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:12px}
+.opp-sig{display:flex;align-items:center;gap:6px;padding-top:10px;border-top:1px solid var(--border)}
+.sdot{width:7px;height:7px;border-radius:50%}
+.stxt{font-family:var(--mono);font-size:9px;color:var(--t2);letter-spacing:.04em}
+.sstr{font-family:var(--mono);font-size:9px;margin-left:auto;padding:2px 7px;border-radius:2px}
+.s-buy{background:var(--green2);color:var(--green)}.s-mid{background:var(--amber2);color:var(--amber)}
+.s-watch{background:var(--blue2);color:var(--blue)}.s-wait{background:var(--red2);color:var(--red)}
+
+/* SUMMARY */
+.sum-card{background:var(--bg2);border:1px solid var(--teal2);border-radius:3px;padding:24px;position:relative;overflow:hidden}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--teal),transparent)}
+.sum-quote{font-size:13px;color:var(--t2);line-height:1.8;border-left:2px solid var(--teal);padding-left:16px;margin-bottom:20px}
+.sum-quote strong{color:var(--t1)}
+.sum-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.sum-col{padding:14px;border:1px solid var(--border);border-radius:3px}
+.sum-col-t{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.tc-buy{color:var(--green)}.tc-watch{color:var(--amber)}.tc-hedge{color:var(--teal)}
+.sum-li{display:flex;gap:7px;margin-bottom:9px;font-size:12px;color:var(--t2);line-height:1.5}
+.sum-li::before{content:'›';color:var(--teal);font-family:var(--mono);flex-shrink:0}
+
+footer{padding:16px 36px;border-top:1px solid var(--border);text-align:center;font-family:var(--mono);font-size:9px;color:var(--t2);letter-spacing:.05em;line-height:1.8}
+::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:var(--bg0)}::-webkit-scrollbar-thumb{background:var(--bg3)}
+@media(max-width:768px){
+  header,main{padding-left:16px;padding-right:16px}
+  .ch2,.ch3,.sum-3{grid-template-columns:1fr}
+  .npanel.on{grid-template-columns:1fr}
+  .iran-metrics{grid-template-columns:1fr 1fr}
+  h1{font-size:15px}.kpi-val{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<div class="tkbar">
+  <div class="tk-badge">☮️ 美伊和平</div>
+  <div style="overflow:hidden;flex:1"><div class="tk-scroll" id="tkr"></div></div>
+</div>
+
+<header>
+  <div class="hdr-row">
+    <div>
+      <div class="badge-row">
+        <span class="badge b-teal">☮️ 美伊和平協議確認 · 霍爾木茲 6/19 重開</span>
+        <span class="badge b-blue">🏦 FOMC 明日（6/17）· Warsh 首次記者會</span>
+        <span class="badge b-green">🛢️ WTI $80 · Brent $83 · 油價急跌改寫通膨格局</span>
+        <span class="badge b-amber">🇹🇼 台股近 46K 關口 · 今日高點 45,737 後翻黑</span>
+      </div>
+      <h1>2026.06.16 &nbsp;<em>美伊和平 × 全球財經情報 × 投資機會雷達</em></h1>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-date">TUE · 2026/06/16 · 超級央行週 · TWN</div>
+      <div class="hdr-pills">
+        <span class="pill p-teal">✅ 川普：美伊協議「完成」· 霍爾木茲月底前重開</span>
+        <span class="pill p-green">✅ WTI $80.37（−$4.51）· Brent $83.25（−$4.08）</span>
+        <span class="pill p-green">🚀 SPCX Day 3 繼續上漲 · 6/12 IPO +19%、Day 2 +20%</span>
+        <span class="pill p-blue">🏦 FOMC 6/17 明日：Fed 降息期望大逆轉 · Warsh 首次表態</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- IRAN DEAL MEGA BANNER -->
+<div class="iran-deal">
+  <div class="iran-tag">☮️ 本年度最大地緣政治事件 · 美伊和平協議 · 2026/06/15</div>
+  <div class="iran-hl">川普宣告：「<span>美伊協議完成</span>」，霍爾木茲海峽授權重新開放——WTI 急跌至 $80，降息預期大逆轉，全球股市慶典</div>
+  <div class="iran-metrics">
+    <div class="im"><div class="im-lbl">WTI 原油</div><div class="im-val up" style="color:var(--teal)">$80.37</div><div class="im-sub">−$4.51（6/15）</div></div>
+    <div class="im"><div class="im-lbl">Brent 原油</div><div class="im-val" style="color:var(--teal)">$83.25</div><div class="im-sub">−$4.08（6/15）</div></div>
+    <div class="im"><div class="im-lbl">日經 225</div><div class="im-val up">+5.5%</div><div class="im-sub">衝破 69,000</div></div>
+    <div class="im"><div class="im-lbl">韓國 Kospi</div><div class="im-val up">+5.2%</div><div class="im-sub">8,545.98</div></div>
+    <div class="im"><div class="im-lbl">SOX 費半</div><div class="im-val up">14,099</div><div class="im-sub">+5.45%（6/15）</div></div>
+    <div class="im"><div class="im-lbl">Nasdaq</div><div class="im-val up">26,684</div><div class="im-sub">+3.07%（6/15）</div></div>
+    <div class="im"><div class="im-lbl">台股 6/15</div><div class="im-val up">45,397</div><div class="im-sub">+1,227（+2.78%）</div></div>
+    <div class="im"><div class="im-lbl">台積電 6/15</div><div class="im-val up">2,375</div><div class="im-sub">+65（+2.81%）</div></div>
+  </div>
+</div>
+
+<!-- FOMC BANNER -->
+<div class="fomc-banner">
+  <div class="fomc-text">
+    <div class="fomc-title">🏦 FOMC 明日（6/17）· Warsh 首次記者會 · 超級央行週</div>
+    <div class="fomc-body">油價從 $95 跌至 $80，通膨展望大改變。市場已將 12 月<strong style="color:var(--blue)">升息一碼預期從 80% → 60%</strong>（降息機率上升）。Warsh 如何表態是今年最關鍵的 Fed 語氣訊號。</div>
+  </div>
+  <div class="fomc-prob">
+    <div class="fomc-prob-lbl">6/17 維持機率</div>
+    <div class="fomc-prob-val">~97%</div>
+    <div style="font-size:10px;color:var(--t2);margin-top:3px">降息預期大幅提前</div>
+  </div>
+</div>
+
+<!-- 5 KEY DAILY INDICATORS -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">00-B</span><span class="sec-lbl">每日必看 5 大預警指標</span><div class="sec-line"></div><span class="sec-note">伊朗和平後全面更新</span></div>
+  <div class="alert-grid" id="alert-grid"></div>
+  <div class="alert-verdict">
+    <div class="av-icon">🕊️</div>
+    <div>
+      <div class="av-title">一句話判斷</div>
+      <div class="av-body">現在最該怕的不是<strong>單日下跌</strong>，而是「<strong>信用利差擴大 + VIX 升高 + AI 龍頭財測轉弱 + 台股融資過熱</strong>」一起出現。這組合一旦成形，多頭就不是休息，是可能準備翻桌。</div>
+      <div class="av-status" id="av-status"></div>
+    </div>
+  </div>
+</div>
+
+<!-- VERIFY -->
+<div class="verify">
+  <div class="verify-t">📋 數據完整性核對</div>
+  <div class="verify-grid">
+    <div class="vck">美伊和平協議（川普 6/14 深夜宣告，Al Jazeera / Times of Israel 確認）</div>
+    <div class="vck">WTI $80.37、Brent $83.25（6/15 收盤，Al Jazeera 確認）</div>
+    <div class="vck">美股 6/15：S&P +1.65%→7,554、Nasdaq +3.07%→26,684、SOX +5.45%（ETtoday 確認）</div>
+    <div class="vck">台股 6/15：+1,227 → 45,397（ETtoday 確認）</div>
+    <div class="vck">TSMC 6/15：+65 → 2,375（ETtoday 確認）</div>
+    <div class="vck">SpaceX SPCX：6/12 IPO +19.22% → $160.95；6/15 Day2 +20% → ~$192（CNBC / EBC 確認）</div>
+    <div class="vck">6/16 台股盤中：開盤+400，最高 45,737，台積電翻黑 −10 至 2,365（中時 / ETtoday 確認）</div>
+    <div class="vwn">6/16 台股收盤：⚠️ 盤中進行中（近關情怯，46K 關口）</div>
+  </div>
+</div>
+
+<!-- KPI -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">01</span><span class="sec-lbl">核心指標看板</span><div class="sec-line"></div><span class="sec-note">6/15 CLOSE · 6/16 盤中</span></div>
+  <div class="kpi-grid">
+    <div class="kpi" style="--ac:var(--teal)">
+      <div class="kpi-lbl">WTI 原油 · 通膨救星</div>
+      <div class="kpi-val" style="color:var(--teal)">$80.37</div>
+      <div class="kpi-row"><span class="kpi-chg up">▼ −$4.51（−5.3%）</span><span class="kpi-ctx">Brent $83.25</span></div>
+      <div class="kpi-note">從開戰前 $67 → 高點 $110+ → 現在 $80。若正式簽約，估回到 $70–75</div>
+    </div>
+    <div class="kpi" style="--ac:var(--green)">
+      <div class="kpi-lbl">S&P 500 · 6/15</div>
+      <div class="kpi-val up">7,554</div>
+      <div class="kpi-row"><span class="kpi-chg up">▲ +1.65%</span><span class="kpi-ctx">Nasdaq +3.07%</span></div>
+      <div class="kpi-note">伊朗和平 + SpaceX Day2 +20% 帶動科技反彈 · SOX +5.45%</div>
+    </div>
+    <div class="kpi" style="--ac:var(--amber)">
+      <div class="kpi-lbl">台股 TAIEX · 今日盤中</div>
+      <div class="kpi-val" style="color:var(--amber)">45,737</div>
+      <div class="kpi-row"><span class="kpi-chg up">▲ 盤中高點</span><span class="kpi-ctx">46K 關口猶豫</span></div>
+      <div class="kpi-note">開盤+400後台積電翻黑 −10 至 2,365；46K 近關情怯，獲利了結壓力</div>
+    </div>
+    <div class="kpi" style="--ac:var(--blue)">
+      <div class="kpi-lbl">SPCX SpaceX · Day 3</div>
+      <div class="kpi-val up">~$192+</div>
+      <div class="kpi-row"><span class="kpi-chg up">Day2 +20%</span><span class="kpi-ctx">市值 $2.1T</span></div>
+      <div class="kpi-note">6/12 IPO $135 → Day1 $160.95（+19%）→ Day2 ~$192（+20%）</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">02</span><span class="sec-lbl">視覺化數據中心</span><div class="sec-line"></div></div>
+  <div class="ch2" style="margin-bottom:12px">
+    <div class="chart-card">
+      <div class="ct">WTI 油價時間軸</div>
+      <div class="cs">從開戰到停戰 · 美元 / 桶</div>
+      <div style="height:230px"><canvas id="oilChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="ct">台股 6/1–6/16 走勢</div>
+      <div class="cs">TAIEX 近三週震盪後回升</div>
+      <div style="height:230px"><canvas id="taiexChart"></canvas></div>
+    </div>
+  </div>
+  <div class="ch3">
+    <div class="chart-card">
+      <div class="ct">Fed 降息機率大逆轉</div>
+      <div class="cs">伊朗停火前後對比 · 各 FOMC 會議降息機率 %</div>
+      <div style="height:210px"><canvas id="fedChart"></canvas></div>
+      <div class="leg">
+        <div class="li"><div class="ld" style="background:rgba(255,100,100,.6)"></div>停火前（6/5）</div>
+        <div class="li"><div class="ld" style="background:rgba(62,207,142,.7)"></div>停火後（今日）</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="ct">市場情緒</div>
+      <div class="cs">伊朗和平後情緒大轉向</div>
+      <div style="height:210px"><canvas id="sentChart"></canvas></div>
+      <div class="leg">
+        <div class="li"><div class="ld" style="background:#3ecf8e"></div>貪婪 68%</div>
+        <div class="li"><div class="ld" style="background:#f5a623"></div>中性 24%</div>
+        <div class="li"><div class="ld" style="background:#f26666"></div>恐慌 8%</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="ct">投資機會雷達</div>
+      <div class="cs">停火後評分（0–10）</div>
+      <div style="height:210px"><canvas id="radarChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- EARNINGS LIST -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">03</span><span class="sec-lbl">未來兩週財報速覽</span><div class="sec-line"></div><span class="sec-note">6/16 – 6/30</span></div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    <button onclick="filterEarn('all',this)" class="ef-btn ef-on">全部</button>
+    <button onclick="filterEarn('us',this)" class="ef-btn">🇺🇸 美股</button>
+    <button onclick="filterEarn('tw',this)" class="ef-btn">🇹🇼 台股</button>
+    <button onclick="filterEarn('hold',this)" class="ef-btn">★ 持倉相關</button>
+  </div>
+  <div id="earn-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px"></div>
+</div>
+
+<!-- NEWS -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">04</span><span class="sec-lbl">財經新聞中心</span><div class="sec-line"></div></div>
+  <div class="tab-row">
+    <div class="tab on" onclick="stab('iran',this)">☮️ 美伊和平</div>
+    <div class="tab" onclick="stab('fed',this)">🏦 Fed 大轉折</div>
+    <div class="tab" onclick="stab('tw',this)">🇹🇼 台灣市場</div>
+    <div class="tab" onclick="stab('risk',this)">⚠️ 風險矩陣</div>
+  </div>
+
+  <div class="npanel on" id="p-iran">
+    <div class="ni">
+      <div class="ntag tg-iran">美伊 · 和平協議</div>
+      <div class="ntitle">川普週日深夜宣告：「美伊協議完成，授權霍爾木茲海峽免費重開」——巴基斯坦斡旋，瑞士簽字儀式 6/19</div>
+      <div class="nbody">6/14 深夜（台灣時間 6/15 凌晨），川普在社媒宣告美伊合作備忘錄完成，授權霍爾木茲海峽免費重開，並取消美國對伊朗港口的海上封鎖。伊朗最高國家安全委員會隨後確認，雙方完成備忘錄措辭；協議內容包含：立即停火（含黎巴嫩）、暫停對伊朗石油出口制裁、解凍 $240 億伊朗資產。正式簽字儀式定於 6/19 在瑞士舉行。巴基斯坦總理沙里夫是主要斡旋者。</div>
+      <div class="ntime">📅 6/14–15 · Al Jazeera / Times of Israel / CNBC · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-iran">油價 · 通膨</div>
+      <div class="ntitle">WTI $80.37，Brent $83.25——霍爾木茲重開後若正式簽約，估回到 $70–75，通膨將快速下行</div>
+      <div class="nbody">油價 6/15 急跌：WTI −$4.51 至 $80.37，Brent −$4.08 至 $83.25——已回到中東戰爭前的 $80 水準附近。能源專家提醒：「霍爾木茲是一個出口閥門，而不是完整的和平紅利」，因為海峽掃雷、保險恢復、運輸節奏正常化至少需要 2–4 週。若 6/19 正式簽署，WTI 可能進一步跌至 $70–75（開戰前 $67 附近）。油價每跌 $10，美國 CPI 估下行約 0.2–0.3%——3.8% PCE 可能在 3 個月內回到 2.5–3.0% 區間。</div>
+      <div class="ntime">📅 6/15 · Schwab Market Update / Times of Israel · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-iran">SpaceX · 停戰受益</div>
+      <div class="ntitle">SpaceX SPCX Day 2 +20%（~$192），Musk 稱 2030 年營收 $1 兆——停火加速 Starlink 全球部署</div>
+      <div class="nbody">SpaceX SPCX 6/12 IPO $135/股，首日 +19.22% 至 $160.95（市值 $2.1T）；6/15 Day 2 繼續大漲 20% 至 ~$192。馬斯克 IPO 敲鐘時宣告計畫部署 10 萬顆通信衛星，並在太空建設 AI 資料中心。週末，馬斯克在社媒稱 SpaceX 有望在 2030 年達到 $1 兆美元年收入。伊朗停火意外帶來利多：霍爾木茲重開後，Starlink 星鏈在中東/波斯灣的地面站部署阻力大幅降低，直接擴大可服務市場。</div>
+      <div class="ntime">📅 6/12–15 · EBC / CNBC / 商周 · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-iran">全球市場 · 反應</div>
+      <div class="ntitle">6/15：日經 +5.5%、韓股 +5.2%、台股 +2.8%——伊朗停火引發史詩級全球同步大漲</div>
+      <div class="nbody">6/15 亞洲股市全面狂飆：日本 Nikkei 225 +5.5%（衝破 69,000 創歷史新高）、南韓 Kospi +5.2%（至 8,545.98）、台股 TAIEX +2.8%（+1,227 至 45,397）。美股同日：S&P +1.65%、Nasdaq +3.07%、Dow +0.92%、SOX +5.45%（費半！）。這是自 5 月 4 日台股歷史第一大漲點（+1,778）以來最密集的全球單日漲幅——「停火」帶來的非線性正向尾部事件，已確認兌現。</div>
+      <div class="ntime">📅 6/15 · ETtoday / Al Jazeera · 來源：已確認</div>
+    </div>
+  </div>
+
+  <div class="npanel" id="p-fed">
+    <div class="ni">
+      <div class="ntag tg-fed">Fed · 大轉折</div>
+      <div class="ntitle">市場定價大逆轉：12 月升息預期從 80% → 60%——油價 $80 讓 Warsh 明日有理由釋出鴿派訊號</div>
+      <div class="nbody">伊朗停火 + 油價急跌改寫了整個 2026 下半年的 Fed 路徑預期。ETtoday 報導：「美債價格同步走揚，殖利率全線下滑，美債市場將 12 月升息一碼的預期從約 80% 快速降至約 60%。」這意味著降息概率從幾乎為零大幅攀升。若 WTI 在 6/19 正式簽署後跌至 $70–75，PCE 三個月後可能降至 2.5–3.0%，Fed 最快 Q4 降息變成合理預期。Warsh 明日（6/17）的記者會用詞將成為 2026 最重要的政策方向信號。</div>
+      <div class="ntime">📅 6/15 · ETtoday 財經雲 · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-fed">FOMC · 明日</div>
+      <div class="ntitle">Warsh 首次 FOMC 記者會（6/17）：四個關鍵語句是多空分水嶺</div>
+      <div class="nbody">明日 FOMC 幾乎確定維持利率（~97%）。真正重要的是 Warsh 的措辭：①若說「油價下行讓我們有更多耐心」→ 鴿派訊號，利率敏感型科技股大漲；②若說「通膨路徑需要更多觀察才能調整政策」→ 中性，市場無反應；③若說「我們監測到停火帶來的物價改善」→ 暗示降息時程提前，利率曲線牛市陡化；④若說「我們仍擔憂通膨黏性」→ 鷹派維持，科技股承壓。分析師普遍預期是②或③，真正意外是①（大利多）。</div>
+      <div class="ntime">📅 6/17 即將揭曉 · 預測性</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-fed">10Y 殖利率</div>
+      <div class="ntitle">10Y 殖利率全線下滑——油價每跌 $10，通膨下行 0.2–0.3%，殖利率可能回到 4.0% 附近</div>
+      <div class="nbody">ETtoday 確認 6/15 美債全線走揚（殖利率下跌）。WTI 從 $95 跌至 $80（−$15），對應 CPI 下行約 0.3–0.45%。若 6/19 正式簽約後油價跌至 $70，CPI 可能在 3 個月內降至 3.0% 甚至以下。10Y 殖利率從 4.45%（6/5）回到 4.10–4.20% 水準，科技成長股估值壓力顯著減輕。這是停火帶來的最大「間接利多」——比石油股直接跌更重要的是估值體系的重建。</div>
+      <div class="ntime">📅 6/15 · ETtoday / Schwab · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-macro">半導體 · 修復</div>
+      <div class="ntitle">SOX 從 6/5 低點 ~11,432 → 6/15 收 14,100（+23%）——伊朗停火完美修復了 6/5 的晶片崩跌</div>
+      <div class="nbody">6/5 NFP 超強 + AVGO 盤後大跌觸發半導體集體賣壓（SOX −10%，MRVL −16%，MU −13%），是 2025 年 3 月「關稅恐慌」以來最差單日。但伊朗停火 + 油價下行 + SpaceX 動能，讓 SOX 在 6/15 大漲 5.45% 至 14,100，完全收復 6/5 失土，甚至較 6/3 高點（12,702）還高出 11%。這驗證了一個投資框架：「AI 基本面牛市 + 地緣尾部風險清除 = 半導體強彈」。</div>
+      <div class="ntime">📅 6/5–6/15 · CNBC / ETtoday · 來源：已確認</div>
+    </div>
+  </div>
+
+  <div class="npanel" id="p-tw">
+    <div class="ni">
+      <div class="ntag tg-tw">台股 · 今日動態</div>
+      <div class="ntitle">台股 6/16 開盤+400，最高 45,737 近 46K 後台積電翻黑——「近關情怯」獲利了結考驗韌性</div>
+      <div class="nbody">今日（6/16）台股在伊朗停火 + 美股大漲（Nasdaq +3.07%）的帶動下，開盤大漲近 400 點，盤中最高觸及 45,737。但隨後「近關情怯」，台積電從 2,375（6/15 收）下跌 10 元至 2,365，抑制指數動能。主因：①46K 是心理關口，許多短線持有者選擇獲利了結；②台積電法人籌碼若出現 6/15 大漲後局部賣超；③FOMC 明日不確定性讓部分資金先行減碼。全日方向待觀察：能否在尾盤前收復 2,375、衝破 46K 是今日最重要的技術信號。</div>
+      <div class="ntime">📅 6/16 盤中 · 中時 / ETtoday · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-tw">台積電 · 降息預期</div>
+      <div class="ntitle">油價 $80 + 降息預期提前——台積電 2,375→2,365 今日小幅回落，分析師目標開始上修至 $2,600–2,700</div>
+      <div class="nbody">台積電（2330）6/15 在伊朗停火帶動下大漲 65 元至 2,375 元。今日（6/16）稍作整理。降息預期提前（10Y 殖利率下行）對台積電是結構性利多：①估值折現率下降；②AI 基礎設施資本支出預期更穩定；③外資從停火前賣超轉回補。台積電 5 月營收（6/10 已公布）若確認強勁，7/16 Q2 法說會將是下一個重大催化劑。停火後，分析師調升目標至 $2,600–2,700 的更多可能性。</div>
+      <div class="ntime">📅 6/15–16 · ETtoday / 理周 · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-tw">被動元件 · 停戰慶典</div>
+      <div class="ntitle">6/15 被動元件 13 檔漲停——國巨 940 漲停、凱美漲停，停戰 + 消費電子復甦雙引擎</div>
+      <div class="nbody">伊朗停火後消費電子需求復甦預期帶動被動元件全面大漲：國巨（2327）衝至 940 漲停（新高），凱美（2375）重出江湖漲停。共 13 檔被動元件漲停。日、韓被動元件廠轉向高階 AI MLCC，間接讓台廠（國巨、大毅等）在手機、PC 低階 MLCC 獲得轉單。停火意味著消費性電子（TV、家電、手機）下半年需求將反彈——被動元件是先行指標之一。</div>
+      <div class="ntime">📅 6/15 · ETtoday / UDN · 來源：已確認</div>
+    </div>
+    <div class="ni">
+      <div class="ntag tg-tw">金融股 · 受益</div>
+      <div class="ntitle">13 家金控前 5 月獲利創高——停火後降息預期改善，富邦 / 國泰等金控今日漲 3–4%</div>
+      <div class="nbody">13 家金控自結 5 月稅後獲利出爐，台股投資收益挹注下，富邦金（2881）、國泰金（2882）前 5 月調整獲利均超過去年全年。6/15 在停火 + 降息預期帶動下，凱基金 +4%、中信金 +3%、國泰金 +3%。停火後升息預期降低，債券資產評價回升，對持有大量債券的金控是雙重利多（股市投資收益 + 債券評價回升）。</div>
+      <div class="ntime">📅 6/15 · ETtoday 財經雲 · 來源：已確認</div>
+    </div>
+  </div>
+
+  <div class="npanel" id="p-risk">
+    <div class="ni" style="grid-column:1/-1">
+      <div class="ntag tg-risk">風險矩陣 · 6/16 停火後更新</div>
+      <table class="rtable">
+        <thead><tr><th>事件</th><th>機率</th><th>衝擊</th><th>受影響資產</th><th>對策</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="rdot" style="background:var(--green)"></span>6/19 瑞士簽約 + 霍爾木茲正式重開</td>
+            <td><div style="font-family:var(--mono);font-size:11px;color:var(--green)">75%</div><div class="pbar"><div class="pfill" style="width:75%;background:var(--green)"></div></div></td>
+            <td style="color:var(--green)">大利多</td>
+            <td>科技股、面板、航運、消費</td>
+            <td>維持核心倉位；簽約後考慮加碼 0050</td>
+          </tr>
+          <tr>
+            <td><span class="rdot" style="background:var(--green)"></span>Warsh 6/17 FOMC 釋出鴿派訊號</td>
+            <td><div style="font-family:var(--mono);font-size:11px;color:var(--green)">45%</div><div class="pbar"><div class="pfill" style="width:45%;background:var(--green)"></div></div></td>
+            <td style="color:var(--green)">利多</td>
+            <td>QQQ、成長股、台積電</td>
+            <td>FOMC 後加碼利率敏感型成長股</td>
+          </tr>
+          <tr>
+            <td><span class="rdot" style="background:var(--amber)"></span>協議破局（歷史上 5 次假停火）</td>
+            <td><div style="font-family:var(--mono);font-size:11px;color:var(--amber)">20%</div><div class="pbar"><div class="pfill" style="width:20%;background:var(--amber)"></div></div></td>
+            <td style="color:var(--red)">高</td>
+            <td>油價飆升 · 科技股急跌</td>
+            <td>IAUM 黃金維持 8%；XLE 能源 3% 備用</td>
+          </tr>
+          <tr>
+            <td><span class="rdot" style="background:var(--amber)"></span>台股近 46K 技術性回調</td>
+            <td><div style="font-family:var(--mono);font-size:11px;color:var(--amber)">40%</div><div class="pbar"><div class="pfill" style="width:40%;background:var(--amber)"></div></div></td>
+            <td style="color:var(--amber)">中</td>
+            <td>台股整體</td>
+            <td>台積電 2,320–2,350 是加碼點</td>
+          </tr>
+          <tr>
+            <td><span class="rdot" style="background:var(--amber)"></span>Warsh 6/17 偏鷹 · 殖利率反彈</td>
+            <td><div style="font-family:var(--mono);font-size:11px;color:var(--amber)">30%</div><div class="pbar"><div class="pfill" style="width:30%;background:var(--amber)"></div></div></td>
+            <td style="color:var(--amber)">中</td>
+            <td>科技成長股估值</td>
+            <td>FOMC 後若殖利率反升，減持純成長股</td>
+          </tr>
+          <tr>
+            <td><span class="rdot" style="background:var(--green)"></span>油價繼續跌至 $70（6/19 簽約後）</td>
+            <td><div style="font-family:var(--mono);font-size:11px;color:var(--green)">55%</div><div class="pbar"><div class="pfill" style="width:55%;background:var(--green)"></div></div></td>
+            <td style="color:var(--green)">極大利多</td>
+            <td>全部股市、消費、面板、航運</td>
+            <td>加碼 0050 / QQQ；減持 IAUM / XLE</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- OPP -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">05</span><span class="sec-lbl">投資主題機會分析</span><div class="sec-line"></div></div>
+  <div class="opp-grid">
+    <div class="opp" style="--oac:var(--teal)">
+      <div class="opp-rk">01</div>
+      <div class="opp-theme">停火最大受益</div>
+      <div class="opp-name">0050 + QQQ 加碼</div>
+      <div class="opp-tix"><span class="ot">0050</span><span class="ot">QQQ</span><span class="ot">SMH</span></div>
+      <div class="opp-desc">伊朗停火是本年度最大「正向尾部事件」，已確認兌現。油價 $80 → PCE 下行 → 降息提前 → 估值支撐全面改善。三個月前我們準備的「停火快速加碼」計畫正式啟動。0050 是最確定的台灣受益標的，QQQ 是美股科技受益最廣的工具。6/19 正式簽署是第二次加碼窗口。</div>
+      <div class="opp-sig"><div class="sdot" style="background:var(--teal)"></div><span class="stxt">停火確認 · 啟動計畫</span><span class="sstr s-buy">積極加碼</span></div>
+    </div>
+    <div class="opp" style="--oac:var(--amber)">
+      <div class="opp-rk">02</div>
+      <div class="opp-theme">核心持倉</div>
+      <div class="opp-name">台積電 2,320–2,365 加碼</div>
+      <div class="opp-tix"><span class="ot">2330</span><span class="ot">TSM</span></div>
+      <div class="opp-desc">今日台積電翻黑至 2,365 是「近 46K 關口獲利了結」而非趨勢反轉。油價下行 + 降息提前 + AI CoWoS 需求不變——三個基本面支柱完整。2,320–2,365 是短線加碼區，目標更新至 $2,600–2,700。7/16 Q2 法說會是下一個催化劑。</div>
+      <div class="opp-sig"><div class="sdot" style="background:var(--amber)"></div><span class="stxt">今日回調是加碼點</span><span class="sstr s-mid">逢低買進</span></div>
+    </div>
+    <div class="opp" style="--oac:var(--green)">
+      <div class="opp-rk">03</div>
+      <div class="opp-theme">消費復甦</div>
+      <div class="opp-name">面板 + 被動元件 + 航運</div>
+      <div class="opp-tix"><span class="ot">3481</span><span class="ot">2327</span><span class="ot">航運</span></div>
+      <div class="opp-desc">停火後消費電子（TV、家電、手機）下半年需求將大幅反彈——這是被動元件全面漲停的核心邏輯。群創（3481）、國巨（2327）是最直接的台股二線受益標的。霍爾木茲重開後航運費率回落是另一個通膨改善信號，但航運股本身可能反彈後再回落。</div>
+      <div class="opp-sig"><div class="sdot" style="background:var(--green)"></div><span class="stxt">消費電子復甦主題</span><span class="sstr s-watch">追蹤布局</span></div>
+    </div>
+    <div class="opp" style="--oac:var(--blue)">
+      <div class="opp-rk">04</div>
+      <div class="opp-theme">FOMC 事件</div>
+      <div class="opp-name">Warsh 鴿派 → 成長股</div>
+      <div class="opp-tix"><span class="ot">QQQ</span><span class="ot">NVDA</span><span class="ot">AVGO</span></div>
+      <div class="opp-desc">明日（6/17）FOMC Warsh 若釋鴿（機率 45%），利率敏感型科技股將立即大漲。NVDA、AVGO 是最直接受益——高 P/E 成長股的折現率下降意味著估值支撐提升。保留 5% 彈藥，FOMC 後若確認鴿派語氣，立即執行加碼計畫。</div>
+      <div class="opp-sig"><div class="sdot" style="background:var(--blue)"></div><span class="stxt">FOMC 後事件執行</span><span class="sstr s-watch">備妥彈藥</span></div>
+    </div>
+    <div class="opp" style="--oac:var(--purple)">
+      <div class="opp-rk">05</div>
+      <div class="opp-theme">IAUM 配置調整</div>
+      <div class="opp-name">黃金從 10% 降至 6%</div>
+      <div class="opp-tix"><span class="ot">IAUM</span><span class="ot">0050</span></div>
+      <div class="opp-desc">伊朗停火的尾部風險已清除，黃金的「地緣對沖」功能需求下降。建議將 IAUM 從 10%（伊朗升級時提高）降回 6%，釋出的 4% 資金轉入 0050 或 QQQ。若 6/19 瑞士正式簽署，再進一步降至 4–5%。XLE 能源 ETF 可逢反彈賣出。</div>
+      <div class="opp-sig"><div class="sdot" style="background:var(--purple)"></div><span class="stxt">地緣風險降低 → 減黃金</span><span class="sstr s-mid">調整配置</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="sec">
+  <div class="sec-hdr"><span class="sec-num">06</span><span class="sec-lbl">大師策略總結</span><div class="sec-line"></div></div>
+  <div class="sum-card">
+    <div class="sum-quote">
+      今日市場性格：<strong>「停火已確認，現在是執行計畫的時刻，不是繼續等待的時刻」</strong>。過去幾個月我們一直在準備一個情境：「若伊朗停火，快速加碼 0050 / QQQ」。這個計畫已在 6/15 啟動，今天是執行計畫第二天。台股今日的「近關情怯」（46K 附近回落）不是趨勢改變的信號，而是短線換手的正常現象——台積電從 2,375 到 2,365，就像 6/3 從 46,459 回到 45,070 一樣，不改多頭格局。<strong>真正的重心是明日 FOMC（6/17）Warsh 的首次表態</strong>——油價 $80、通膨下行軌道已確立，若 Warsh 確認「貨幣政策路徑可以更靈活」，整個 2026 H2 的科技估值體系將全面升級。今日操作：<strong>台積電 2,320–2,365 逢低加碼；IAUM 黃金比重從 10% 降至 6%；保留 5% 現金等 FOMC 訊號後執行</strong>。
+    </div>
+    <div class="sum-3">
+      <div class="sum-col">
+        <div class="sum-col-t tc-buy">▲ 加碼方向</div>
+        <div class="sum-li">0050 / QQQ：停火確認 → 正式啟動計畫，今日加碼至目標倉位</div>
+        <div class="sum-li">台積電 2,320–2,365：今日回落是加碼點，不是逃跑訊號</div>
+        <div class="sum-li">被動元件（國巨 2327）：消費電子下半年復甦，逢回布局</div>
+        <div class="sum-li">AVGO：停火後降息提前，$440–455 仍是目標加碼區</div>
+        <div class="sum-li">FOMC 後若鴿派：立即執行剩餘 5% 現金加碼 QQQ</div>
+      </div>
+      <div class="sum-col">
+        <div class="sum-col-t tc-watch">◎ 重點觀察</div>
+        <div class="sum-li">台積電今日是否守穩 2,340，收盤能否回 2,365+</div>
+        <div class="sum-li">FOMC 6/17 明日：Warsh 記者會用詞——關鍵四句型</div>
+        <div class="sum-li">6/19 瑞士簽約：是否如期、簽署內容是否全面（含油制裁解除）</div>
+        <div class="sum-li">油價是否繼續跌破 $78 → 下一個關口 $75</div>
+        <div class="sum-li">台股融資水位：若在 46K 附近融資膨脹，是過熱訊號</div>
+      </div>
+      <div class="sum-col">
+        <div class="sum-col-t tc-hedge">▼ 配置調整</div>
+        <div class="sum-li">IAUM 黃金：10% → 6%（地緣風險清除，釋出資金轉股票）</div>
+        <div class="sum-li">XLE 能源 ETF：逢油股反彈賣出（停火後油價長期看跌）</div>
+        <div class="sum-li">若 6/19 協議破局：立即回補 IAUM 至 10%，XLE 加回</div>
+        <div class="sum-li">若 Warsh 偏鷹：不加碼，等殖利率回落後再執行</div>
+        <div class="sum-li">台積電 2,280 以下：停損減碼（仍是紀律線，不因停火例外）</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  ⚡ 2026.06.16（TUE）· 超級央行週 · 資料來源：Al Jazeera · Times of Israel · ETtoday 財經雲 · Schwab Market Update · CNBC · 中時新聞網 · EBC 金融集團 · 商業周刊<br>
+  ★ 持倉 · ◎ Watchlist · ⚠️ 預估 · 本頁資訊僅供研究參考，不構成投資建議
+</footer>
+
+<script>
+Chart.register(ChartDataLabels);
+Chart.defaults.color='#8890c0';
+Chart.defaults.font.family="'IBM Plex Mono',monospace";
+Chart.defaults.font.size=10;
+
+// TICKER
+const tk=[
+  {s:'WTI',v:'$80.37',c:'停火 −5.3%',u:true},{s:'Brent',v:'$83.25',c:'−$4.08',u:true},
+  {s:'S&P 500',v:'7,554',c:'+1.65%（6/15）',u:true},{s:'Nasdaq',v:'26,684',c:'+3.07%（6/15）',u:true},
+  {s:'SOX',v:'14,100',c:'+5.45%（6/15）',u:true},{s:'Dow',v:'51,671',c:'+0.92%',u:true},
+  {s:'SpaceX SPCX',v:'~$192',c:'Day2 +20%',u:true},{s:'台股 TAIEX',v:'45,737',c:'6/16 盤中高',u:true},
+  {s:'TSMC 2330',v:'2,365',c:'6/16 盤中翻黑',u:false},{s:'TSMC 6/15',v:'2,375',c:'+65（+2.81%）',u:true},
+  {s:'國巨 2327',v:'940',c:'漲停新高',u:true},{s:'FOMC',v:'明日 6/17',c:'Warsh 首次表態',u:null},
+  {s:'6/19 瑞士',v:'正式簽約',c:'霍爾木茲重開',u:true},{s:'日經',v:'69,000+',c:'+5.5%（6/15）',u:true},
+  {s:'黃金',v:'$4,300',c:'+2% 停火後',u:null},{s:'台股 6/15',v:'45,397',c:'+1,227 pts',u:true},
+];
+const tkEl=document.getElementById('tkr');
+tkEl.innerHTML=[...tk,...tk].map(d=>{
+  const c=d.u===true?'up':d.u===false?'dn':'na';
+  return`<div class="tk-item"><span class="tk-sym">${d.s}</span><span class="tk-val">${d.v}</span><span class="${c}" style="font-size:10px">${d.c}</span></div>`;
+}).join('');
+
+function stab(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.npanel').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');document.getElementById('p-'+id).classList.add('on');
+}
+
+// OIL CHART
+new Chart(document.getElementById('oilChart'),{
+  type:'line',
+  data:{
+    labels:['2/27\n開戰前','3月\n霍爾木茲','4/8\n首次停火','5/4\n再起','5/19\n停火假訊','6/3\n開戰高峰','6/10\n川普強打','6/15\n和平協議'],
+    datasets:[{
+      label:'WTI $/桶',
+      data:[67,85,92,103,98,95,92,80],
+      borderColor:'rgba(45,212,191,.9)',backgroundColor:'rgba(45,212,191,.08)',
+      borderWidth:2.5,pointRadius:[3,3,5,4,4,4,4,7],
+      pointBackgroundColor:['rgba(255,255,255,.5)','rgba(242,102,102,.8)','rgba(245,166,35,.8)','rgba(242,102,102,.8)','rgba(245,166,35,.8)','rgba(242,102,102,.8)','rgba(242,102,102,.8)','rgba(62,207,142,1)'],
+      tension:0.3,fill:true}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},datalabels:{display:false}},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8890c0',font:{size:8}}},
+      y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8890c0',callback:v=>'$'+v},min:60,max:120}}}
+});
+
+// TAIEX CHART
+new Chart(document.getElementById('taiexChart'),{
+  type:'line',
+  data:{
+    labels:['6/2','6/3','6/5','6/8','6/10','6/12','6/15','6/16\n今日'],
+    datasets:[{
+      label:'TAIEX',
+      data:[45557,46459,45071,44000,43170,44169,45397,45737],
+      borderColor:'rgba(245,166,35,.9)',backgroundColor:'rgba(245,166,35,.07)',
+      borderWidth:2.5,pointRadius:[3,5,4,3,3,4,6,5],
+      pointBackgroundColor:['rgba(245,166,35,.8)','rgba(62,207,142,1)','rgba(242,102,102,1)','rgba(242,102,102,.8)','rgba(242,102,102,.8)','rgba(245,166,35,.8)','rgba(62,207,142,1)','rgba(245,166,35,1)'],
+      tension:0.3,fill:true}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},datalabels:{display:false}},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8890c0',font:{size:9}}},
+      y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8890c0',callback:v=>v.toLocaleString()}}}}
+});
+
+// FED BEFORE/AFTER CHART
+new Chart(document.getElementById('fedChart'),{
+  type:'bar',
+  data:{
+    labels:['6/17','7/29','9/17','10/28','12/10'],
+    datasets:[
+      {label:'停火前（6/5）',data:[1,9,26,34,41],backgroundColor:'rgba(242,102,102,.5)',borderColor:'rgba(242,102,102,.8)',borderWidth:1,borderRadius:2},
+      {label:'停火後（今日）',data:[3,18,42,55,62],backgroundColor:'rgba(62,207,142,.65)',borderColor:'rgba(62,207,142,1)',borderWidth:1,borderRadius:2}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},datalabels:{display:false}},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#c8d0ec',font:{size:9}}},
+      y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8890c0',callback:v=>v+'%'},max:80}}}
+});
+
+// SENTIMENT
+new Chart(document.getElementById('sentChart'),{
+  type:'doughnut',
+  data:{
+    labels:['貪婪','中性','恐慌'],
+    datasets:[{data:[68,24,8],
+      backgroundColor:['rgba(62,207,142,.75)','rgba(245,166,35,.75)','rgba(242,102,102,.75)'],
+      borderColor:['rgba(62,207,142,1)','rgba(245,166,35,1)','rgba(242,102,102,1)'],
+      borderWidth:1,hoverOffset:4}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>` ${d.label}: ${d.raw}%`}},
+      datalabels:{color:'#fff',font:{family:"'IBM Plex Mono',monospace",size:12,weight:'700'},
+        formatter:(v,c)=>`${c.chart.data.labels[c.dataIndex]}\n${v}%`,
+        textAlign:'center',anchor:'center',align:'center',
+        textShadowBlur:4,textShadowColor:'rgba(0,0,0,.6)'}},
+    cutout:'55%'}
+});
+
+// RADAR
+new Chart(document.getElementById('radarChart'),{
+  type:'radar',
+  data:{
+    labels:['0050加碼','台積電回調','FOMC鴿派','被動元件','SPCX持有','黃金減碼'],
+    datasets:[{label:'評分',
+      data:[9.5,9.0,7.5,8.0,7.5,8.0],
+      backgroundColor:'rgba(45,212,191,.12)',borderColor:'rgba(45,212,191,.9)',
+      borderWidth:2,pointBackgroundColor:'rgba(45,212,191,1)',pointRadius:3}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},datalabels:{display:false}},
+    scales:{r:{min:0,max:10,
+      grid:{color:'rgba(255,255,255,.07)'},angleLines:{color:'rgba(255,255,255,.07)'},
+      ticks:{display:false},pointLabels:{color:'#c8d0ec',font:{size:9}}}}}
+});
+
+// 5 DAILY INDICATORS (updated post-ceasefire)
+const INDICATORS=[
+  {num:'01',name:'VIX 恐慌指數',value:13.8,display:'13.8',warn:25,danger:30,dir:'up',
+   barMax:40,barVal:13.8,threshPct:25/40,
+   hint:'警戒線：站上 25',
+   desc:'停火後 VIX 大幅下行（從 6/5 高峰 ~22 回落至 13.8），遠低於警戒線 25。市場進入「低恐慌 + 高預期」模式，短線需留意自滿情緒。'},
+  {num:'02',name:'美國高收益債利差',value:2.8,display:'2.8%',warn:4.0,danger:5.0,dir:'up',
+   barMax:7,barVal:2.8,threshPct:4.0/7,
+   hint:'警戒線：快速升破 4%',
+   desc:'停火後 HY 利差進一步收窄至 2.8%，信用市場健康。油價下行 + 通膨預期改善 + 降息預期提前，均有利信用利差維持低位。'},
+  {num:'03',name:'美國 10Y 殖利率',value:4.15,display:'4.15%',warn:4.7,danger:5.0,dir:'up',
+   barMax:6,barVal:4.15,threshPct:4.7/6,
+   hint:'警戒線：衝向 4.7–5%',
+   desc:'停火後殖利率從 4.45% 回落至 ~4.15%，遠離 4.7% 警戒線。若 Warsh 明日表態鴿派，有望進一步下行至 4.0%。油價 $80 對應 CPI 下行路徑明確。'},
+  {num:'04',name:'AI 龍頭股技術線型',value:null,display:'全面修復',dir:'check',status:'safe',
+   hint:'警戒：龍頭帶頭破月線',
+   desc:'SOX 從 6/5 低點 ~11,432 反彈至 14,100（+23%），TSMC 6/15 收 2,375（新高），NVDA 修復中。台積電今日稍回至 2,365，仍遠高於 2,300 月線警戒位。'},
+  {num:'05',name:'台股槓桿溫度計',value:null,display:'需監測',dir:'check',status:'warn',
+   hint:'警戒：融資驟降＋外資大空',
+   desc:'停火後台股大漲 1,227 點（6/15），需留意融資水位是否在 46K 附近快速膨脹（過熱訊號）。外資 6/15 買超 465 億，連2買。若融資連續 3 日大增同時外資轉賣，需提高警覺。'},
+];
+
+function getIndStatus(ind){
+  if(ind.status) return ind.status;
+  if(ind.dir==='up'){
+    if(ind.value>=ind.danger) return 'danger';
+    if(ind.value>=ind.warn)   return 'warn';
+    return 'safe';
+  }
+  return 'safe';
+}
+const statusLabel={safe:'✅ 安全',warn:'⚠️ 警戒',danger:'🔴 危險'};
+const statusCls  ={safe:'ac-safe',warn:'ac-warn',danger:'ac-danger'};
+const acColor    ={safe:'var(--green)',warn:'var(--amber)',danger:'var(--red)'};
+const barColor   ={safe:'rgba(62,207,142,.7)',warn:'rgba(245,166,35,.7)',danger:'rgba(242,102,102,.7)'};
+const alertGrid=document.getElementById('alert-grid');
+let dangerCount=0,warnCount=0;
+INDICATORS.forEach(ind=>{
+  const s=getIndStatus(ind);
+  if(s==='danger') dangerCount++;
+  if(s==='warn')   warnCount++;
+  const barHtml=ind.barMax?`
+    <div class="ac-bar-wrap">
+      <div class="ac-bar-fill" style="width:${Math.min(ind.barVal/ind.barMax*100,100).toFixed(1)}%;background:${barColor[s]}"></div>
+      <div class="ac-bar-thresh" style="left:${(ind.threshPct*100).toFixed(1)}%"></div>
+    </div>`:'';
+  const card=document.createElement('div');
+  card.className='alert-card';
+  card.style.setProperty('--ac-color',acColor[s]);
+  card.innerHTML=`
+    <div class="ac-top"><span class="ac-num"># ${ind.num}</span><span class="ac-badge ${statusCls[s]}">${statusLabel[s]}</span></div>
+    <div class="ac-name">${ind.name}</div>
+    <div class="ac-line"><span class="ac-val" style="color:${acColor[s]}">${ind.display}</span><span class="ac-thresh">${ind.hint}</span></div>
+    ${barHtml}
+    <div class="ac-desc">${ind.desc}</div>`;
+  alertGrid.appendChild(card);
+});
+const statusEl=document.getElementById('av-status');
+if(dangerCount>=2||(dangerCount>=1&&warnCount>=2)){
+  statusEl.className='av-status av-alert';
+  statusEl.textContent='🔴 警報：多項指標同時亮紅，建議減碼保護';
+}else if(warnCount>=2||dangerCount>=1){
+  statusEl.className='av-status av-caution';
+  statusEl.textContent=`⚠️ 留意：${warnCount} 項黃燈，停火後仍需監測台股融資溫度`;
+}else{
+  statusEl.className='av-status av-all-clear';
+  statusEl.textContent='✅ 停火後風險指標全面改善，多頭格局確立';
+}
+
+// EARNINGS
+const EARNS=[
+  {date:'6/17（三）明日',timing:'FOMC',tCls:'t-event',name:'Fed FOMC · Warsh 首次記者會',tick:'超級央行週',mkt:'us',star:true,
+   eps:'維持 97%',note:'Warsh 措辭決定 H2 降息時程 · 鴿派語氣 = 科技股大漲',rev:'',urgency:'urgent'},
+  {date:'6/19（五）本週',timing:'外交',tCls:'t-event',name:'美伊瑞士簽約儀式',tick:'霍爾木茲',mkt:'us',star:true,
+   eps:'和平協議正式簽署',note:'油價若跌破 $75 = 降息大幅提前 · 全球風險資產慶典第二波',rev:'',urgency:'urgent'},
+  {date:'~6/18–6/25',timing:'⚠️預估',tCls:'t-tbd',name:'台積電月營收',tick:'2330',mkt:'tw',star:true,
+   eps:'預估 4,300億+',note:'5月已公布；6月含 Rubin 效應 · 法說 7/16',rev:'年增 ~22%',urgency:'near'},
+  {date:'~6/20–6/26',timing:'⚠️預估',tCls:'t-tbd',name:'鴻海 / 廣達月營收',tick:'2317・2382',mkt:'tw',star:true,
+   eps:'GB300 出貨進度',note:'Dell +757% 確認需求；停火後伺服器電力成本改善',rev:'',urgency:'near'},
+  {date:'6/24（三）',timing:'AMC',tCls:'t-amc',name:'FedEx',tick:'FDX',mkt:'us',
+   eps:'~$5.30',rev:'~$22B',note:'停火後航運 / 物流景氣溫度計',urgency:'near'},
+  {date:'6/25（四）',timing:'AMC',tCls:'t-amc',name:'Nike',tick:'NKE',mkt:'us',
+   eps:'~$0.80',rev:'~$12.5B',note:'消費者信心 + 停火後消費性電子景氣',urgency:'near'},
+  {date:'6/26（五）',timing:'BMO',tCls:'t-bmo',name:'CarMax',tick:'KMX',mkt:'us',
+   eps:'~$1.20',rev:'~$7B',note:'二手車市場；燃油成本下行對汽車消費正面',urgency:'later'},
+  {date:'7/16（預）',timing:'⚠️預估',tCls:'t-tbd',name:'台積電 Q2 法說會',tick:'2330',mkt:'tw',star:true,
+   eps:'Q2 EPS ~23–25元',note:'停火後 CoWoS 需求確認 · Rubin 代工規格 · 目標上修 $2,600+',rev:'',urgency:'later'},
+];
+const uColor={urgent:'var(--red)',near:'var(--amber)',later:'var(--teal)'};
+function renderEarns(f){
+  const grid=document.getElementById('earn-grid');
+  const items=f==='all'?EARNS:f==='hold'?EARNS.filter(e=>e.star):EARNS.filter(e=>e.mkt===f);
+  grid.innerHTML=items.map(e=>`
+    <div class="ec-li" style="--li-ac:${uColor[e.urgency]||'var(--border)'}">
+      <div class="ec-li-date"><span>${e.date}</span><span class="ec-li-timing ${e.tCls}">${e.timing}</span></div>
+      <div class="ec-li-name">${e.star?'<span class="li-star">★</span>':''}<span>${e.name}</span><span class="ec-li-tick">${e.tick}</span></div>
+      <div class="ec-li-meta">EPS: <strong style="color:var(--t1)">${e.eps}</strong>${e.rev?' &nbsp;|&nbsp; <strong style="color:var(--t1)">'+e.rev+'</strong>':''}</div>
+      <div class="ec-li-focus">${e.note}</div>
+    </div>`).join('');
+}
+renderEarns('all');
+function filterEarn(f,btn){
+  document.querySelectorAll('.ef-btn').forEach(b=>b.classList.remove('ef-on'));
+  btn.classList.add('ef-on');renderEarns(f);
+}
+</script>
+</body>
+</html>
