@@ -1,0 +1,82 @@
+name: Daily Investment Report
+
+on:
+  schedule:
+    # 台灣時間每天 08:00 = UTC 00:00（週一至週五）
+    - cron: '0 0 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      date_override:
+        description: '指定日期 YYYY-MM-DD（留空=今天）'
+        required: false
+        default: ''
+
+jobs:
+  generate-and-notify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic>=0.45.0 requests
+
+      - name: Generate report
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DATE_OVERRIDE: ${{ github.event.inputs.date_override }}
+        run: python scripts/generate_report.py
+
+      # ── ① 自動發佈到網路：commit + push 觸發 GitHub Pages 重新部署 ──────
+      - name: Commit and push report (auto-publish to GitHub Pages)
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "📊 Daily report $(date +'%Y-%m-%d')"
+          git push
+
+      # ── ② 通知本人（Telegram）─────────────────────────────────────
+      - name: Send Telegram notification
+        if: ${{ secrets.TELEGRAM_BOT_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+          REPO=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
+          DATE=$(date +'%Y/%m/%d')
+          URL="https://${OWNER}.github.io/${REPO}/"
+          MSG="📊 *${DATE} 投資情報已更新*
+
+每日 AI 投資情報自動生成完成！
+
+🔗 [點此查看完整報告](${URL})
+
+⚡ 自動生成 by Claude AI \+ GitHub Actions"
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d text="${MSG}" \
+            -d parse_mode="MarkdownV2" \
+            -d disable_web_page_preview="false"
+
+      # ── ③ 通知本人 + 多位收件人（Email，逗號分隔多個地址）────────────
+      - name: Send Email notification (supports multiple recipients)
+        if: ${{ secrets.GMAIL_USER != '' && secrets.GMAIL_APP_PASSWORD != '' }}
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python scripts/send_email.py
