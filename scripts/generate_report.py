@@ -1,6 +1,6 @@
 """
 Daily Investment Report Generator
-每天自動呼叫 Claude API + web_search，生成 HTML 報告並備份舊報告
+每天自動呼叫 Claude API + web_search（伺服器端工具），生成 HTML 報告並備份舊報告
 """
 import anthropic
 import os
@@ -60,15 +60,25 @@ client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 print(f"[{date_str}] 開始生成報告...")
 
-html_content = None
+MODEL = "claude-sonnet-4-6"
+MAX_TOKENS = 32000
+TOOLS = [{"type": "web_search_20250305", "name": "web_search", "max_uses": 12}]
+
+messages = [{"role": "user", "content": PROMPT}]
+
 response = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=20000,
-    tools=[{"type": "web_search_20250305", "name": "web_search"}],
-    messages=[{"role": "user", "content": PROMPT}]
+    model=MODEL,
+    max_tokens=MAX_TOKENS,
+    tools=TOOLS,
+    messages=messages
 )
 
-for iteration in range(15):
+html_content = None
+
+# web_search 是伺服器端工具：Claude 在同一輪對話內自動完成搜尋。
+# 唯一需要我們手動處理的情況是 stop_reason == "pause_turn"
+# （伺服器端搜尋迴圈達到單次請求上限，需把回應原樣送回去讓 Claude 繼續）。
+for iteration in range(5):
     print(f"  迭代 {iteration+1}: stop_reason={response.stop_reason}")
 
     if response.stop_reason == "end_turn":
@@ -81,29 +91,25 @@ for iteration in range(15):
                     html_content = block.text.strip()
         break
 
-    assistant_msg = {"role": "assistant", "content": response.content}
-    tool_results = []
-    for block in response.content:
-        if block.type == "tool_use":
-            tool_results.append({
-                "type": "tool_result",
-                "tool_use_id": block.id,
-                "content": "search executed"
-            })
-    if not tool_results:
+    elif response.stop_reason == "pause_turn":
+        messages.append({"role": "assistant", "content": response.content})
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=MAX_TOKENS,
+            tools=TOOLS,
+            messages=messages
+        )
+        continue
+
+    else:
+        print(f"  ⚠️ 非預期 stop_reason: {response.stop_reason}")
+        for block in response.content:
+            if hasattr(block, "text"):
+                print(f"  已產生文字長度: {len(block.text)}")
         break
 
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=20000,
-        tools=[{"type": "web_search_20250305", "name": "web_search"}],
-        messages=[{"role": "user", "content": PROMPT},
-                   assistant_msg,
-                   {"role": "user", "content": tool_results}]
-    )
-
 if not html_content:
-    raise RuntimeError("未能從 Claude 取得 HTML 內容")
+    raise RuntimeError(f"未能從 Claude 取得 HTML 內容（最終 stop_reason={response.stop_reason}）")
 
 archive_dir = "archive"
 os.makedirs(archive_dir, exist_ok=True)
