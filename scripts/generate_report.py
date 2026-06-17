@@ -63,7 +63,7 @@ print(f"[{date_str}] 開始生成報告...")
 html_content = None
 response = client.messages.create(
     model="claude-sonnet-4-6",
-    max_tokens=8000,
+    max_tokens=20000,
     tools=[{"type": "web_search_20250305", "name": "web_search"}],
     messages=[{"role": "user", "content": PROMPT}]
 )
@@ -81,7 +81,6 @@ for iteration in range(15):
                     html_content = block.text.strip()
         break
 
-    # 處理 tool_use → 繼續對話
     assistant_msg = {"role": "assistant", "content": response.content}
     tool_results = []
     for block in response.content:
@@ -96,7 +95,7 @@ for iteration in range(15):
 
     response = client.messages.create(
         model="claude-sonnet-4-6",
-        max_tokens=8000,
+        max_tokens=20000,
         tools=[{"type": "web_search_20250305", "name": "web_search"}],
         messages=[{"role": "user", "content": PROMPT},
                    assistant_msg,
