@@ -1,6 +1,7 @@
 """
 Daily Investment Report Generator
 每天自動呼叫 Claude API + web_search（伺服器端工具），生成 HTML 報告並備份舊報告
+使用串流模式（SDK 要求：max_tokens 較大時必須用 streaming，避免長時間請求被中斷）
 """
 import anthropic
 import os
@@ -66,18 +67,23 @@ TOOLS = [{"type": "web_search_20250305", "name": "web_search", "max_uses": 12}]
 
 messages = [{"role": "user", "content": PROMPT}]
 
-response = client.messages.create(
-    model=MODEL,
-    max_tokens=MAX_TOKENS,
-    tools=TOOLS,
-    messages=messages
-)
 
+def call_claude(messages):
+    """用串流模式呼叫 API，回傳最終完整訊息物件"""
+    with client.messages.stream(
+        model=MODEL,
+        max_tokens=MAX_TOKENS,
+        tools=TOOLS,
+        messages=messages
+    ) as stream:
+        for _ in stream.text_stream:
+            pass
+        return stream.get_final_message()
+
+
+response = call_claude(messages)
 html_content = None
 
-# web_search 是伺服器端工具：Claude 在同一輪對話內自動完成搜尋。
-# 唯一需要我們手動處理的情況是 stop_reason == "pause_turn"
-# （伺服器端搜尋迴圈達到單次請求上限，需把回應原樣送回去讓 Claude 繼續）。
 for iteration in range(5):
     print(f"  迭代 {iteration+1}: stop_reason={response.stop_reason}")
 
@@ -93,12 +99,7 @@ for iteration in range(5):
 
     elif response.stop_reason == "pause_turn":
         messages.append({"role": "assistant", "content": response.content})
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=MAX_TOKENS,
-            tools=TOOLS,
-            messages=messages
-        )
+        response = call_claude(messages)
         continue
 
     else:
