@@ -37,16 +37,14 @@ jobs:
           DATE_OVERRIDE: ${{ github.event.inputs.date_override }}
         run: python scripts/generate_report.py
 
-      # ── ① 自動發佈到網路：commit + push 觸發 GitHub Pages 重新部署 ──────
-      - name: Commit and push report (auto-publish to GitHub Pages)
+      - name: Commit and push report
         run: |
-          git config user.name  "github-actions[bot]"
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --staged --quiet || git commit -m "📊 Daily report $(date +'%Y-%m-%d')"
+          git diff --staged --quiet || git commit -m "Daily report update"
           git push
 
-      # ── ② 通知本人（Telegram）─────────────────────────────────────
       - name: Send Telegram notification
         if: ${{ secrets.TELEGRAM_BOT_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '' }}
         env:
@@ -58,21 +56,10 @@ jobs:
           REPO=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
           DATE=$(date +'%Y/%m/%d')
           URL="https://${OWNER}.github.io/${REPO}/"
-          MSG="📊 *${DATE} 投資情報已更新*
+          MSG=$(printf '投資情報已更新 %s\n\n每日 AI 投資情報自動生成完成\n\n點此查看完整報告 %s' "$DATE" "$URL")
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" -d chat_id="${TELEGRAM_CHAT_ID}" --data-urlencode "text=${MSG}"
 
-每日 AI 投資情報自動生成完成！
-
-🔗 [點此查看完整報告](${URL})
-
-⚡ 自動生成 by Claude AI \+ GitHub Actions"
-          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            -d chat_id="${TELEGRAM_CHAT_ID}" \
-            -d text="${MSG}" \
-            -d parse_mode="MarkdownV2" \
-            -d disable_web_page_preview="false"
-
-      # ── ③ 通知本人 + 多位收件人（Email，逗號分隔多個地址）────────────
-      - name: Send Email notification (supports multiple recipients)
+      - name: Send Email notification
         if: ${{ secrets.GMAIL_USER != '' && secrets.GMAIL_APP_PASSWORD != '' }}
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
