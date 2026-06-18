@@ -35,6 +35,10 @@ PROMPT = f"""
 
 ## HTML 設計規格
 - 深色主題（背景 #04040d，IBM Plex Mono + Inter 字體）
+- 文字色階規則（嚴格遵守）：
+  - 主要文字、標題、指標名稱、數值：`color: #f0f2fc`（近白）
+  - 次要說明文字、日期、副標題、跑馬燈股票代號、單位、來源：`color: #c8d0ec`（明亮灰白，不可更暗）
+  - 禁止在任何可讀文字上使用 `#8890c0` 或更暗的顏色；低亮度色（如 `#8890c0`）僅可用於純裝飾性佔位元素
 - 頂部跑馬燈（即時數據）
 - 標題區（badges + 日期 + 4 條關鍵 pill）
 - 英雄橫幅（2 欄，最重要的 2 個事件）
@@ -137,4 +141,9 @@ if os.path.exists("index.html"):
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(html_content)
 
+backup_dir = "Backup"
+os.makedirs(backup_dir, exist_ok=True)
+shutil.copy("index.html", f"{backup_dir}/{date_str}.html")
+
 print(f"  ✅ 報告已寫入 index.html（{len(html_content):,} bytes）")
+print(f"  ✅ 已備份至 Backup/{date_str}.html")
