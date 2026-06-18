@@ -62,6 +62,27 @@ jobs:
           MSG=$(printf '投資情報已更新 %s\n\n每日 AI 投資情報自動生成完成\n\n點此查看完整報告 %s' "$DATE" "$URL")
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" -d chat_id="${TELEGRAM_CHAT_ID}" --data-urlencode "text=${MSG}"
 
+      - name: Send LINE notification
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ -z "$LINE_CHANNEL_ACCESS_TOKEN" ] || [ -z "$LINE_USER_ID" ]; then
+            echo "LINE not configured, skipping."
+            exit 0
+          fi
+          OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+          REPO=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
+          DATE=$(date +'%Y/%m/%d')
+          URL="https://${OWNER}.github.io/${REPO}/"
+          TITLE=$(date +'%Y.%m.%d')
+          MSG="${TITLE} 每日投資情報已更新 📊\n\n🔗 ${URL}"
+          curl -s -X POST https://api.line.me/v2/bot/message/push \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${LINE_CHANNEL_ACCESS_TOKEN}" \
+            -d "{\"to\":\"${LINE_USER_ID}\",\"messages\":[{\"type\":\"text\",\"text\":\"${MSG}\"}]}"
+
       - name: Send Email notification
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
