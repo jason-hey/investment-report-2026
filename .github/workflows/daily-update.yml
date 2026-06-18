@@ -66,9 +66,10 @@ jobs:
         env:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          LINE_GROUP_ID: ${{ secrets.LINE_GROUP_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          if [ -z "$LINE_CHANNEL_ACCESS_TOKEN" ] || [ -z "$LINE_USER_ID" ]; then
+          if [ -z "$LINE_CHANNEL_ACCESS_TOKEN" ]; then
             echo "LINE not configured, skipping."
             exit 0
           fi
@@ -78,10 +79,20 @@ jobs:
           URL="https://${OWNER}.github.io/${REPO}/"
           TITLE=$(date +'%Y.%m.%d')
           MSG="${TITLE} 每日投資情報已更新 📊\n\n🔗 ${URL}"
-          curl -s -X POST https://api.line.me/v2/bot/message/push \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${LINE_CHANNEL_ACCESS_TOKEN}" \
-            -d "{\"to\":\"${LINE_USER_ID}\",\"messages\":[{\"type\":\"text\",\"text\":\"${MSG}\"}]}"
+          send_line() {
+            curl -s -X POST https://api.line.me/v2/bot/message/push \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${LINE_CHANNEL_ACCESS_TOKEN}" \
+              -d "{\"to\":\"$1\",\"messages\":[{\"type\":\"text\",\"text\":\"${MSG}\"}]}"
+          }
+          if [ -n "$LINE_USER_ID" ]; then
+            send_line "$LINE_USER_ID"
+            echo "LINE 個人通知已發送"
+          fi
+          if [ -n "$LINE_GROUP_ID" ]; then
+            send_line "$LINE_GROUP_ID"
+            echo "LINE 群組通知已發送"
+          fi
 
       - name: Send Email notification
         env:
