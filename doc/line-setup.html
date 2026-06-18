@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINE 通知設定指南 — Investment Report 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg0: #04040d; --bg1: #08081a; --bg2: #0e0e22; --bg3: #13132c;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.16);
+    --t1: #f0f2fc; --t2: #c8d0ec;
+    --green: #3ecf8e; --green2: rgba(62,207,142,.15);
+    --amber: #f5a623; --amber2: rgba(245,166,35,.14);
+    --blue: #5b9cf6; --blue2: rgba(91,156,246,.15);
+    --teal: #2dd4bf; --teal2: rgba(45,212,191,.15);
+    --red: #f26666; --red2: rgba(242,102,102,.15);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg0); color: var(--t1); font-family: var(--sans); font-size: 15px; line-height: 1.7; }
+
+  header {
+    padding: 40px 48px 28px;
+    border-bottom: 1px solid var(--border2);
+    background: var(--bg1);
+  }
+  .badge {
+    display: inline-block;
+    font-family: var(--mono); font-size: 9px; letter-spacing: .12em;
+    padding: 3px 10px; border-radius: 2px; margin-bottom: 14px;
+    border: 1px solid var(--teal); color: var(--teal); background: var(--teal2);
+  }
+  h1 { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { color: var(--t2); font-size: 14px; }
+
+  main { max-width: 860px; margin: 0 auto; padding: 48px 48px 80px; }
+
+  /* 費用卡片 */
+  .pricing-card {
+    background: var(--green2); border: 1px solid var(--green);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .pricing-icon { font-size: 32px; flex-shrink: 0; }
+  .pricing-title { font-weight: 600; font-size: 16px; color: var(--green); margin-bottom: 4px; }
+  .pricing-desc { color: var(--t2); font-size: 14px; }
+
+  /* 區塊標題 */
+  h2 {
+    font-family: var(--mono); font-size: 13px; letter-spacing: .1em;
+    color: var(--teal); text-transform: uppercase;
+    margin-bottom: 16px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border2);
+  }
+  section { margin-bottom: 44px; }
+
+  /* 步驟 */
+  .steps { display: flex; flex-direction: column; gap: 12px; }
+  .step {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 14px 18px;
+  }
+  .step-num {
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    background: var(--teal2); color: var(--teal);
+    border: 1px solid var(--teal); border-radius: 3px;
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step-body { flex: 1; }
+  .step-body strong { color: var(--t1); font-weight: 600; }
+  .step-body p { color: var(--t2); font-size: 14px; margin-top: 3px; }
+
+  /* code inline */
+  code {
+    font-family: var(--mono); font-size: 12px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 3px; padding: 1px 6px; color: var(--amber);
+  }
+
+  /* Secrets 表格 */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+    color: var(--t2); text-align: left; padding: 8px 14px;
+    background: var(--bg2); border-bottom: 1px solid var(--border2);
+  }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--t2); vertical-align: top; }
+  td:first-child { font-family: var(--mono); font-size: 12px; color: var(--amber); white-space: nowrap; }
+  td strong { color: var(--t1); }
+  tr:last-child td { border-bottom: none; }
+
+  /* 格式說明 */
+  .id-format {
+    display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;
+  }
+  .id-chip {
+    font-family: var(--mono); font-size: 12px;
+    padding: 6px 14px; border-radius: 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .id-chip.user { background: var(--blue2); border: 1px solid var(--blue); color: var(--blue); }
+  .id-chip.group { background: var(--amber2); border: 1px solid var(--amber); color: var(--amber); }
+  .id-chip span { color: var(--t2); font-size: 11px; }
+
+  /* 注意區塊 */
+  .note {
+    background: var(--amber2); border: 1px solid var(--amber);
+    border-radius: 6px; padding: 14px 18px;
+    font-size: 14px; color: var(--t2); margin-top: 16px;
+  }
+  .note strong { color: var(--amber); }
+
+  /* 行為說明 */
+  .behavior-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .bcard {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 16px;
+  }
+  .bcard-label { font-family: var(--mono); font-size: 10px; color: var(--t2); margin-bottom: 8px; letter-spacing: .06em; }
+  .bcard-title { font-size: 14px; font-weight: 600; color: var(--t1); margin-bottom: 4px; }
+  .bcard-desc { font-size: 13px; color: var(--t2); }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .dot.green { background: var(--green); }
+  .dot.amber { background: var(--amber); }
+  .dot.red { background: var(--red); }
+
+  footer {
+    text-align: center; padding: 24px;
+    color: var(--t2); font-size: 12px; font-family: var(--mono);
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">SETUP GUIDE</div>
+  <h1>LINE 通知設定指南</h1>
+  <p class="subtitle">Investment Report 2026 — LINE Messaging API 整合文件</p>
+</header>
+
+<main>
+
+  <!-- 費用說明 -->
+  <div class="pricing-card">
+    <div class="pricing-icon">💰</div>
+    <div>
+      <div class="pricing-title">免費使用</div>
+      <div class="pricing-desc">LINE Messaging API 免費方案每月提供 200 則推播訊息。本專案每月約使用 <strong style="color:var(--green)">20 則</strong>（週一至週五各 1 則），完全在免費範圍內，無需付費。</div>
+    </div>
+  </div>
+
+  <!-- 傳送範圍 -->
+  <section>
+    <h2>傳送範圍</h2>
+    <div class="behavior-grid">
+      <div class="bcard">
+        <div class="bcard-label">個人通知</div>
+        <div class="bcard-title"><span class="dot green"></span>支援</div>
+        <div class="bcard-desc">傳送到你個人的 LINE 帳號，設定 <code>LINE_USER_ID</code> 即可。</div>
+      </div>
+      <div class="bcard">
+        <div class="bcard-label">群組通知</div>
+        <div class="bcard-title"><span class="dot green"></span>支援</div>
+        <div class="bcard-desc">傳送到指定 LINE 群組，設定 <code>LINE_GROUP_ID</code> 即可。</div>
+      </div>
+      <div class="bcard">
+        <div class="bcard-label">同時傳送</div>
+        <div class="bcard-title"><span class="dot green"></span>支援</div>
+        <div class="bcard-desc">兩個 Secret 都設定時，個人與群組會同時收到通知。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 1: 建立 Bot -->
+  <section>
+    <h2>Step 1 — 取得 LINE_CHANNEL_ACCESS_TOKEN</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>前往 LINE Developers Console</strong>
+          <p>用 LINE 帳號登入 <code>developers.line.biz/console</code></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>建立 Provider</strong>
+          <p>點 Create a new provider，名稱隨意填（例如「Investment Bot」）</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>建立 Messaging API Channel</strong>
+          <p>在 Provider 下點 Create a new channel → 選 Messaging API → 填寫基本資料</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>產生 Channel access token</strong>
+          <p>進入 channel → 切換到 <strong>Messaging API</strong> 分頁 → 拉到最下方 → 點 <strong>Issue</strong> → 複製 token</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 2: 取得 User ID -->
+  <section>
+    <h2>Step 2 — 取得 LINE_USER_ID（個人通知）</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>掃描 QR Code 加 Bot 為好友</strong>
+          <p>在 channel 頁面的 Messaging API 分頁找到 QR Code，用 LINE 掃描加入</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>查看 Your user ID</strong>
+          <p>回到 channel → <strong>Basic settings</strong> 分頁 → 拉到最下方 → 複製 <strong>Your user ID</strong></p>
+        </div>
+      </div>
+    </div>
+    <div class="id-format">
+      <div class="id-chip user">U<span>開頭，例如 Uabcd1234efgh5678</span></div>
+    </div>
+  </section>
+
+  <!-- Step 3: 取得 Group ID -->
+  <section>
+    <h2>Step 3 — 取得 LINE_GROUP_ID（群組通知，可選）</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>將 Bot 加入目標群組</strong>
+          <p>在 LINE 群組中邀請剛建立的 Bot 加入</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>在群組對 Bot 傳任意訊息</strong>
+          <p>例如傳「hi」，觸發 webhook 事件</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>用 webhook.site 接收 Group ID</strong>
+          <p>前往 <code>webhook.site</code> 取得一個臨時 URL → 在 LINE Developers Console 的 Messaging API 分頁設定為 Webhook URL → 重新在群組傳一則訊息 → 在 webhook.site 看到的 JSON 中找 <code>groupId</code> 欄位</p>
+        </div>
+      </div>
+    </div>
+    <div class="id-format">
+      <div class="id-chip group">C<span>開頭，例如 Cabcd1234efgh5678</span></div>
+    </div>
+    <div class="note">
+      <strong>注意：</strong>Bot 加入群組後，需在 LINE Developers Console 的 Messaging API 分頁將 <strong>Allow bot to join group chats</strong> 設為 Enabled。
+    </div>
+  </section>
+
+  <!-- Step 4: 設定 Secrets -->
+  <section>
+    <h2>Step 4 — 設定 GitHub Secrets</h2>
+    <p style="color:var(--t2);font-size:14px;margin-bottom:16px;">GitHub repo → Settings → Secrets and variables → Actions → New repository secret</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Secret 名稱</th>
+          <th>說明</th>
+          <th>必填</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>LINE_CHANNEL_ACCESS_TOKEN</td>
+          <td><strong>Bot 的 Channel access token</strong><br>Step 1 取得的長字串 token</td>
+          <td><span style="color:var(--green)">✅ 必填</span></td>
+        </tr>
+        <tr>
+          <td>LINE_USER_ID</td>
+          <td><strong>個人 LINE User ID</strong><br>Step 2 取得，<code>U</code> 開頭</td>
+          <td><span style="color:var(--t2)">可選</span></td>
+        </tr>
+        <tr>
+          <td>LINE_GROUP_ID</td>
+          <td><strong>群組 ID</strong><br>Step 3 取得，<code>C</code> 開頭</td>
+          <td><span style="color:var(--t2)">可選</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 通知內容 -->
+  <section>
+    <h2>通知內容格式</h2>
+    <div class="bcard" style="max-width:360px;">
+      <div class="bcard-label">LINE 訊息預覽</div>
+      <div style="background:var(--bg3);border-radius:4px;padding:14px;font-size:14px;color:var(--t1);margin-top:8px;font-family:var(--sans);">
+        2026.06.18 每日投資情報已更新 📊<br><br>
+        🔗 https://jason-hey.github.io/investment-report-2026/
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>Investment Report 2026 — LINE Setup Guide</footer>
+
+</body>
+</html>
