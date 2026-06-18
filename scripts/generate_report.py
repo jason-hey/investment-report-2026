@@ -62,7 +62,7 @@ client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 print(f"[{date_str}] 開始生成報告...")
 
 MODEL = "claude-sonnet-4-6"
-MAX_TOKENS = 32000
+MAX_TOKENS = 64000
 TOOLS = [{"type": "web_search_20250305", "name": "web_search", "max_uses": 12}]
 
 messages = [{"role": "user", "content": PROMPT}]
@@ -101,6 +101,22 @@ for iteration in range(5):
         messages.append({"role": "assistant", "content": response.content})
         response = call_claude(messages)
         continue
+
+    elif response.stop_reason == "max_tokens":
+        print(f"  ⚠️ 達到 max_tokens 上限，嘗試從已產生內容中萃取 HTML...")
+        for block in response.content:
+            if hasattr(block, "text"):
+                print(f"  已產生文字長度: {len(block.text)}")
+                m = re.search(r"```html\s*([\s\S]*?)```", block.text)
+                if m:
+                    html_content = m.group(1).strip()
+                elif "<html" in block.text.lower():
+                    # 輸出被截斷，補上缺少的結尾標籤讓瀏覽器能正常渲染
+                    partial = block.text.strip()
+                    if not partial.endswith("</html>"):
+                        partial += "\n</body></html>"
+                    html_content = partial
+        break
 
     else:
         print(f"  ⚠️ 非預期 stop_reason: {response.stop_reason}")
