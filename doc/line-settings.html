@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINE 設定紀錄 — Investment Report 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg0:#04040d;--bg1:#08081a;--bg2:#0e0e22;--bg3:#13132c;
+    --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
+    --t1:#f0f2fc;--t2:#c8d0ec;
+    --green:#3ecf8e;--green2:rgba(62,207,142,.15);
+    --amber:#f5a623;--amber2:rgba(245,166,35,.14);
+    --blue:#5b9cf6;--blue2:rgba(91,156,246,.15);
+    --teal:#2dd4bf;--teal2:rgba(45,212,191,.15);
+    --red:#f26666;--red2:rgba(242,102,102,.15);
+    --mono:'IBM Plex Mono',monospace;--sans:'Inter',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg0);color:var(--t1);font-family:var(--sans);font-size:15px;line-height:1.7}
+
+  header{padding:40px 48px 28px;border-bottom:1px solid var(--border2);background:var(--bg1)}
+  .badge{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.12em;padding:3px 10px;border-radius:2px;margin-bottom:14px;border:1px solid var(--teal);color:var(--teal);background:var(--teal2)}
+  h1{font-family:var(--mono);font-size:22px;font-weight:700;margin-bottom:6px}
+  .subtitle{color:var(--t2);font-size:14px}
+
+  main{max-width:900px;margin:0 auto;padding:48px 48px 80px}
+
+  h2{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--teal);text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border2)}
+  section{margin-bottom:44px}
+
+  /* 帳號資訊卡片 */
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .info-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:16px 20px}
+  .info-label{font-family:var(--mono);font-size:10px;color:var(--t2);letter-spacing:.06em;margin-bottom:6px}
+  .info-value{font-family:var(--mono);font-size:13px;color:var(--amber);word-break:break-all}
+  .info-note{font-size:12px;color:var(--t2);margin-top:4px}
+
+  /* Secrets 表格 */
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--t2);text-align:left;padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border2)}
+  td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--t2);vertical-align:top}
+  td:first-child{font-family:var(--mono);font-size:12px;color:var(--amber);white-space:nowrap}
+  td strong{color:var(--t1)}
+  tr:last-child td{border-bottom:none}
+
+  code{font-family:var(--mono);font-size:12px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:2px 7px;color:var(--amber)}
+
+  /* 步驟 */
+  .steps{display:flex;flex-direction:column;gap:10px}
+  .step{display:flex;gap:14px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px 18px}
+  .step-num{font-family:var(--mono);font-size:11px;font-weight:700;background:var(--teal2);color:var(--teal);border:1px solid var(--teal);border-radius:3px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .step-body strong{color:var(--t1);font-weight:600}
+  .step-body p{color:var(--t2);font-size:14px;margin-top:3px}
+
+  /* PowerShell 區塊 */
+  .code-block{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:16px 20px;margin-top:12px}
+  .code-block pre{font-family:var(--mono);font-size:12px;color:var(--t2);white-space:pre-wrap;line-height:1.8}
+  .code-block .comment{color:#5a6080}
+  .code-block .var{color:var(--teal)}
+  .code-block .str{color:var(--green)}
+
+  /* 狀態卡片 */
+  .status-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .scard{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:16px}
+  .scard-label{font-family:var(--mono);font-size:10px;color:var(--t2);margin-bottom:8px;letter-spacing:.06em}
+  .scard-val{font-size:14px;font-weight:600}
+  .ok{color:var(--green)}.pending{color:var(--amber)}.na{color:var(--t2)}
+
+  .note{background:var(--amber2);border:1px solid var(--amber);border-radius:6px;padding:14px 18px;font-size:14px;color:var(--t2);margin-top:16px}
+  .note strong{color:var(--amber)}
+
+  footer{text-align:center;padding:24px;color:var(--t2);font-size:12px;font-family:var(--mono);border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">SETTINGS RECORD</div>
+  <h1>LINE 設定紀錄</h1>
+  <p class="subtitle">Investment Report 2026 — LINE Messaging API 帳號與 Secret 設定紀錄</p>
+</header>
+
+<main>
+
+  <!-- 帳號資訊 -->
+  <section>
+    <h2>帳號資訊</h2>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">LINE OFFICIAL ACCOUNT</div>
+        <div class="info-value">@927gvncd</div>
+        <div class="info-note">【每日股市投資情報自動通知】Bot</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">BOT USER ID</div>
+        <div class="info-value">U87c789e8610d93378c804529f964e592</div>
+        <div class="info-note">Bot 自身的 LINE User ID（非收件人）</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">CHANNEL ID</div>
+        <div class="info-value">2010437858</div>
+        <div class="info-note">LINE Developers Console 顯示</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">PROVIDER</div>
+        <div class="info-value">Jason</div>
+        <div class="info-note">LINE Developers Console 的 Provider 名稱</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 通知狀態 -->
+  <section>
+    <h2>通知狀態</h2>
+    <div class="status-grid">
+      <div class="scard">
+        <div class="scard-label">個人通知</div>
+        <div class="scard-val ok">✓ 已設定</div>
+      </div>
+      <div class="scard">
+        <div class="scard-label">群組通知</div>
+        <div class="scard-val pending">⚠ 待設定</div>
+      </div>
+      <div class="scard">
+        <div class="scard-label">每月用量</div>
+        <div class="scard-val ok">~20 則（免費上限 200 則）</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GitHub Secrets -->
+  <section>
+    <h2>GitHub Secrets 設定</h2>
+    <table>
+      <thead>
+        <tr><th>Secret 名稱</th><th>說明</th><th>狀態</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>LINE_CHANNEL_ACCESS_TOKEN</td>
+          <td><strong>Bot Channel Access Token</strong><br>從 LINE Developers Console → Messaging API 分頁 → Issue 取得</td>
+          <td><span style="color:var(--green)">✓ 已設定</span></td>
+        </tr>
+        <tr>
+          <td>LINE_USER_ID</td>
+          <td><strong>個人 LINE User ID</strong><br>Developers Console → @927gvncd channel → Basic settings → Your user ID</td>
+          <td><span style="color:var(--green)">✓ 已設定</span></td>
+        </tr>
+        <tr>
+          <td>LINE_GROUP_ID</td>
+          <td><strong>群組 ID</strong><br>需透過 webhook.site 從群組訊息事件取得，<code>C</code> 開頭</td>
+          <td><span style="color:var(--amber)">⚠ 待設定</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 取得 Group ID -->
+  <section>
+    <h2>取得群組 Group ID 步驟</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>開啟 webhook.site</strong>
+          <p>瀏覽器開啟 <code>webhook.site</code>，複製頁面上的 Your unique URL</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>設定 Webhook URL</strong>
+          <p>LINE Developers Console → @927gvncd channel → Messaging API 分頁 → Webhook URL 填入 webhook.site 的網址 → Update → 開啟 Use webhook</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>邀請 Bot 進群組</strong>
+          <p>手機 LINE 群組 → 邀請 <code>@927gvncd</code> 加入</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>在群組傳訊息</strong>
+          <p>在群組裡傳任意一則訊息（例如「hi」）觸發 webhook 事件</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <strong>複製 groupId</strong>
+          <p>回到 webhook.site，在 JSON 內容裡找 <code>"groupId"</code>，複製 <code>C</code> 開頭的值，填入 GitHub Secret <code>LINE_GROUP_ID</code></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PowerShell 測試指令 -->
+  <section>
+    <h2>PowerShell 測試指令</h2>
+    <div class="code-block">
+      <pre><span class="comment"># 設定 Token（每次開新 PowerShell 視窗需重新設定）</span>
+<span class="var">$token</span> = <span class="str">"貼上 LINE_CHANNEL_ACCESS_TOKEN"</span>
+
+<span class="comment"># 測試傳送個人通知</span>
+<span class="var">$userId</span> = <span class="str">"貼上 LINE_USER_ID"</span>
+<span class="var">$body</span> = <span class="str">'{"to":"'</span> + <span class="var">$userId</span> + <span class="str">'","messages":[{"type":"text","text":"測試通知 📊"}]}'</span>
+Invoke-RestMethod -Method Post `
+  -Uri <span class="str">"https://api.line.me/v2/bot/message/push"</span> `
+  -Headers @{<span class="str">"Authorization"</span>=<span class="str">"Bearer $token"</span>; <span class="str">"Content-Type"</span>=<span class="str">"application/json"</span>} `
+  -Body ([System.Text.Encoding]::UTF8.GetBytes(<span class="var">$body</span>))
+
+<span class="comment"># 測試傳送群組通知</span>
+<span class="var">$groupId</span> = <span class="str">"貼上 LINE_GROUP_ID"</span>
+<span class="var">$body</span> = <span class="str">'{"to":"'</span> + <span class="var">$groupId</span> + <span class="str">'","messages":[{"type":"text","text":"測試通知 📊"}]}'</span>
+Invoke-RestMethod -Method Post `
+  -Uri <span class="str">"https://api.line.me/v2/bot/message/push"</span> `
+  -Headers @{<span class="str">"Authorization"</span>=<span class="str">"Bearer $token"</span>; <span class="str">"Content-Type"</span>=<span class="str">"application/json"</span>} `
+  -Body ([System.Text.Encoding]::UTF8.GetBytes(<span class="var">$body</span>))
+
+<span class="comment"># 確認 Bot 資訊（驗證 token 是否有效）</span>
+Invoke-RestMethod -Method Get `
+  -Uri <span class="str">"https://api.line.me/v2/bot/info"</span> `
+  -Headers @{<span class="str">"Authorization"</span>=<span class="str">"Bearer $token"</span>}</pre>
+    </div>
+    <div class="note">
+      <strong>注意：</strong>PowerShell 中不可使用 <code>curl</code>（是 Invoke-WebRequest 的別名），請一律使用 <code>Invoke-RestMethod</code>。
+    </div>
+  </section>
+
+</main>
+
+<footer>Investment Report 2026 — LINE Settings Record</footer>
+
+</body>
+</html>
