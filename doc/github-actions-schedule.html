@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Actions 排程延遲問題與解法 — Investment Report 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg0: #04040d; --bg1: #08081a; --bg2: #0e0e22; --bg3: #13132c;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.16);
+    --t1: #f0f2fc; --t2: #c8d0ec;
+    --green: #3ecf8e; --green2: rgba(62,207,142,.15);
+    --amber: #f5a623; --amber2: rgba(245,166,35,.14);
+    --blue: #5b9cf6; --blue2: rgba(91,156,246,.15);
+    --teal: #2dd4bf; --teal2: rgba(45,212,191,.15);
+    --red: #f26666; --red2: rgba(242,102,102,.15);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg0); color: var(--t1); font-family: var(--sans); font-size: 15px; line-height: 1.7; }
+
+  header {
+    padding: 40px 48px 28px;
+    border-bottom: 1px solid var(--border2);
+    background: var(--bg1);
+  }
+  .badge {
+    display: inline-block;
+    font-family: var(--mono); font-size: 9px; letter-spacing: .12em;
+    padding: 3px 10px; border-radius: 2px; margin-bottom: 14px;
+    border: 1px solid var(--amber); color: var(--amber); background: var(--amber2);
+  }
+  h1 { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { color: var(--t2); font-size: 14px; }
+
+  main { max-width: 860px; margin: 0 auto; padding: 48px 48px 80px; }
+
+  /* 問題警告卡片 */
+  .alert-card {
+    background: var(--red2); border: 1px solid var(--red);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+  .alert-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+  .alert-title { font-weight: 600; font-size: 16px; color: var(--red); margin-bottom: 6px; }
+  .alert-desc { color: var(--t2); font-size: 14px; line-height: 1.6; }
+
+  /* 解法推薦卡片 */
+  .recommend-card {
+    background: var(--green2); border: 1px solid var(--green);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .recommend-icon { font-size: 32px; flex-shrink: 0; }
+  .recommend-title { font-weight: 600; font-size: 16px; color: var(--green); margin-bottom: 4px; }
+  .recommend-desc { color: var(--t2); font-size: 14px; }
+
+  /* 區塊標題 */
+  h2 {
+    font-family: var(--mono); font-size: 13px; letter-spacing: .1em;
+    color: var(--amber); text-transform: uppercase;
+    margin-bottom: 16px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border2);
+  }
+  h2.green { color: var(--green); }
+  h2.blue  { color: var(--blue); }
+  section { margin-bottom: 44px; }
+
+  /* 步驟 */
+  .steps { display: flex; flex-direction: column; gap: 12px; }
+  .step {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 14px 18px;
+  }
+  .step-num {
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    background: var(--green2); color: var(--green);
+    border: 1px solid var(--green); border-radius: 3px;
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step-body { flex: 1; }
+  .step-body strong { color: var(--t1); font-weight: 600; }
+  .step-body p { color: var(--t2); font-size: 14px; margin-top: 3px; }
+  .step-body a { color: var(--blue); text-decoration: none; }
+  .step-body a:hover { text-decoration: underline; }
+
+  /* code block */
+  code {
+    font-family: var(--mono); font-size: 12px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 3px; padding: 1px 6px; color: var(--teal);
+  }
+  pre {
+    font-family: var(--mono); font-size: 12px; line-height: 1.65;
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: 6px; padding: 16px 20px; margin-top: 12px;
+    overflow-x: auto; color: var(--t2);
+  }
+  pre .key   { color: var(--blue); }
+  pre .val   { color: var(--green); }
+  pre .cmt   { color: #4a5070; font-style: italic; }
+
+  /* 比較表格 */
+  table {
+    width: 100%; border-collapse: collapse; margin-top: 12px;
+    font-size: 14px;
+  }
+  th {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--t2);
+    padding: 10px 14px; border-bottom: 1px solid var(--border2);
+    text-align: left;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--t2); }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: var(--t1); font-weight: 500; }
+  .tag-free  { color: var(--green); font-weight: 600; }
+  .tag-paid  { color: var(--amber); font-weight: 600; }
+  .tag-hard  { color: var(--red); }
+  .tag-easy  { color: var(--green); }
+  .tag-mid   { color: var(--amber); }
+
+  /* 資訊方塊 */
+  .info-box {
+    background: var(--blue2); border: 1px solid var(--blue);
+    border-radius: 6px; padding: 14px 18px; margin-top: 12px;
+    color: var(--t2); font-size: 14px;
+  }
+  .info-box strong { color: var(--blue); }
+
+  /* header field 說明 */
+  .field-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .field-row {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 10px 14px;
+  }
+  .field-name { font-family: var(--mono); font-size: 12px; color: var(--teal); flex-shrink: 0; min-width: 260px; }
+  .field-desc { font-size: 13px; color: var(--t2); }
+
+  @media (max-width: 640px) {
+    header { padding: 28px 20px 20px; }
+    main   { padding: 32px 20px 60px; }
+    .field-row { flex-direction: column; }
+    .field-name { min-width: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">TROUBLESHOOTING</div>
+  <h1>GitHub Actions 排程延遲問題與解法</h1>
+  <p class="subtitle">說明為何自動排程不準時，以及如何透過外部 cron 服務確保準點發布</p>
+</header>
+
+<main>
+
+  <!-- 問題說明 -->
+  <section>
+    <h2>問題說明</h2>
+    <div class="alert-card">
+      <div class="alert-icon">⚠️</div>
+      <div>
+        <div class="alert-title">GitHub Actions 排程不保證準點觸發</div>
+        <div class="alert-desc">
+          GitHub Actions 的 <code>schedule</code>（cron）觸發器使用共用排程器。在高峰時段，排程器可能排隊積壓，
+          導致實際執行時間比設定時間延遲數分鐘至數小時，甚至在少數情況下完全跳過當次執行。
+          這是 GitHub 的平台限制，無法從 workflow 設定內部解決。
+        </div>
+      </div>
+    </div>
+
+    <p style="color:var(--t2); font-size:14px; margin-bottom:14px;">常見症狀：</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="background:var(--red2);color:var(--red);border-color:var(--red);">!</div>
+        <div class="step-body">
+          <strong>排程延遲 1–3 小時</strong>
+          <p>設定 08:00 執行，實際卻在 10:00 甚至 11:00 才觸發，Actions 頁面顯示「Scheduled」但時間偏移。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:var(--red2);color:var(--red);border-color:var(--red);">!</div>
+        <div class="step-body">
+          <strong>當天完全未執行</strong>
+          <p>Actions 頁面沒有當天的排程紀錄，排程器在高峰時直接跳過該次執行。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:var(--red2);color:var(--red);border-color:var(--red);">!</div>
+        <div class="step-body">
+          <strong>repo 閒置 60 天後自動停用</strong>
+          <p>GitHub 會停用超過 60 天沒有 push 活動的 repo 的排程 workflow，需手動至 Actions 頁面重新啟用。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 根本解法 -->
+  <section>
+    <h2 class="green">根本解法：外部 cron 服務觸發</h2>
+    <div class="recommend-card">
+      <div class="recommend-icon">🎯</div>
+      <div>
+        <div class="recommend-title">改用外部服務呼叫 GitHub API</div>
+        <div class="recommend-desc">
+          捨棄 GitHub 自己的排程器，改由可靠的外部 cron 服務在指定時間呼叫 GitHub API，
+          觸發 <code>workflow_dispatch</code> 事件。外部服務負責計時，GitHub 收到請求後立即執行，準時率接近 100%。
+        </div>
+      </div>
+    </div>
+
+    <p style="color:var(--t2);font-size:14px;margin-bottom:20px;">
+      推薦使用 <strong style="color:var(--t1);">cron-job.org</strong>（完全免費，無需信用卡），設定步驟如下：
+    </p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>建立 GitHub Personal Access Token（PAT）</strong>
+          <p>前往 GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)，
+          點 <strong>Generate new token</strong>，勾選 <code>workflow</code> 權限，複製產生的 token。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>註冊 cron-job.org 免費帳號</strong>
+          <p>前往 <a href="https://cron-job.org" target="_blank">cron-job.org</a> 完成免費註冊，無需信用卡。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>建立新的 Cronjob</strong>
+          <p>點 <strong>Create cronjob</strong>，依下表填入設定：</p>
+          <div class="field-list">
+            <div class="field-row">
+              <span class="field-name">URL</span>
+              <span class="field-desc"><code>https://api.github.com/repos/jason-hey/investment-report-2026/actions/workflows/daily-update.yml/dispatches</code></span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">Request method</span>
+              <span class="field-desc"><code>POST</code></span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">Header: Authorization</span>
+              <span class="field-desc"><code>Bearer &lt;你的 GitHub PAT&gt;</code></span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">Header: Accept</span>
+              <span class="field-desc"><code>application/vnd.github+json</code></span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">Header: Content-Type</span>
+              <span class="field-desc"><code>application/json</code></span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">Request body</span>
+              <span class="field-desc"><code>{"ref":"main"}</code></span>
+            </div>
+            <div class="field-row">
+              <span class="field-name">Schedule（時區選 Asia/Taipei）</span>
+              <span class="field-desc">每週二、三、四、五、六 — 08:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>移除或保留 GitHub 原本的 schedule</strong>
+          <p>可以從 <code>daily-update.yml</code> 中刪除 <code>schedule</code> 區塊，只保留 <code>workflow_dispatch</code>，
+          避免兩者重複觸發。或保留作為備援（重複觸發也只會多一次執行）。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <strong>驗證設定</strong>
+          <p>在 cron-job.org 手動執行一次，確認 GitHub Actions 頁面出現新的 <code>workflow_dispatch</code> 執行紀錄，
+          且狀態為成功。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box" style="margin-top:20px;">
+      <strong>注意：</strong> GitHub PAT 是敏感資訊，請勿將其寫入 repo 或公開分享。
+      cron-job.org 的 header 欄位是加密儲存的，安全性足夠。
+    </div>
+  </section>
+
+  <!-- 方案比較 -->
+  <section>
+    <h2 class="blue">其他方案比較</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>方案</th>
+          <th>費用</th>
+          <th>設定難度</th>
+          <th>備註</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>cron-job.org</td>
+          <td class="tag-free">免費</td>
+          <td class="tag-easy">低</td>
+          <td>推薦首選，介面直覺，無需信用卡</td>
+        </tr>
+        <tr>
+          <td>EasyCron</td>
+          <td class="tag-free">免費（限制較多）</td>
+          <td class="tag-easy">低</td>
+          <td>免費方案每天最多執行次數有限制</td>
+        </tr>
+        <tr>
+          <td>AWS EventBridge + Lambda</td>
+          <td class="tag-free">幾乎免費</td>
+          <td class="tag-mid">中</td>
+          <td>需要 AWS 帳號，設定較複雜但穩定</td>
+        </tr>
+        <tr>
+          <td>Google Cloud Scheduler</td>
+          <td class="tag-free">免費額度內免費</td>
+          <td class="tag-mid">中</td>
+          <td>需要 GCP 帳號，穩定性高</td>
+        </tr>
+        <tr>
+          <td>自有 VPS 的 crontab</td>
+          <td class="tag-paid">需主機費用</td>
+          <td class="tag-easy">低</td>
+          <td>最靈活，但需自行維護伺服器</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 目前 workflow 設定 -->
+  <section>
+    <h2>目前 Workflow 排程設定</h2>
+    <p style="color:var(--t2);font-size:14px;margin-bottom:12px;">
+      <code>.github/workflows/daily-update.yml</code> 目前的 cron 設定：
+    </p>
+    <pre><span class="key">on:</span>
+  <span class="key">schedule:</span>
+    <span class="cmt"># 台灣時間 08:00 = UTC 00:00（週二至週五、週六）</span>
+    - <span class="key">cron:</span> <span class="val">'0 0 * * 2-6'</span>
+  <span class="key">workflow_dispatch:</span>  <span class="cmt"># 支援手動觸發</span>
+    <span class="key">inputs:</span>
+      <span class="key">date_override:</span>
+        <span class="key">description:</span> <span class="val">'指定日期 YYYY-MM-DD（留空=今天）'</span>
+        <span class="key">required:</span> <span class="val">false</span></pre>
+    <div class="info-box" style="margin-top:12px;">
+      <strong>cron 語法說明：</strong> <code>0 0 * * 2-6</code> — 每週二（2）至週六（6）的 UTC 00:00（= 台灣時間 08:00）執行。
+      數字 0=週日、1=週一、2=週二、…、6=週六。
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

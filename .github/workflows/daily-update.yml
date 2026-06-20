@@ -2,8 +2,8 @@ name: Daily Investment Report
 
 on:
   schedule:
-    # 台灣時間每天 08:00 = UTC 00:00（週一至週五）
-    - cron: '0 0 * * 1-5'
+    # 台灣時間每天 08:00 = UTC 00:00（週二至週五、週六）
+    - cron: '0 0 * * 2-6'
   workflow_dispatch:
     inputs:
       date_override:
@@ -29,7 +29,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install "anthropic>=0.45.0" requests
+        run: pip install "anthropic>=0.45.0" requests yfinance exchange-calendars
 
       - name: Generate report
         env:
