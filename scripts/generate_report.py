@@ -165,6 +165,45 @@ def fetch_all_pe_data():
                 print(f"  P/E {name}: {len(data_3y)} 個月資料")
     return result
 
+
+# ── 恐懼指數：VIX（美股）與 VXTW（台股）近 6 個月日資料 ──────────────────────
+
+FEAR_INDEX_TICKERS = {
+    "us": ("^VIX",  "美股 VIX 恐懼指數"),
+    "tw": ("^VXTW", "台股 VXTW 恐懼指數"),
+}
+
+
+def fetch_fear_index_history(symbol, display_name, period="6mo"):
+    """抓取近 period 的每日收盤值，回傳 [{"date":"2026-01-02","value":18.5}, ...]"""
+    try:
+        import yfinance as yf
+        hist = yf.Ticker(symbol).history(period=period, interval="1d")
+        if hist.empty:
+            return []
+        results = [
+            {"date": dt.strftime("%Y-%m-%d"), "value": round(row["Close"], 2)}
+            for dt, row in hist.iterrows()
+        ]
+        print(f"  恐懼指數 {display_name}: {len(results)} 天資料")
+        return results
+    except Exception as e:
+        print(f"  ⚠️ {display_name} 抓取失敗: {e}")
+        return []
+
+
+def fetch_all_fear_index():
+    """回傳台股與美股恐懼指數歷史，格式供 JSON 注入。"""
+    result = {}
+    for key, (symbol, name) in FEAR_INDEX_TICKERS.items():
+        result[key] = {
+            "symbol": symbol,
+            "name":   name,
+            "history": fetch_fear_index_history(symbol, name),
+        }
+    return result
+
+
 TZ_TW = timezone(timedelta(hours=8))
 today = datetime.now(TZ_TW)
 
@@ -193,6 +232,11 @@ import json as _json
 pe_data = fetch_all_pe_data()
 pe_json = _json.dumps(pe_data, ensure_ascii=False)
 
+print("  正在用 yfinance 抓取恐懼指數（近 6 個月）...")
+fear_data = fetch_all_fear_index()
+fear_json = _json.dumps(fear_data, ensure_ascii=False)
+tw_fear_available = bool(fear_data.get("tw", {}).get("history"))
+
 PROMPT = f"""
 今天是 {date_label}（{weekday_cn}），台灣台中。
 請為我生成一份完整的「每日投資情報 HTML 網頁」。
@@ -209,6 +253,11 @@ PROMPT = f"""
 
 欄位說明：data_3y = 近 3 年月資料；data_1y = 近 1 年月資料。pe 值為基於當前 trailing EPS 的歷史估算。
 
+## 【已預先抓取】恐懼指數近 6 個月日資料（直接用於圖表，勿再搜尋美股 VIX）
+{fear_json}
+
+欄位說明：history = 每日 [{{"date":"YYYY-MM-DD","value":數值}}] 陣列。tw.history 若為空陣列，請改用搜尋任務補充。
+
 ## 必須完成的搜尋任務（依序執行，至少 8 次搜尋）
 1. 今日/昨日美股收盤：S&P 500、Nasdaq、Dow 漲跌幅與主要個股
 2. 台股今日行情：加權指數、台積電（2330）、鴻海（2317）、聯發科（2454）
@@ -218,7 +267,8 @@ PROMPT = f"""
 6. 總體經濟：Fed 動態、美債殖利率、PCE/CPI 最新數據、CME FedWatch 降息機率
 7. SpaceX SPCX 等重大 IPO 進度
 8. 台指期夜盤最新走勢：當日夜盤開盤價、最新價、漲跌點數、成交量、與日盤收盤的差距
-9. AI 基礎建設驗證指標（三項，每項均需搜尋最新數據）：
+9. {'（台股 VXTW 已由 API 提供，跳過此項）' if tw_fear_available else '台股恐懼指數（VXTW）近 6 個月趨勢數據：請搜尋 TAIFEX 或相關來源，取得每月或每週指數值'}
+10. AI 基礎建設驗證指標（三項，每項均需搜尋最新數據）：
    - CSP capex 同比變化：Microsoft/Amazon/Google/Meta 最新季度雲端資本支出金額與 YoY 成長率
    - AI 伺服器出貨量月度趨勢：最新月份全球 AI 伺服器出貨量或出貨量預估（來源：TrendForce / IDC）
    - HBM 合約價與現貨價利差：最新 HBM3e 或 HBM3 合約價、現貨價，及兩者利差（來源：DRAMeXchange / TrendForce）
@@ -242,6 +292,12 @@ PROMPT = f"""
   - 每格底部標明資料來源與日期
 - KPI 指標看板（4 格）
 - 視覺圖表區（Chart.js 4.4.1 + datalabels 2.2.0）
+- 恐懼指數近 6 個月趨勢圖區塊（使用上方 fear_data JSON）：
+  - 左右並排兩張 Chart.js 折線圖：左「台股恐懼指數（VXTW）」、右「美股恐懼指數（VIX）」
+  - X 軸：近 6 個月日期；Y 軸：指數值
+  - 加入水平參考線：VIX 20（警戒）、VIX 30（恐慌），標示顏色
+  - 線條顏色：數值高於 25 時轉紅，低於 15 時轉綠，中間為琥珀色
+  - 若某市場資料為空陣列，顯示「資料暫無，請參考最新搜尋結果」提示
 - 台指期夜盤動態區塊：
   - 顯示夜盤最新報價、漲跌點數與百分比、成交量
   - 與日盤收盤差距（用顏色標示漲跌：漲綠跌紅）
