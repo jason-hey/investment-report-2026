@@ -268,7 +268,11 @@ PROMPT = f"""
 7. SpaceX SPCX 等重大 IPO 進度
 8. 台指期夜盤最新走勢：當日夜盤開盤價、最新價、漲跌點數、成交量、與日盤收盤的差距
 9. {'（台股 VXTW 已由 API 提供，跳過此項）' if tw_fear_available else '台股恐懼指數（VXTW）近 6 個月趨勢數據：請搜尋 TAIFEX 或相關來源，取得每月或每週指數值'}
-10. AI 基礎建設驗證指標（三項，每項均需搜尋最新數據）：
+10. LLY Foundayo 週處方量（TRx）趨勢：
+    - 搜尋最近 8–12 週的 Foundayo 週處方量數據（來源：IQVIA、Symphony Health、投行研報、財經新聞）
+    - 取得每週 TRx 絕對數量與週增長率（WoW%）
+    - 若找不到 Foundayo 專項數據，以 LLY GLP-1 組合（Mounjaro + Zepbound）週處方量趨勢替代
+11. AI 基礎建設驗證指標（三項，每項均需搜尋最新數據）：
    - CSP capex 同比變化：Microsoft/Amazon/Google/Meta 最新季度雲端資本支出金額與 YoY 成長率
    - AI 伺服器出貨量月度趨勢：最新月份全球 AI 伺服器出貨量或出貨量預估（來源：TrendForce / IDC）
    - HBM 合約價與現貨價利差：最新 HBM3e 或 HBM3 合約價、現貨價，及兩者利差（來源：DRAMeXchange / TrendForce）
@@ -292,6 +296,12 @@ PROMPT = f"""
   - 每格底部標明資料來源與日期
 - KPI 指標看板（4 格）
 - 視覺圖表區（Chart.js 4.4.1 + datalabels 2.2.0）
+- LLY Foundayo 週處方量區塊（使用搜尋任務 10 的數據）：
+  - 上方：Chart.js 折線圖，X 軸為週別（如 W1/W2...），Y 軸為 TRx 數量（千份）
+  - 下方：長條圖或標注，顯示每週 WoW 增長率（%），正增長綠色、負增長紅色
+  - 右上角顯示最新一週 TRx 數值與 WoW%（大字突出）
+  - 若資料來源為 Mounjaro + Zepbound 合計，請標明「GLP-1 合計」
+  - 標明資料來源（IQVIA / Symphony Health / 投行）與資料截止日期
 - 恐懼指數近 6 個月趨勢圖區塊（使用上方 fear_data JSON）：
   - 左右並排兩張 Chart.js 折線圖：左「台股恐懼指數（VXTW）」、右「美股恐懼指數（VIX）」
   - X 軸：近 6 個月日期；Y 軸：指數值
