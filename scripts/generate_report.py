@@ -268,10 +268,11 @@ PROMPT = f"""
 7. SpaceX SPCX 等重大 IPO 進度
 8. 台指期夜盤最新走勢：當日夜盤開盤價、最新價、漲跌點數、成交量、與日盤收盤的差距
 9. {'（台股 VXTW 已由 API 提供，跳過此項）' if tw_fear_available else '台股恐懼指數（VXTW）近 6 個月趨勢數據：請搜尋 TAIFEX 或相關來源，取得每月或每週指數值'}
-10. LLY Foundayo 週處方量（TRx）趨勢：
-    - 搜尋最近 8–12 週的 Foundayo 週處方量數據（來源：IQVIA、Symphony Health、投行研報、財經新聞）
+10. LLY Foundayo（orforglipron）週處方量（TRx）趨勢：
+    - Foundayo 是 Eli Lilly orforglipron 的商品名，為口服 GLP-1 小分子藥物，與 Mounjaro/Zepbound（tirzepatide 注射劑）是完全不同的產品線，絕對不可混用或替代
+    - 搜尋最近 8–12 週的 Foundayo / orforglipron 週處方量數據（來源：IQVIA、Symphony Health、投行研報、財經新聞）
     - 取得每週 TRx 絕對數量與週增長率（WoW%）
-    - 若找不到 Foundayo 專項數據，以 LLY GLP-1 組合（Mounjaro + Zepbound）週處方量趨勢替代
+    - 若暫無處方量數據（如仍在商業化初期），搜尋 orforglipron 上市進度、處方量放量速度分析師預估或醫療通路鋪貨狀況，並在圖表區說明目前所處商業化階段
 11. AI 基礎建設驗證指標（三項，每項均需搜尋最新數據）：
    - CSP capex 同比變化：Microsoft/Amazon/Google/Meta 最新季度雲端資本支出金額與 YoY 成長率
    - AI 伺服器出貨量月度趨勢：最新月份全球 AI 伺服器出貨量或出貨量預估（來源：TrendForce / IDC）
@@ -300,7 +301,8 @@ PROMPT = f"""
   - 上方：Chart.js 折線圖，X 軸為週別（如 W1/W2...），Y 軸為 TRx 數量（千份）
   - 下方：長條圖或標注，顯示每週 WoW 增長率（%），正增長綠色、負增長紅色
   - 右上角顯示最新一週 TRx 數值與 WoW%（大字突出）
-  - 若資料來源為 Mounjaro + Zepbound 合計，請標明「GLP-1 合計」
+  - 【重要】Foundayo = orforglipron（口服小分子 GLP-1），與 Mounjaro/Zepbound（tirzepatide 注射劑）是獨立產品線，圖表內容嚴禁混用
+  - 若 TRx 數據尚不可得（商業化初期），改以文字卡片說明：當前商業化階段、分析師 TRx 放量預估、鋪貨進度
   - 標明資料來源（IQVIA / Symphony Health / 投行）與資料截止日期
 - 恐懼指數近 6 個月趨勢圖區塊（使用上方 fear_data JSON）：
   - 左右並排兩張 Chart.js 折線圖：左「台股恐懼指數（VXTW）」、右「美股恐懼指數（VIX）」
