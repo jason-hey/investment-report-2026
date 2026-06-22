@@ -214,6 +214,11 @@ date_str   = today.strftime("%Y-%m-%d")
 date_label = today.strftime("%Y.%m.%d")
 weekday_cn = ["週一","週二","週三","週四","週五","週六","週日"][today.weekday()]
 
+print(f"[{date_str}] 檢查今日是否已發布...")
+if os.path.exists(f"Backup/{date_str}.html"):
+    print(f"  今日報告已存在（Backup/{date_str}.html），跳過本次生成（一天只發布一次）。")
+    exit(0)
+
 print(f"[{date_str}] 檢查美股假日...")
 if is_prev_us_day_holiday(today):
     prev = today - timedelta(days=1)
