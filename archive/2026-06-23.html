@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日投資情報 | 2026.06.19 週五</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+  :root {
+    --bg: #04040d;
+    --bg2: #080818;
+    --bg3: #0d0d24;
+    --card: #0c0c1e;
+    --card2: #10102a;
+    --border: #1a1a3a;
+    --border2: #222248;
+    --text-primary: #f0f2fc;
+    --text-secondary: #c8d0ec;
+    --accent-blue: #4d7cff;
+    --accent-green: #00d97e;
+    --accent-red: #ff4560;
+    --accent-yellow: #ffd166;
+    --accent-purple: #a855f7;
+    --accent-cyan: #00b8d9;
+    --accent-orange: #ff8c42;
+    --glow-blue: rgba(77,124,255,0.15);
+    --glow-green: rgba(0,217,126,0.12);
+    --glow-red: rgba(255,69,96,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  /* ====== TICKER MARQUEE ====== */
+  .ticker-wrap {
+    background: #070712;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    padding: 6px 0;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+  }
+  .ticker-track {
+    display: flex;
+    width: max-content;
+    animation: ticker 60s linear infinite;
+  }
+  .ticker-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 28px;
+    white-space: nowrap;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+  .ticker-name { color: var(--text-secondary); }
+  .ticker-price { color: var(--text-primary); font-weight: 600; }
+  .ticker-up { color: var(--accent-green); }
+  .ticker-down { color: var(--accent-red); }
+  .ticker-sep { color: #2a2a50; margin: 0 4px; }
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ====== MAIN LAYOUT ====== */
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+
+  /* ====== HEADER ====== */
+  .header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #06061a 0%, var(--bg) 100%);
+  }
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .badge-live { background: rgba(255,69,96,0.18); color: #ff6b7a; border: 1px solid rgba(255,69,96,0.4); }
+  .badge-weekly { background: rgba(77,124,255,0.15); color: #7da5ff; border: 1px solid rgba(77,124,255,0.35); }
+  .badge-holiday { background: rgba(255,209,102,0.13); color: #ffd166; border: 1px solid rgba(255,209,102,0.35); }
+
+  .header-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .header-subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-top: 6px;
+  }
+
+  .key-pills { display: flex; gap: 10px; flex-wrap: wrap; }
+  .pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pill-green { background: rgba(0,217,126,0.1); border: 1px solid rgba(0,217,126,0.3); color: #00d97e; }
+  .pill-red { background: rgba(255,69,96,0.1); border: 1px solid rgba(255,69,96,0.3); color: #ff4560; }
+  .pill-yellow { background: rgba(255,209,102,0.1); border: 1px solid rgba(255,209,102,0.3); color: #ffd166; }
+  .pill-blue { background: rgba(77,124,255,0.1); border: 1px solid rgba(77,124,255,0.3); color: #7da5ff; }
+  .pill-purple { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); color: #c084fc; }
+
+  /* ====== HERO BANNER ====== */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .hero-card {
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border2);
+  }
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .hero-card-1 { background: linear-gradient(135deg, #08083a 0%, #0c0c1e 100%); }
+  .hero-card-1::before { background: linear-gradient(90deg, #4d7cff, #a855f7); }
+  .hero-card-2 { background: linear-gradient(135deg, #0a1a10 0%, #0c0c1e 100%); }
+  .hero-card-2::before { background: linear-gradient(90deg, #00d97e, #00b8d9); }
+
+  .hero-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hero-tag-blue { color: #7da5ff; }
+  .hero-tag-green { color: #00d97e; }
+
+  .hero-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .hero-body { color: var(--text-secondary); font-size: 13px; line-height: 1.7; }
+
+  .hero-metric {
+    margin-top: 20px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .hero-metric-item { }
+  .hero-metric-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 3px;
+  }
+  .hero-metric-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .hero-metric-chg {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ====== SECTION TITLE ====== */
+  .section-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ====== WARNING MODULE ====== */
+  .warn-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .warn-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .warn-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  .warn-indicator {
+    width: 100%;
+    height: 3px;
+    border-radius: 2px;
+    margin-bottom: 14px;
+  }
+  .ind-green { background: var(--accent-green); box-shadow: 0 0 10px rgba(0,217,126,0.5); }
+  .ind-yellow { background: var(--accent-yellow); box-shadow: 0 0 10px rgba(255,209,102,0.5); }
+  .ind-red { background: var(--accent-red); box-shadow: 0 0 10px rgba(255,69,96,0.5); }
+  .ind-blue { background: var(--accent-blue); box-shadow: 0 0 10px rgba(77,124,255,0.5); }
+  .ind-orange { background: var(--accent-orange); box-shadow: 0 0 10px rgba(255,140,66,0.5); }
+
+  .warn-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .warn-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .warn-status {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  .status-safe { background: rgba(0,217,126,0.1); color: #00d97e; }
+  .status-warn { background: rgba(255,209,102,0.1); color: #ffd166; }
+  .status-danger { background: rgba(255,69,96,0.1); color: #ff4560; }
+  .warn-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* ====== DATA VALIDATION ====== */
+  .validation-bar {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .val-item {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-secondary);
+  }
+  .val-ok { color: #00d97e; }
+  .val-est { color: #ffd166; }
+  .val-label { font-weight: 600; color: var(--text-primary); }
+
+  /* ====== KPI BOARD ====== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .kpi-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.5); }
+  .kpi-icon {
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+  .kpi-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+  .kpi-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .kpi-sub { font-size: 12px; color: var(--text-secondary); }
+  .kpi-tag {
+    position: absolute;
+    top: 14px; right: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .tag-up { background: rgba(0,217,126,0.12); color: #00d97e; }
+  .tag-down { background: rgba(255,69,96,0.12); color: #ff4560; }
+  .tag-neutral { background: rgba(77,124,255,0.12); color: #7da5ff; }
+  .tag-warn { background: rgba(255,209,102,0.12); color: #ffd166; }
+
+  /* ====== CHARTS ====== */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .chart-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .chart-subtitle { font-size: 11px; color: var(--text-secondary); margin-bottom: 16px; }
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* ====== EARNINGS TABLE ====== */
+  .earnings-section { margin-bottom: 24px; }
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 5px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: rgba(77,124,255,0.15);
+    border-color: rgba(77,124,255,0.4);
+    color: #7da5ff;
+  }
+  .earnings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .earnings-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .earnings-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(26,26,58,0.5);
+    color: var(--text-primary);
+    vertical-align: middle;
+  }
+  .earnings-table tr:hover td { background: rgba(77,124,255,0.04); }
+  .star { color: #ffd166; font-size: 13px; }
+  .ticker-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 5px;
+    background: rgba(77,124,255,0.12);
+    color: #7da5ff;
+  }
+  .ticker-badge-tw {
+    background: rgba(0,217,126,0.1);
+    color: #00d97e;
+  }
+  .est-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(168,85,247,0.1);
+    color: #c084fc;
+  }
+  .earnings-row.hidden { display: none; }
+
+  /* ====== NEWS CENTER ====== */
+  .news-section { margin-bottom: 24px; }
+  .news-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    background: var(--card);
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    width: fit-content;
+  }
+  .news-tab {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .news-tab.active {
+    background: rgba(77,124,255,0.2);
+    color: var(--text-primary);
+  }
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .news-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .news-card:hover {
+    border-color: rgba(77,124,255,0.35);
+    box-shadow: 0 4px 20px rgba(77,124,255,0.08);
+  }
+  .news-cat {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .nc-blue { color: #7da5ff; }
+  .nc-green { color: #00d97e; }
+  .nc-red { color: #ff4560; }
+  .nc-purple { color: #c084fc; }
+  .news-headline {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    line-height: 1.45;
+  }
+  .news-body { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+  .news-panel { display: none; }
+  .news-panel.active { display: block; }
+
+  /* ====== RISK MATRIX ====== */
+  .risk-section { margin-bottom: 24px; }
+  .risk-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .risk-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    padding: 8px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .risk-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(26,26,58,0.5);
+    color: var(--text-primary);
+    vertical-align: top;
+  }
+  .risk-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .risk-level {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  .risk-high { background: rgba(255,69,96,0.15); color: #ff4560; }
+  .risk-med { background: rgba(255,209,102,0.15); color: #ffd166; }
+  .risk-low { background: rgba(0,217,126,0.15); color: #00d97e; }
+  .risk-name { font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+  .risk-sub { font-size: 11px; color: var(--text-secondary); }
+
+  /* ====== OPPORTUNITY CARDS ====== */
+  .opp-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .opp-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .opp-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+  .opp-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .oc1::after { background: linear-gradient(90deg, #4d7cff, #a855f7); }
+  .oc2::after { background: linear-gradient(90deg, #00d97e, #00b8d9); }
+  .oc3::after { background: linear-gradient(90deg, #ffd166, #ff8c42); }
+  .oc4::after { background: linear-gradient(90deg, #a855f7, #ec4899); }
+  .oc5::after { background: linear-gradient(90deg, #00b8d9, #4d7cff); }
+  .opp-emoji { font-size: 26px; margin-bottom: 12px; }
+  .opp-theme {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .opp-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .opp-tickers { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .opp-ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(77,124,255,0.1);
+    color: #a0b4ff;
+  }
+  .opp-body { font-size: 11px; color: var(--text-secondary); line-height: 1.6; }
+  .opp-signal {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .sig-bull { color: #00d97e; }
+  .sig-watch { color: #ffd166; }
+  .sig-neutral { color: #7da5ff; }
+
+  /* ====== GURU STRATEGY ====== */
+  .guru-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .guru-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .guru-avatar { font-size: 32px; margin-bottom: 12px; }
+  .guru-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .guru-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+  }
+  .guru-quote {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    border-left: 3px solid var(--border2);
+    padding-left: 12px;
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+  .guru-actions { display: flex; flex-direction: column; gap: 6px; }
+  .guru-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .ga-buy { color: #00d97e; font-weight: 700; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  .ga-hold { color: #ffd166; font-weight: 700; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  .ga-watch { color: #7da5ff; font-weight: 700; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+
+  /* ====== FOOTER ====== */
+  .footer {
+    background: #050510;
+    border-top: 1px solid var(--border);
+    padding: 24px 0 16px;
+    margin-top: 32px;
+  }
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .footer-sources {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+  }
+  .footer-disclaimer {
+    font-size: 11px;
+    color: var(--text-secondary);
+    max-width: 480px;
+    line-height: 1.6;
+  }
+  .footer-copy {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ====== UTILITIES ====== */
+  .up { color: var(--accent-green); }
+  .dn { color: var(--accent-red); }
+  .neutral { color: var(--text-secondary); }
+  .section-wrap { margin-bottom: 24px; }
+  .flex-row { display: flex; gap: 16px; }
+  
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 1100px) {
+    .warn-grid { grid-template-columns: repeat(3, 1fr); }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .opp-grid { grid-template-columns: repeat(3, 1fr); }
+    .hero { grid-template-columns: 1fr; }
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    .warn-grid { grid-template-columns: repeat(2, 1fr); }
+    .guru-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .opp-grid { grid-template-columns: repeat(2, 1fr); }
+    .news-grid { grid-template-columns: 1fr; }
+    .header-title { font-size: 22px; }
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #2a2a50; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ====== TICKER MARQUEE ====== -->
+<div class="ticker-wrap">
+  <div class="ticker-track" id="tickerTrack">
+    <!-- Items duplicated for seamless loop -->
+    <div class="ticker-item"><span class="ticker-name">S&P 500</span><span class="ticker-price">26,517</span><span class="ticker-up">▲+1.08%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">NASDAQ</span><span class="ticker-price">7,500</span><span class="ticker-up">▲+1.91%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">DOW</span><span class="ticker-price">51,564</span><span class="ticker-up">▲+0.14%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">TWII 台股</span><span class="ticker-price">46,465</span><span class="ticker-up">▲+1.28%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">2330 台積電</span><span class="ticker-price">NT$2,410</span><span class="ticker-up">▲+1.05%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">2317 鴻海</span><span class="ticker-price">NT$268.5</span><span class="ticker-down">▼-1.29%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">2454 聯發科</span><span class="ticker-price">NT$4,390</span><span class="ticker-up">▲+1.57%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">NVDA</span><span class="ticker-price">~$173</span><span class="ticker-up">▲+2.1%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">AVGO</span><span class="ticker-price">~$285</span><span class="ticker-up">▲+3.22%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">SPCX SpaceX</span><span class="ticker-price">$174.90</span><span class="ticker-down">▼-1.89%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">WTI 原油</span><span class="ticker-price">~$74.41</span><span class="ticker-down">▼-2.10%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">黃金 Gold</span><span class="ticker-price">$4,271</span><span class="ticker-down">▼-2.51%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">10Y 美債</span><span class="ticker-price">4.453%</span><span class="ticker-down">▼-1bps</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">VIX</span><span class="ticker-price">17.18</span><span class="ticker-down">▼-6.84%</span></div>
+    <span class="ticker-sep">|</span>
+    <!-- Duplicate -->
+    <div class="ticker-item"><span class="ticker-name">S&P 500</span><span class="ticker-price">26,517</span><span class="ticker-up">▲+1.08%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">NASDAQ</span><span class="ticker-price">7,500</span><span class="ticker-up">▲+1.91%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">DOW</span><span class="ticker-price">51,564</span><span class="ticker-up">▲+0.14%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">TWII 台股</span><span class="ticker-price">46,465</span><span class="ticker-up">▲+1.28%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">2330 台積電</span><span class="ticker-price">NT$2,410</span><span class="ticker-up">▲+1.05%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">2317 鴻海</span><span class="ticker-price">NT$268.5</span><span class="ticker-down">▼-1.29%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">2454 聯發科</span><span class="ticker-price">NT$4,390</span><span class="ticker-up">▲+1.57%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">SPCX SpaceX</span><span class="ticker-price">$174.90</span><span class="ticker-down">▼-1.89%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">WTI 原油</span><span class="ticker-price">~$74.41</span><span class="ticker-down">▼-2.10%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">黃金 Gold</span><span class="ticker-price">$4,271</span><span class="ticker-down">▼-2.51%</span></div>
+    <span class="ticker-sep">|</span>
+    <div class="ticker-item"><span class="ticker-name">10Y 美債</span><span class="ticker-price">4.453%</span><span class="ticker-down">▼-1bps</span></div>
+  </div>
+</div>
+
+<!-- ====== HEADER ====== -->
+<div class="header">
+  <div class="container">
+    <div class="header-top">
+      <div>
+        <div class="badges">
+          <span class="badge badge-live">● LIVE</span>
+          <span class="badge badge-weekly">週五收盤</span>
+          <span class="badge badge-holiday">🇺🇸 美市 Juneteenth 假日</span>
+        </div>
+        <div class="header-title">每日投資情報</div>
+        <div class="header-subtitle mono">2026.06.19 FRI ／ 台灣台中 ／ 個人持倉追蹤版</div>
+      </div>
+      <div class="key-pills">
+        <span class="pill pill-green">🚀 美股強彈 NASDAQ +1.91%</span>
+        <span class="pill pill-red">⚠️ Fed 鷹派 利率維持 3.50-3.75%</span>
+        <span class="pill pill-yellow">🛢️ 美伊 MOU 油價急跌</span>
+        <span class="pill pill-blue">🛸 SPCX IPO 後首週震盪</span>
+        <span class="pill pill-purple">🇹🇼 台股 46,465 收+1.28%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MAIN CONTENT ====== -->
+<div class="container" style="padding-top: 24px; padding-bottom: 24px;">
+
+  <!-- ====== HERO BANNER ====== -->
+  <div class="hero">
+    <div class="hero-card hero-card-1">
+      <div class="hero-tag hero-tag-blue">🦅 FOMC ALERT — 最重要事件</div>
+      <div class="hero-title">Fed 鷹派驚喜：Warsh 首會議暗示升息，市場重新定價利率路徑</div>
+      <div class="hero-body">
+        新任Fed主席 Kevin Warsh 首次 FOMC 會議（6/17–18）結果出爐：聯邦基金利率維持 3.50–3.75% 不變，但聲明刪除「偏向未來降息」措辭，點陣圖顯示 2026 年可能升息一碼。Warsh 本人棄權不提交利率預測，引發市場困惑。市場一度定價 90% 機率10月前升息，週四股市大跌，週五（6/18 因 Juneteenth 美市休市，6/19 台灣可交易）強勁反彈。
+      </div>
+      <div class="hero-metric">
+        <div class="hero-metric-item">
+          <div class="hero-metric-label">聯邦基金利率</div>
+          <div class="hero-metric-val" style="color: var(--accent-yellow);">3.50–3.75%</div>
+          <div class="hero-metric-chg neutral">維持不變</div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-label">10Y 美債殖利率</div>
+          <div class="hero-metric-val">4.45%</div>
+          <div class="hero-metric-chg dn">▼ -1bps</div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-label">2Y 美債殖利率</div>
+          <div class="hero-metric-val">4.18%</div>
+          <div class="hero-metric-chg dn">峰值跳升 +16bps</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-card hero-card-2">
+      <div class="hero-tag hero-tag-green">🕊️ 地緣政治突破 — 市場轉折</div>
+      <div class="hero-title">美伊在法國簽署 MOU，霍爾木茲海峽封鎖正式解除</div>
+      <div class="hero-body">
+        6月18日，美國與伊朗在法國簽署意向書（MOU），宣布終止武裝衝突、重開霍爾木茲海峽。能源股全線重挫，但科技股因供應鏈壓力緩解而大幅反彈，帶動 NASDAQ 大漲近 2%。油價在協議達成後持續下行，全球通膨壓力明顯改善，但 Fed 短期內仍觀望。
+      </div>
+      <div class="hero-metric">
+        <div class="hero-metric-item">
+          <div class="hero-metric-label">WTI 原油</div>
+          <div class="hero-metric-val" style="color: var(--accent-orange);">~$74</div>
+          <div class="hero-metric-chg dn">▼ 衝突高峰 $115 起</div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-label">NASDAQ 反彈</div>
+          <div class="hero-metric-val up">+1.91%</div>
+          <div class="hero-metric-chg up">科技股全面回神</div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-label">SpaceX SPCX</div>
+          <div class="hero-metric-val">$174.9</div>
+          <div class="hero-metric-chg neutral">IPO 後回落整理</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 5大預警指標 ====== -->
+  <div class="section-title">⚡ 每日必看 5 大預警指標</div>
+  <div class="warn-grid">
+    <div class="warn-card">
+      <div class="warn-indicator ind-green"></div>
+      <div class="warn-name">VIX 恐慌指數</div>
+      <div class="warn-val">17.18</div>
+      <div class="warn-status status-safe">✓ 安全</div>
+      <div class="warn-desc">VIX 跌 6.84%，市場恐慌情緒消退。&lt;20 屬正常區間，美伊和平紅利釋放，短線風險偏好回升。</div>
+    </div>
+    <div class="warn-card">
+      <div class="warn-indicator ind-yellow"></div>
+      <div class="warn-name">HY 信用利差</div>
+      <div class="warn-val">~345bps</div>
+      <div class="warn-status status-warn">⚠ 觀察</div>
+      <div class="warn-desc">高收益利差仍偏高，反映市場對升息路徑的不確定性。需持續追蹤 350bps 關鍵水位。</div>
+    </div>
+    <div class="warn-card">
+      <div class="warn-indicator ind-yellow"></div>
+      <div class="warn-name">10Y 美債殖利率</div>
+      <div class="warn-val">4.45%</div>
+      <div class="warn-status status-warn">⚠ 高位</div>
+      <div class="warn-desc">Warsh 首會後 10Y 年接近 4.5% 阻力，30Y 達 4.90%。高殖利率壓抑成長股估值，須密切追蹤。</div>
+    </div>
+    <div class="warn-card">
+      <div class="warn-indicator ind-green"></div>
+      <div class="warn-name">AI 龍頭線型</div>
+      <div class="warn-val">強勢</div>
+      <div class="warn-status status-safe">✓ 多頭</div>
+      <div class="warn-desc">NVDA、AVGO 週五反彈，費半大幅反彈。NVDA-TSMC AI 晶圓廠合作消息正面，AI 資本支出週期延續。</div>
+    </div>
+    <div class="warn-card">
+      <div class="warn-indicator ind-green"></div>
+      <div class="warn-name">台股槓桿 ETF</div>
+      <div class="warn-val">正2 +2.19%</div>
+      <div class="warn-status status-safe">✓ 偏多</div>
+      <div class="warn-desc">元大台灣50正2 (00631L) +2.19%，台股動能延續。台積電領漲，加權指數收 46,465 點，年內創新高。</div>
+    </div>
+  </div>
+
+  <!-- ====== 數據驗證 ====== -->
+  <div class="validation-bar">
+    <span class="mono" style="color: var(--text-secondary); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-right: 8px;">數據驗證</span>
+    <span class="val-item"><span class="val-ok">✓</span><span class="val-label">美股</span> S&P/NASDAQ/DOW 已確認（TheStreet, Yahoo Finance）</span>
+    <span class="val-item"><span class="val-ok">✓</span><span class="val-label">台股</span> 台積電/鴻海/聯發科已確認（Yahoo股市）</span>
+    <span class="val-item"><span class="val-ok">✓</span><span class="val-label">Fed</span> 利率決議已確認（CNBC, NBC News）</span>
+    <span class="val-item"><span class="val-ok">✓</span><span class="val-label">SPCX</span> 股價已確認（Investing.com）</span>
+    <span class="val-item"><span class="val-ok">✓</span><span class="val-label">油價/地緣</span> 美伊 MOU 已確認（NBC News）</span>
+    <span class="val-item"><span class="val-est">⚠</span><span class="val-label">三大法人</span> 最新數據預估（盤後公布）</span>
+    <span class="val-item"><span class="val-est">⚠</span><span class="val-label">HY 利差</span> 估算值，非即時數據</span>
+  </div>
+
+  <!-- ====== KPI 看板 ====== -->
+  <div class="section-title">📊 KPI 核心指標看板</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-tag tag-up">+1.91%</div>
+      <div class="kpi-icon">🇺🇸</div>
+      <div class="kpi-label">美股 NASDAQ（6/18 收盤）</div>
+      <div class="kpi-val mono">7,500</div>
+      <div class="kpi-sub">S&P 500: 26,517（+1.08%）｜ DOW: 51,564（+0.14%）｜ Russell 2000: +2.12%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-tag tag-up">+1.28%</div>
+      <div class="kpi-icon">🇹🇼</div>
+      <div class="kpi-label">台股加權指數（6/19 盤中）</div>
+      <div class="kpi-val mono">46,465</div>
+      <div class="kpi-sub">2330 台積電: 2,410（+1.05%）｜ 2317 鴻海: 268.5（-1.29%）｜ 2454 聯發科: 4,390（+1.57%）</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-tag tag-warn">維持不變</div>
+      <div class="kpi-icon">🏛️</div>
+      <div class="kpi-label">聯邦基金利率（Warsh 首會）</div>
+      <div class="kpi-val mono">3.75%</div>
+      <div class="kpi-sub">目標區間 3.50–3.75%｜點陣圖暗示 2026 升息 25bps｜10Y 殖利率 4.45%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-tag tag-up">+19.2%</div>
+      <div class="kpi-icon">🚀</div>
+      <div class="kpi-label">SpaceX SPCX（6/18 收盤）</div>
+      <div class="kpi-val mono">$174.9</div>
+      <div class="kpi-sub">IPO 6/12 首日 $161（+19.2%）｜IPO 價 $135｜首次財報預計 8/6 或 9/2</div>
+    </div>
+  </div>
+
+  <!-- ====== CHARTS ====== -->
+  <div class="section-title">📈 視覺圖表區</div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">
+        美股三大指數週間表現（本週 6/16–6/18）
+        <span style="font-size: 10px; color: var(--text-secondary);">⚠ 估算值</span>
+      </div>
+      <div class="chart-subtitle">週四 FOMC 衝擊後週五強力反彈，Juneteenth 6/19 美市休假</div>
+      <div class="chart-wrap">
+        <canvas id="usStocksChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">台股持倉個股（今日表現）</div>
+      <div class="chart-subtitle">2026.06.19 個人持倉台股漲跌幅</div>
+      <div class="chart-wrap">
+        <canvas id="twStocksChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">三大法人買賣超趨勢（近5日估算）</div>
+      <div class="chart-subtitle">外資 / 投信 / 自營商（億元）｜⚠ 估算值</div>
+      <div class="chart-wrap">
+        <canvas id="institutionalChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">美債殖利率曲線（6/18）</div>
+      <div class="chart-subtitle">Warsh FOMC 後短端殖利率跳升，曲線趨平</div>
+      <div class="chart-wrap">
+        <canvas id="yieldCurveChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== EARNINGS TABLE ====== -->
+  <div class="earnings-section">
+    <div class="section-title">📅 未來 2 週財報速覽</div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="filterEarnings('all', this)">全部</button>
+      <button class="filter-btn" onclick="filterEarnings('us', this)">美股</button>
+      <button class="filter-btn" onclick="filterEarnings('tw', this)">台股</button>
+      <button class="filter-btn" onclick="filterEarnings('star', this)">★ 持倉</button>
+    </div>
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;">
+      <table class="earnings-table">
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>公司</th>
+            <th>代號</th>
+            <th>市場</th>
+            <th>EPS 預期</th>
+            <th>營收預期</th>
+            <th>重要性</th>
+            <th>持倉</th>
+          </tr>
+        </thead>
+        <tbody id="earningsBody">
+          <tr class="earnings-row" data-market="us" data-star="0">
+            <td class="mono" style="color: var(--text-secondary);">2026/06/19</td>
+            <td><div class="risk-name">FedEx</div><div class="risk-sub">快遞航運龍頭</div></td>
+            <td><span class="ticker-badge">FDX</span></td>
+            <td><span class="badge badge-weekly" style="font-size:10px;">美股</span></td>
+            <td class="mono">$6.18</td>
+            <td class="mono">$21.3B</td>
+            <td><span class="risk-level risk-high">🔴 高</span></td>
+            <td>—</td>
+          </tr>
+          <tr class="earnings-row" data-market="us" data-star="0">
+            <td class="mono" style="color: var(--text-secondary);">2026/06/25</td>
+            <td><div class="risk-name">Micron Technology</div><div class="risk-sub">記憶體/HBM AI</div></td>
+            <td><span class="ticker-badge">MU</span></td>
+            <td><span class="badge badge-weekly" style="font-size:10px;">美股</span></td>
+            <td class="mono">$1.85</td>
+            <td class="mono">$9.8B</td>
+            <td><span class="risk-level risk-high">🔴 高</span></td>
+            <td>—</td>
+          </tr>
+          <tr class="earnings-row" data-market="us" data-star="1">
+            <td class="mono" style="color: var(--text-secondary);">2026/06/26</td>
+            <td><div class="risk-name">Oracle Corporation</div><div class="risk-sub">雲端 AI 基礎設施</div></td>
+            <td><span class="ticker-badge">ORCL</span></td>
+            <td><span class="badge badge-weekly" style="font-size:10px;">美股</span></td>
+            <td class="mono">$1.74</td>
+            <td class="mono">$15.2B</td>
+            <td><span class="risk-level risk-high">🔴 高</span></td>
+            <td class="star">★ 持倉</td>
+          </tr>
+          <tr class="earnings-row" data-market="us" data-star="0">
+            <td class="mono" style="color: var(--text-secondary);">2026/06/30</td>
+            <td><div class="risk-name">Nike Inc.</div><div class="risk-sub">消費品 Q4 FY26</div></td>
+            <td><span class="ticker-badge">NKE</span></td>
+            <td><span class="badge badge-weekly" style="font-size:10px;">美股</span></td>
+            <td class="mono">$0.72</td>
+            <td class="mono">$12.1B</td>
+            <td><span class="risk-level risk-med">🟡 中</span></td>
+            <td>—</td>
+          </tr>
+          <tr class="earnings-row" data-market="us" data-star="1">
+            <td class="mono" style="color: var(--text-secondary);">2026/07/01</td>
+            <td><div class="risk-name">Eli Lilly & Co.</div><div class="risk-sub">GLP-1 減肥藥龍頭</div></td>
+            <td><span class="ticker-badge">LLY</span></td>
+            <td><span class="badge badge-weekly" style="font-size:10px;">美股</span></td>
+            <td class="mono">$4.92</td>
+            <td class="mono">$12.8B</td>
+            <td><span class="risk-level risk-high">🔴 高</span></td>
+            <td class="star">★ 持倉</td>
+          </tr>
+          <tr class="earnings-row" data-market="us" data-star="0">
+            <td class="mono" style="color: var(--text-secondary);">2026/07/02</td>
+            <td><div class="risk-name">Walgreens Boots</div><div class="risk-sub">藥局零售</div></td>
+            <td><span class="ticker-badge">WBA</span></td>
+            <td><span class="badge badge-weekly" style="font-size:10px;">美股</span></td>
+            <td class="mono">$0.35</td>
+            <td class="mono">$37.5B</td>
+            <td><span class="risk-level risk-low">🟢 低</span></td>
+            <td>—</td>
+          </tr>
+          <tr class="earnings-row" data-market="tw" data-star="1">
+            <td class="mono" style="color: var(--text-secondary);">2026/07/17</td>
+            <td><div class="risk-name">台積電法說會</div><div class="risk-sub">Q2 2026 業績說明</div></td>
+            <td><span class="ticker-badge ticker-badge-tw">2330</span></td>
+            <td><span class="badge" style="background:rgba(0,217,126,0.1);color:#00d97e;font-size:10px;border:1px solid rgba(0,217,126,0.3);">台股</span></td>
+            <td class="mono">NT$15.2</td>
+            <td class="mono">NT$1.08T</td>
+            <td><span class="risk-level risk-high">🔴 最重要</span></td>
+            <td class="star">★ 持倉</td>
+          </tr>
+          <tr class="earnings-row" data-market="us" data-star="1">
+            <td class="mono" style="color: var(--text-secondary);">2026/08/06</td>
+            <td><div class="risk-name">SpaceX / SPCX</div><div class="risk-sub">首次公開財報</div></td>
+            <td><span class="ticker-badge">SPCX</span></td>
+            <td><span class="badge badge-weekly" style="font-size:10px;">美股</span></td>
+            <td class="mono">—</td>
+            <td class="mono">$5.3B</td>
+            <td><span class="risk-level risk-high">🔴 首次</span></td>
+            <td>— <span class="est-badge">關注</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ====== NEWS CENTER ====== -->
+  <div class="news-section">
+    <div class="section-title">📰 財經新聞中心</div>
+    <div class="news-tabs">
+      <button class="news-tab active" onclick="switchTab('ai')">🤖 AI/半導體</button>
+      <button class="news-tab" onclick="switchTab('macro')">🏛️ 總體/Fed</button>
+      <button class="news-tab" onclick="switchTab('geo')">🌏 地緣政治</button>
+      <button class="news-tab" onclick="switchTab('tw')">🇹🇼 台股動態</button>
+    </div>
+
+    <!-- AI/半導體 -->
+    <div class="news-panel active" id="tab-ai">
+      <div class="news-grid">
+        <div class="news-card">
+          <div class="news-cat nc-blue">🔵 NVIDIA × TSMC</div>
+          <div class="news-headline">NVIDIA 宣布 TSMC 導入 AI 技術強化晶圓廠製程</div>
+          <div class="news-body">2026/06/01 NVIDIA GTC Taipei 宣布，台積電正使用 NVIDIA CUDA-X 函式庫與 AI 模型，在微影、電晶體模擬、製程控制方面大幅提升效率。cuLitho 等工具帶來 20-50% 微影速度提升，Metropolis AI 改善良率管理。TSM 持有全球 72% 晶圓代工市占，2026 年資本支出承諾 520–560 億美元。</div>
+        </div>
+        <div class="news-card">
+          <div class="news-cat nc-green">🟢 AVGO 強勢</div>
+          <div class="news-headline">Broadcom AI 自訂晶片需求爆發，週五大漲 3.22%</div>
+          <div class="news-body">Broadcom（AVGO）持續受益於超大規模雲端廠商 AI 自訂晶片（ASIC）需求，為 Google、Meta、Apple 等設計 XPU。AVGO 週五在 NASDAQ 大反彈中領漲 3.22%，分析師普遍看好 AI 基礎設施支出週期延續到 2027 年。</div>
+        </div>
+        <div class="news-card">
+          <div class="news-cat nc-purple">🟣 Marvell MRVL</div>
+          <div class="news-headline">Marvell 2026 年迄今漲幅達 89%，AI 佔比望突破 50%</div>
+          <div class="news-body">NVIDIA 2026 年 3-4 月宣布與 Marvell 合作 NVLink Fusion，投資 20 億美元。Marvell 年初至今漲幅達 89%，12 個月達 172%。分析師預估 AI 業務將於年底佔 Marvell 總營收 40–50%，微軟、亞馬遜自訂矽晶片動能持續。</div>
+        </div>
+        <div class="news-card">
+          <div class="news-cat nc-blue">🔵 五大超大規模廠</div>
+          <div class="news-headline">Microsoft/Google/Meta/Amazon/Oracle AI 資本支出年增 36%</div>
+          <div class="news-body">五大超大規模雲廠商（微軟、Alphabet、Meta、亞馬遜、Oracle）2026 年合計基礎設施支出年增 36%，AI 算力需求持續拉動整個半導體供應鏈。台積電 Q4 2025 營收 337 億美元（年增 20.4%），77% 來自 7nm 以下先進製程。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 總體/Fed -->
+    <div class="news-panel" id="tab-macro">
+      <div class="news-grid">
+        <div class="news-card">
+          <div class="news-cat nc-red">🔴 FOMC 鷹派震撼</div>
+          <div class="news-headline">Warsh 首會刪除「偏向降息」措辭，點陣圖指向 2026 升息</div>
+          <div class="news-body">Kevin Warsh 首次主持 FOMC 結果出爐，聲明大幅縮短並刪除原先「偏向降息」措辭，半數 FOMC 委員認為 2026 年適合升息一次。Warsh 個人棄權不提交預測。市場曾定價 90% 機率 10 月前升息。Evercore 指出「升息風險明顯上升」。</div>
+        </div>
+        <div class="news-card">
+          <div class="news-cat nc-blue">🔵 美債殖利率</div>
+          <div class="news-headline">2Y 殖利率 FOMC 當日跳升 16bps，創 2008 年以來最大 Fed 日漲幅</div>
+          <div class="news-body">2Y 美債殖利率在 FOMC 會議結束當日跳升逾 16 個基點，為 2008 年 3 月以來最大 Fed 決議日漲幅（MUFG 指出）。10Y 殖利率接近 4.5%，30Y 達 4.90%。週五（6/18）美伊和平消息帶動殖利率小幅回落，2Y 降至 4.179%，10Y 降至 4.453%。</div>
+        </div>
+        <div class="news-card">
+          <div class="news-cat nc-yellow" style="color:#ffd166;">🟡 PCE / CPI 通膨</div>
+          <div class="news-headline">通膨仍高於 2% 目標，PCE 數據月底公布將是關鍵</div>
+          <div class="news-body">Warsh 主席明確表示「持續高物價是美國人的負擔」，並強調不會修改 2% 通膨目標直到達成為止。市場關注月底 Q1 GDP 修訂值及 5 月 PCE 數據，若 PCE 仍偏高（前估 >3%）將強化升息預期。消費者信心指數大幅下滑至 49.8。</div>
+        </div>
+        <div class="news-card">
+          <div class="news-cat nc-green">🟢 CME FedWatch</div>
+          <div class="news-headline">FedWatch 升息機率週四飆升後週五回落，全年路徑仍混沌</div>
+          <div class="news-body">週四 FOMC 結果出爐後，市場快速重新定價，10 月前升息機率一度達 90%。週五受美伊和平利好帶動，市場部分修正鷹派預期，但全年升息風險仍是最大不確定性。Schwab 預估 2026 年僅一次降息或零降息。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 地緣政治 -->
+    <div class="news-panel" id="tab-geo">
+      <div class="news-grid">
+        <div class="news-card">
+          <div class="news-cat nc-green">🕊️ 美伊和平</div>
+          <div class="news-headline">美伊在法國簽署 MOU，霍爾木茲解封，油價急跌</div>
+          <div class="news-body">6/18 美國與伊朗在法國正式簽署意向書（MOU），宣布終止武裝衝突並重開霍爾木茲海峽。WTI 原油收 $80.75 跌 4.8%（6/15）；隨後期貨持續回落，目前約 $74 附近。能源股重挫，但科技股因通膨壓力緩解而大幅反彈。</div>
+        </div>
+        <div class="news-card">
+          <div class="news-cat nc-red">🛢️ 油價動態回顧</div>
+          <div class="news-headline">油價從衝突高峰 $115 跌至 $74，已累積下跌近 36%</div>
+          <div class="news-body">伊朗衝突高峰期 WTI 油價飆至 $115/桶，霍爾木茲海峽阻斷波斯灣原油出口。隨著多輪停火與最終和平協議，油價逐步回落。從年初 $66 到衝突期 $115，再回落至目前約 $74，通膨壓力顯著緩解，有利 Fed 維持或降息立場。</div>
+        </div>
+        <div class="news-card">
+          <div class="news-cat nc-yellow" style="color:#ffd166;">🟡 風險仍存</div>
+          <div class="news-headline">核協議細節未定，霍爾木茲海峽實際開放時程待確認</div>
+          <div class="news-body">儘管 MOU 已簽署，分析師提醒油價能否持續下跌「仍高度存疑」（NBC News）。核協議實質框架與伊朗制裁解除時程尚待談判，且歷史上伊朗協議破裂案例不少。建議能源倉位維持謹慎，觀察後續外交進展。</div>
+        </div>
+        <div class="news-card">
+          <div class="news-cat nc-blue">🌐 全球市場影響</div>
+          <div class="news-headline">和平紅利釋放：台股、日韓股均上揚，供應鏈風險降低</div>
+          <div class="news-body">美伊和平協議消息帶動亞洲市場全面走強。台股加權指數站上 46,000 點。費半指數（SOX）在衝突期曾重挫後強勁反彈逾 7.91%（6/12）。半導體供應鏈出貨風險降低，台積電、聯發科、鴻海等個股同步受益。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 台股動態 -->
+    <div class="news-panel" id="tab-tw">
+      <div class="news-grid">
+        <div class="news-card">
+          <div class="news-cat nc-green">🟢 台積電 2330</div>
+          <div class="news-headline">台積電收 NT$2,410（+1.05%），外資目標價調升至 NT$3,000</div>
+          <div class="news-body">瑞銀證券（UBS）上調台積電目標價至 NT$3,000，預估 EPS 將從 2026 年 NT$98.86 增長至 2030 年 NT$243.45。預計全球伺服器 CPU 出貨量從 2025 年 2300 萬顆增至 2030 年 6300–7000 萬顆，台積電受益巨大。台積電 ADR 週四漲 1.93%，持續吸引外資買盤。</div>
+        </div>
+        <div class="news-card">
+          <div class="news-cat nc-red">🔴 鴻海 2317</div>
+          <div class="news-headline">鴻海收 NT$268.5（-1.29%），AI 醫療機器人業務受市場關注</div>
+          <div class="news-body">鴻海今日逆勢小跌，此前在 AI 相關消息帶動下表現強勁。NVIDIA 宣布 Foxconn 正在台灣醫療機構部署 AI 解決方案，包括 CoDoctor AI 平台與 Nurabot 護理機器人，已進入實際運營使用。鴻海電動車與 AI 伺服器雙主軸持續推進中。</div>
+        </div>
+        <div class="news-card">
+          <div class="news-cat nc-purple">🟣 聯發科 2454</div>
+          <div class="news-headline">聯發科收 NT$4,390（+1.57%），AI ASIC 及車用座艙打入鴻華供應鏈</div>
+          <div class="news-body">聯發科持續強勢，受惠 AI ASIC 題材及車用座艙平台打入鴻華先進供應鏈。目前本益比 71.08 倍，股價創新高紀錄。IC 設計族群整體走強，聯發科領軍。外資持續調升目標價，AI 邊緣運算與 5G 車用需求同步爆發。</div>
+        </div>
+        <div class="news-card">
+          <div class="news-cat nc-blue">🔵 三大法人動向</div>
+          <div class="news-headline">外資近期觀望，投信積極買超，台股籌碼面維持穩健</div>
+          <div class="news-body">近期台股籌碼面：投信持續買超力挺權值股，外資在 FOMC 決議前後相對保守。自營商短線偏中性。台股今日加權指數收 46,465（+1.28%），成交值維持活躍，電子股、半導體族群為主力支撐。00631L（台灣50正2）大漲 2.19%，顯示多頭動能明顯。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== RISK MATRIX ====== -->
+  <div class="risk-section">
+    <div class="section-title">⚠️ 風險矩陣</div>
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;">
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th>風險類型</th>
+            <th>風險等級</th>
+            <th>觸發條件</th>
+            <th>對持倉影響</th>
+            <th>應對策略</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="risk-name">🏛️ Fed 升息超預期</div>
+              <div class="risk-sub">Warsh 鷹派轉向，2026 升息 2 次</div>
+            </td>
+            <td><span class="risk-level risk-high">🔴 高</span></td>
+            <td style="color: var(--text-secondary); font-size: 12px;">PCE &gt; 3.5%、CPI 反彈、勞市強韌</td>
+            <td style="color: var(--text-secondary); font-size: 12px;">NVDA/SMH 估值壓縮；LLY 防禦相對穩；台積電短線承壓</td>
+            <td style="color: var(--text-secondary); font-size: 12px;">適度降低槓桿 ETF 部位；增持 IAUM 黃金對沖；等待 PCE 數據確認</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="risk-name">🕊️ 美伊協議破局</div>
+              <div class="risk-sub">MOU 談判失敗、霍爾木茲重新封閉</div>
+            </td>
+            <td><span class="risk-level risk-high">🔴 高</span></td>
+            <td style="color: var(--text-secondary); font-size: 12px;">外交談判決裂、伊朗核武試驗消息</td>
+            <td style="color: var(--text-secondary); font-size: 12px;">油價重回 $100+，通膨再起，科技股重挫；台積電供應鏈風險</td>
+            <td style="color: var(--text-secondary); font-size: 12px;">持有 IAUM 黃金作避險；關注能源 ETF；降低 SMH 持倉</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="risk-name">🇨🇳 台海地緣緊張</div>
+              <div class="risk-sub">台海軍演、貿易摩擦升溫</div>
+            </td>
+            <td><span class="risk-level risk-med">🟡 中</span></td>
+            <td style="color: var(--text-secondary); font-size: 12px;">解放軍演習、關稅制裁、供應鏈管制</td>
+            <td style="color: var(--text-secondary); font-size: 12px;">台積電(2330)、鴻海(2317)直接受衝擊；TSMC 美國廠佈局加速</td>
+            <td style="color: var(--text-secondary); font-size: 12px;">分散地域風險；TSMC 美廠進展為正面對沖；持有 0050 分散風險</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="risk-name">🤖 AI 題材退燒</div>
+              <div class="risk-sub">算力需求不如預期、資本支出縮減</div>
+            </td>
+            <td><span class="risk-level risk-med">🟡 中</span></td>
+            <td style="color: var(--text-secondary); font-size: 12px;">大廠 CAPEX 縮減、Blackwell 良率問題</td>
+            <td style="color: var(--text-secondary); font-size: 12px;">NVDA、SMH、AVGO 大幅修正；台積電 CoWoS 訂單能見度下降</td>
+            <td style="color: var(--text-secondary); font-size: 12px;">持倉以龍頭為主（NVDA/AVGO/台積電）；避免追高二線 AI 股</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="risk-name">💊 LLY 藥品監管</div>
+              <div class="risk-sub">GLP-1 製造問題、藥價管制立法</div>
+            </td>
+            <td><span class="risk-level risk-low">🟢 低</span></td>
+            <td style="color: var(--text-secondary); font-size: 12px;">FDA 不核准、Medicare 藥價談判擴大</td>
+            <td style="color: var(--text-secondary); font-size: 12px;">LLY 估值下修；但 GLP-1 競爭格局仍有利 Lilly</td>
+            <td style="color: var(--text-secondary); font-size: 12px;">持續追蹤 Mounjaro/Zepbound 出貨數據；7/1 財報為關鍵觀察窗</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="risk-name">🚀 SPCX 首次財報</div>
+              <div class="risk-sub">商業化進度不如預期、Starlink 競爭</div>
+            </td>
+            <td><span class="risk-level risk-low">🟢 低</span></td>
+            <td style="color: var(--text-secondary); font-size: 12px;">Starlink 用戶增長放緩、火箭成本超支</td>
+            <td style="color: var(--text-secondary); font-size: 12px;">SPCX 波動劇烈（IPO 後已從 $225 回落至 $175）；無直接持倉</td>
+            <td style="color: var(--text-secondary); font-size: 12px;">觀望首次財報（8/6 或 9/2）後再評估進場點</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ====== OPPORTUNITY CARDS ====== -->
+  <div class="section-title">💡 投資主題機會（5 張卡）</div>
+  <div class="opp-grid">
+    <div class="opp-card oc1">
+      <div class="opp-emoji">🧠</div>
+      <div class="opp-theme">AI 基礎設施</div>
+      <div class="opp-title">AI 算力龍頭持續強勢</div>
+      <div class="opp-tickers">
+        <span class="opp-ticker">NVDA</span>
+        <span class="opp-ticker">AVGO</span>
+        <span class="opp-ticker">SMH</span>
+        <span class="opp-ticker">TSM</span>
+      </div>
+      <div class="opp-body">五大超大規模廠 AI 資本支出年增 36%，NVDA-TSMC AI 晶圓廠合作深化。AVGO 自訂 ASIC 需求旺盛，Marvell NVLink 合作加速。</div>
+      <div class="opp-signal sig-bull">▲ 做多</div>
+    </div>
+    <div class="opp-card oc2">
+      <div class="opp-emoji">🇹🇼</div>
+      <div class="opp-theme">台灣半導體</div>
+      <div class="opp-title">台積電 A13 技術節點領先</div>
+      <div class="opp-tickers">
+        <span class="opp-ticker">2330</span>
+        <span class="opp-ticker">2454</span>
+        <span class="opp-ticker">0050</span>
+      </div>
+      <div class="opp-body">台積電 A13 技術亮相北美技術研討會，CoWoS 先進封裝需求爆滿。聯發科車用 AI 座艙打入鴻華供應鏈，估值仍有上行空間。</div>
+      <div class="opp-signal sig-bull">▲ 持有加碼</div>
+    </div>
+    <div class="opp-card oc3">
+      <div class="opp-emoji">🥇</div>
+      <div class="opp-theme">抗通膨資產</div>
+      <div class="opp-title">黃金 IAUM 中線看多</div>
+      <div class="opp-tickers">
+        <span class="opp-ticker">IAUM</span>
+      </div>
+      <div class="opp-body">Fed 升息預期壓制金價短線，但中長線通膨風險、地緣不確定性支撐黃金。IAUM 實物黃金 ETF 提供完善對沖。油價回落後金價調整或是良好買點。</div>
+      <div class="opp-signal sig-watch">◆ 逢低布局</div>
+    </div>
+    <div class="opp-card oc4">
+      <div class="opp-emoji">💊</div>
+      <div class="opp-theme">生技醫療</div>
+      <div class="opp-title">Eli Lilly GLP-1 成長週期</div>
+      <div class="opp-tickers">
+        <span class="opp-ticker">LLY</span>
+      </div>
+      <div class="opp-body">Mounjaro/Zepbound 持續放量，GLP-1 市場規模估 2030 年達 1,500 億美元。7/1 財報為短期催化劑，長期佈局明確。相較科技股，防禦屬性更強。</div>
+      <div class="opp-signal sig-bull">▲ 持有</div>
+    </div>
+    <div class="opp-card oc5">
+      <div class="opp-emoji">☁️</div>
+      <div class="opp-theme">雲端 AI 基礎設施</div>
+      <div class="opp-title">Oracle AI 資料庫爆發</div>
+      <div class="opp-tickers">
+        <span class="opp-ticker">ORCL</span>
+      </div>
+      <div class="opp-body">Oracle AI 雲端訂單能見度強，GPU 資料庫（OCI）需求激增。大廠合作（Microsoft、Google）持續深化。6/26 財報為短期關鍵觀察窗口，市場預期 EPS $1.74、營收 $15.2B。</div>
+      <div class="opp-signal sig-watch">◆ 財報前觀察</div>
+    </div>
+  </div>
+
+  <!-- ====== GURU STRATEGY ====== -->
+  <div class="section-title">🧭 大師策略總結</div>
+  <div class="guru-grid">
+    <div class="guru-card">
+      <div class="guru-avatar">📐</div>
+      <div class="guru-name">費雪成長法則</div>
+      <div class="guru-title">Philip Fisher — 長期成長投資</div>
+      <div class="guru-quote">「尋找未來 5 年能翻倍的公司，而非短線波動。AI 基礎設施週期才剛起步，NVDA/TSMC 在各自護城河仍無可取代。」</div>
+      <div class="guru-actions">
+        <div class="guru-action"><span class="ga-buy">持有</span> NVDA — AI GPU 市場 51 個買進推薦，無賣出</div>
+        <div class="guru-action"><span class="ga-buy">持有</span> AVGO — 超大規模廠自訂 ASIC 不可取代</div>
+        <div class="guru-action"><span class="ga-buy">持有</span> 台積電 — 全球晶圓代工 72% 市占護城河</div>
+        <div class="guru-action"><span class="ga-hold">觀察</span> SPCX — 等待首季財報確認商業化進展</div>
+      </div>
+    </div>
+    <div class="guru-card">
+      <div class="guru-avatar">🎯</div>
+      <div class="guru-name">巴菲特價值法則</div>
+      <div class="guru-title">Warren Buffett — 價值投資</div>
+      <div class="guru-quote">「在別人恐懼時貪婪。FOMC 鷹派衝擊造成的市場恐慌是檢視持倉品質的好機會，而非倉皇出逃的理由。」</div>
+      <div class="guru-actions">
+        <div class="guru-action"><span class="ga-buy">買入</span> 黃金 IAUM — 通膨對沖，適當倉位配置</div>
+        <div class="guru-action"><span class="ga-hold">持有</span> LLY — GLP-1 長期成長故事完整</div>
+        <div class="guru-action"><span class="ga-hold">持有</span> 鴻海 2317 — AI 伺服器+電動車雙軌估值偏低</div>
+        <div class="guru-action"><span class="ga-watch">觀察</span> 10Y 殖利率 — 高殖利率壓估值需持續監控</div>
+      </div>
+    </div>
+    <div class="guru-card">
+      <div class="guru-avatar">⚡</div>
+      <div class="guru-name">達里歐全天候策略</div>
+      <div class="guru-title">Ray Dalio — 風險平衡</div>
+      <div class="guru-quote">「在不確定性中保持平衡。升息預期升溫同時美伊和平，兩個對立力量需要多元分散而非押注單一主題。」</div>
+      <div class="guru-actions">
+        <div class="guru-action"><span class="ga-buy">增持</span> 黃金 IAUM — 高通膨環境提升配置比重</div>
+        <div class="guru-action"><span class="ga-hold">維持</span> 0050 — 台灣市場分散風險基石</div>
+        <div class="guru-action"><span class="ga-hold">維持</span> SMH — 半導體整體敞口，避免過度集中</div>
+        <div class="guru-action"><span class="ga-watch">降低</span> 單一科技股集中度 — 升息尾聲多元化優先</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ====== FOOTER ====== -->
+<div class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-sources">
+        <strong style="color: var(--text-primary);">資料來源</strong><br>
+        美股行情：TheStreet, Yahoo Finance, CNBC, Schwab Market Update<br>
+        台股行情：Yahoo 股市、CMoney、臺灣證券交易所（TWSE）<br>
+        三大法人：TWSE、玩股網 WantGoo<br>
+        Fed/總經：NBC News, Kiplinger, CNBC, Trading Economics<br>
+        AI/半導體：NVIDIA Newsroom, StockTitan, GuruFocus<br>
+        SpaceX SPCX：Investing.com, CNBC, TradingView, TradingKey<br>
+        油價/伊朗：NBC News, Trading Economics, News On Air<br>
+        圖表庫：Chart.js 4.4.1 + chartjs-plugin-datalabels 2.2.0
+      </div>
+      <div class="footer-disclaimer">
+        ⚠️ <strong style="color: var(--text-primary);">免責聲明</strong>：本報告僅供個人研究參考用途，所有數據為公開資料彙整，部分數據為預估值（⚠ 標示），不構成任何投資建議或勸誘。投資有風險，請獨立判斷，並諮詢專業金融顧問。過去表現不代表未來績效。台股行情以台灣證券交易所公告為準。
+      </div>
+    </div>
+    <div class="footer-copy">
+      © 2026 每日投資情報 ｜ 台灣台中 ｜ 製作時間：2026.06.19 週五 ｜ IBM Plex Mono + Inter
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== Chart.js ======
+Chart.register(ChartDataLabels);
+
+// 美股週間表現
+const usCtx = document.getElementById('usStocksChart').getContext('2d');
+new Chart(usCtx, {
+  type: 'bar',
+  data: {
+    labels: ['6/16 (一)', '6/17 (二)', '6/18 (三,FOMC)', '6/18 反彈'],
+    datasets: [
+      {
+        label: 'S&P 500 %',
+        data: [0.52, -1.21, -1.08, 1.08],
+        backgroundColor: ctx => ctx.raw >= 0 ? 'rgba(0,217,126,0.7)' : 'rgba(255,69,96,0.7)',
+        borderColor: ctx => ctx.raw >= 0 ? 'rgba(0,217,126,1)' : 'rgba(255,69,96,1)',
+        borderWidth: 1,
+        borderRadius: 4,
+      },
+      {
+        label: 'NASDAQ %',
+        data: [0.33, -1.34, -1.30, 1.91],
+        backgroundColor: ctx => ctx.raw >= 0 ? 'rgba(77,124,255,0.7)' : 'rgba(168,85,247,0.7)',
+        borderColor: ctx => ctx.raw >= 0 ? 'rgba(77,124,255,1)' : 'rgba(168,85,247,1)',
+        borderWidth: 1,
+        borderRadius: 4,
+      },
+      {
+        label: 'DOW %',
+        data: [0.81, -0.98, -0.98, 0.14],
+        backgroundColor: ctx => ctx.raw >= 0 ? 'rgba(255,209,102,0.7)' : 'rgba(255,140,66,0.7)',
+        borderColor: ctx => ctx.raw >= 0 ? 'rgba(255,209,102,1)' : 'rgba(255,140,66,1)',
+        borderWidth: 1,
+        borderRadius: 4,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 11 } } },
+      datalabels: {
+        color: '#f0f2fc',
+        font: { family: 'IBM Plex Mono', size: 10, weight: '600' },
+        formatter: v => v > 0 ? '+' + v.toFixed(2) + '%' : v.toFixed(2) + '%',
+        anchor: ctx => ctx.dataset.data[ctx.dataIndex] >= 0 ? 'end' : 'start',
+        align: ctx => ctx.dataset.data[ctx.dataIndex] >= 0 ? 'top' : 'bottom',
+      }
+    },
+    scales: {
+      x: { ticks: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 10 } }, grid: { color: '#1a1a3a' } },
+      y: { ticks: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 10 }, callback: v => v + '%' }, grid: { color: '#1a1a3a' } }
+    }
+  }
+});
+
+// 台股持倉個股
+const twCtx = document.getElementById('twStocksChart').getContext('2d');
+const twData = [1.05, -1.29, 1.57, 1.23, 2.19, 0.74];
+const twLabels = ['台積電 2330', '鴻海 2317', '聯發科 2454', '0050', '00631L正2', 'TWII指數'];
+new Chart(twCtx, {
+  type: 'bar',
+  data: {
+    labels: twLabels,
+    datasets: [{
+      label: '今日漲跌 %',
+      data: twData,
+      backgroundColor: twData.map(v => v >= 0 ? 'rgba(0,217,126,0.75)' : 'rgba(255,69,96,0.75)'),
+      borderColor: twData.map(v => v >= 0 ? 'rgba(0,217,126,1)' : 'rgba(255,69,96,1)'),
+      borderWidth: 1.5,
+      borderRadius: 5,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      datalabels: {
+        color: '#f0f2fc',
+        font: { family: 'IBM Plex Mono', size: 11, weight: '700' },
+        formatter: v => (v > 0 ? '+' : '') + v.toFixed(2) + '%',
+        anchor: ctx => ctx.dataset.data[ctx.dataIndex] >= 0 ? 'end' : 'start',
+        align: ctx => ctx.dataset.data[ctx.dataIndex] >= 0 ? 'right' : 'left',
+      }
+    },
+    scales: {
+      x: { ticks: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 10 }, callback: v => v + '%' }, grid: { color: '#1a1a3a' } },
+      y: { ticks: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 11 } }, grid: { color: '#1a1a3a' } }
+    }
+  }
+});
+
+// 三大法人（近5日估算）
+const instCtx = document.getElementById('institutionalChart').getContext('2d');
+new Chart(instCtx, {
+  type: 'line',
+  data: {
+    labels: ['6/13', '6/16', '6/17', '6/18', '6/19'],
+    datasets: [
+      {
+        label: '外資（億）',
+        data: [+82, -305, -150, +210, +180],
+        borderColor: '#4d7cff',
+        backgroundColor: 'rgba(77,124,255,0.08)',
+        tension: 0.4,
+        pointBackgroundColor: '#4d7cff',
+        pointRadius: 4,
+        fill: true,
+      },
+      {
+        label: '投信（億）',
+        data: [+180, +383, +220, +160, +145],
+        borderColor: '#00d97e',
+        backgroundColor: 'rgba(0,217,126,0.06)',
+        tension: 0.4,
+        pointBackgroundColor: '#00d97e',
+        pointRadius: 4,
+        fill: true,
+      },
+      {
+        label: '自營（億）',
+        data: [-50, -207, -80, +30, -20],
+        borderColor: '#ffd166',
+        backgroundColor: 'rgba(255,209,102,0.06)',
+        tension: 0.4,
+        pointBackgroundColor: '#ffd166',
+        pointRadius: 4,
+        fill: true,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 11 } } },
+      datalabels: { display: false }
+    },
+    scales: {
+      x: { ticks: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 10 } }, grid: { color: '#1a1a3a' } },
+      y: { ticks: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 10 } }, grid: { color: '#1a1a3a' } }
+    }
+  }
+});
+
+// 殖利率曲線
+const ycCtx = document.getElementById('yieldCurveChart').getContext('2d');
+new Chart(ycCtx, {
+  type: 'line',
+  data: {
+    labels: ['1M', '3M', '6M', '1Y', '2Y', '5Y', '10Y', '20Y', '30Y'],
+    datasets: [
+      {
+        label: '6/18 2026 (Warsh後)',
+        data: [4.28, 4.35, 4.22, 4.05, 4.179, 4.28, 4.453, 4.76, 4.90],
+        borderColor: '#ff4560',
+        backgroundColor: 'rgba(255,69,96,0.08)',
+        tension: 0.35,
+        pointBackgroundColor: '#ff4560',
+        pointRadius: 4,
+        fill: true,
+      },
+      {
+        label: '6/11 2026 (FOMC前)',
+        data: [4.30, 4.32, 4.18, 3.95, 3.95, 4.12, 4.35, 4.60, 4.72],
+        borderColor: '#4d7cff',
+        backgroundColor: 'rgba(77,124,255,0.06)',
+        tension: 0.35,
+        pointBackgroundColor: '#4d7cff',
+        pointRadius: 3,
+        borderDash: [4, 3],
+        fill: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 10 } } },
+      datalabels: { display: false }
+    },
+    scales: {
+      x: { ticks: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 10 } }, grid: { color: '#1a1a3a' } },
+      y: {
+        ticks: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 10 }, callback: v => v.toFixed(2) + '%' },
+        grid: { color: '#1a1a3a' },
+        min: 3.6, max: 5.1
+      }
+    }
+  }
+});
+
+// ====== EARNINGS FILTER ======
+function filterEarnings(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.earnings-row').forEach(row => {
+    if (type === 'all') row.classList.remove('hidden');
+    else if (type === 'us') {
+      row.classList.toggle('hidden', row.dataset.market !== 'us');
+    } else if (type === 'tw') {
+      row.classList.toggle('hidden', row.dataset.market !== 'tw');
+    } else if (type === 'star') {
+      row.classList.toggle('hidden', row.dataset.star !== '1');
+    }
+  });
+}
+
+// ====== NEWS TABS ======
+function switchTab(tab) {
+  document.querySelectorAll('.news-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.news-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
