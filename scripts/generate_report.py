@@ -110,59 +110,71 @@ PE_TICKERS = {
 
 def fetch_pe_history(symbol, display_name):
     """
-    用 current trailingPE + 歷史收盤價計算每月 P/E 趨勢。
-    回傳 3Y 月資料 list，格式 [{"date":"2023-06","pe":18.5}, ...]
+    用 current trailingPE + 歷史收盤價計算每月 Trailing P/E 趨勢。
+    同時抓取 forwardPE 當前值。
+    回傳 dict: {
+        "trailing_3y": [{"date":"2023-06","pe":18.5}, ...],
+        "forward_pe": 25.3 or None
+    }
     """
     try:
         import yfinance as yf
     except ImportError:
-        return []
+        return {"trailing_3y": [], "forward_pe": None}
 
     try:
         ticker = yf.Ticker(symbol)
         info = ticker.info or {}
         trailing_pe = info.get("trailingPE")
+        forward_pe = info.get("forwardPE")
         current_price = info.get("regularMarketPrice") or info.get("currentPrice")
 
+        if forward_pe and forward_pe > 0:
+            forward_pe = round(forward_pe, 1)
+        else:
+            forward_pe = None
+
         if not trailing_pe or not current_price or trailing_pe <= 0 or current_price <= 0:
-            print(f"  ⚠️ {display_name} 無 P/E 資料，跳過")
-            return []
+            print(f"  ⚠️ {display_name} 無 Trailing P/E 資料，跳過歷史趨勢")
+            return {"trailing_3y": [], "forward_pe": forward_pe}
 
         implied_eps = current_price / trailing_pe
 
         hist = ticker.history(period="3y", interval="1mo")
-        if hist.empty:
-            return []
+        trailing_3y = []
+        if not hist.empty:
+            for dt, row in hist.iterrows():
+                pe = row["Close"] / implied_eps
+                if 0 < pe < 1000:
+                    trailing_3y.append({"date": dt.strftime("%Y-%m"), "pe": round(pe, 1)})
 
-        results = []
-        for dt, row in hist.iterrows():
-            pe = row["Close"] / implied_eps
-            if 0 < pe < 1000:
-                results.append({"date": dt.strftime("%Y-%m"), "pe": round(pe, 1)})
-
-        return results
+        return {"trailing_3y": trailing_3y, "forward_pe": forward_pe}
     except Exception as e:
         print(f"  ⚠️ {display_name} P/E 抓取失敗: {e}")
-        return []
+        return {"trailing_3y": [], "forward_pe": None}
 
 
 def fetch_all_pe_data():
-    """抓取所有追蹤標的的 P/E 歷史，回傳 JSON 可序列化的 dict。"""
-    import json
+    """抓取所有追蹤標的的 Trailing P/E 歷史與 Forward P/E 當前值。"""
     result = {}
     for market, tickers in PE_TICKERS.items():
         result[market] = []
         for symbol, name in tickers:
-            data_3y = fetch_pe_history(symbol, name)
-            data_1y = data_3y[-12:] if len(data_3y) >= 12 else data_3y
-            if data_3y:
+            pe_data = fetch_pe_history(symbol, name)
+            trailing_3y = pe_data["trailing_3y"]
+            forward_pe = pe_data["forward_pe"]
+            trailing_1y = trailing_3y[-12:] if len(trailing_3y) >= 12 else trailing_3y
+            current_trailing = trailing_3y[-1]["pe"] if trailing_3y else None
+            if trailing_3y or forward_pe:
                 result[market].append({
                     "symbol": symbol,
                     "name": name,
-                    "data_3y": data_3y,
-                    "data_1y": data_1y,
+                    "trailing_3y": trailing_3y,
+                    "trailing_1y": trailing_1y,
+                    "current_trailing_pe": current_trailing,
+                    "current_forward_pe": forward_pe,
                 })
-                print(f"  P/E {name}: {len(data_3y)} 個月資料")
+                print(f"  P/E {name}: Trailing={current_trailing} Forward={forward_pe} ({len(trailing_3y)}個月趨勢)")
     return result
 
 
@@ -256,7 +268,7 @@ PROMPT = f"""
 
 {pe_json}
 
-欄位說明：data_3y = 近 3 年月資料；data_1y = 近 1 年月資料。pe 值為基於當前 trailing EPS 的歷史估算。
+欄位說明：trailing_3y = 近 3 年月 Trailing P/E 歷史趨勢；trailing_1y = 近 1 年月資料；current_trailing_pe = 當前 Trailing P/E（TTM 實際 EPS）；current_forward_pe = 當前 Forward P/E（分析師預估未來 12 個月 EPS，null 表示無資料）。
 
 ## 【已預先抓取】恐懼指數近 6 個月日資料（直接用於圖表，勿再搜尋美股 VIX）
 {fear_json}
@@ -324,10 +336,14 @@ PROMPT = f"""
   - 兩個 Tab：「台股」和「美股」
   - 每個 Tab 內有「1Y」和「3Y」切換按鈕
   - Chart.js 折線圖，深色主題，格線淡化
-  - 台股 Tab：顯示 pe_data.tw 各標的（多條線，每條一個顏色）
-  - 美股 Tab：顯示 pe_data.us 各標的（多條線，每條一個顏色）
-  - 若某標的資料為空，則不渲染該線
-  - 圖表標題標明「本益比（P/E）歷史趨勢 — 基於當前 EPS 估算」
+  - 台股 Tab：顯示 pe_data.tw 各標的的 Trailing P/E 歷史趨勢（多條實線，每條一個顏色）
+  - 美股 Tab：顯示 pe_data.us 各標的的 Trailing P/E 歷史趨勢（多條實線，每條一個顏色）
+  - Forward P/E 顯示方式（每個標的）：
+    - 若 current_forward_pe 不為 null，在圖表上畫一條對應顏色的**水平虛線**，代表當前 Forward P/E 水準
+    - 水平虛線加上 label「{name} Fwd」
+  - 圖表右上角（圖表內浮層）顯示當前數值對比小表格：每個標的一行，顯示「名稱 ｜ Trailing: xx.x ｜ Forward: xx.x」，Forward 若無資料顯示「N/A」
+  - 若某標的 trailing_3y / trailing_1y 為空且 current_forward_pe 也為 null，則不渲染該標的
+  - 圖表標題標明「本益比（P/E）趨勢 — 實線 Trailing TTM / 虛線 Forward」
 - 未來 2 週財報速覽（Filter 按鈕：全部/美股/台股/★持倉）
 - 財經新聞中心（Tab：4 個主題）
 - 風險矩陣表格
