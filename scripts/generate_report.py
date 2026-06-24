@@ -178,11 +178,10 @@ def fetch_all_pe_data():
     return result
 
 
-# ── 恐懼指數：VIX（美股）與 VXTW（台股）近 6 個月日資料 ──────────────────────
+# ── 恐懼指數：VIX（美股）近 6 個月日資料 ──────────────────────
 
 FEAR_INDEX_TICKERS = {
     "us": ("^VIX",  "美股 VIX 恐懼指數"),
-    "tw": ("^VXTW", "台股 VXTW 恐懼指數"),
 }
 
 
@@ -205,7 +204,7 @@ def fetch_fear_index_history(symbol, display_name, period="6mo"):
 
 
 def fetch_all_fear_index():
-    """回傳台股與美股恐懼指數歷史，格式供 JSON 注入。"""
+    """回傳美股恐懼指數歷史，格式供 JSON 注入。"""
     result = {}
     for key, (symbol, name) in FEAR_INDEX_TICKERS.items():
         result[key] = {
@@ -252,7 +251,6 @@ pe_json = _json.dumps(pe_data, ensure_ascii=False)
 print("  正在用 yfinance 抓取恐懼指數（近 6 個月）...")
 fear_data = fetch_all_fear_index()
 fear_json = _json.dumps(fear_data, ensure_ascii=False)
-tw_fear_available = bool(fear_data.get("tw", {}).get("history"))
 
 PROMPT = f"""
 今天是 {date_label}（{weekday_cn}），台灣台中。
@@ -270,10 +268,10 @@ PROMPT = f"""
 
 欄位說明：trailing_3y = 近 3 年月 Trailing P/E 歷史趨勢；trailing_1y = 近 1 年月資料；current_trailing_pe = 當前 Trailing P/E（TTM 實際 EPS）；current_forward_pe = 當前 Forward P/E（分析師預估未來 12 個月 EPS，null 表示無資料）。
 
-## 【已預先抓取】恐懼指數近 6 個月日資料（直接用於圖表，勿再搜尋美股 VIX）
+## 【已預先抓取】美股 VIX 恐懼指數近 6 個月日資料（直接用於圖表，勿再搜尋）
 {fear_json}
 
-欄位說明：history = 每日 [{{"date":"YYYY-MM-DD","value":數值}}] 陣列。tw.history 若為空陣列，請改用搜尋任務補充。
+欄位說明：history = 每日 [{{"date":"YYYY-MM-DD","value":數值}}] 陣列。
 
 ## 必須完成的搜尋任務（依序執行，至少 8 次搜尋）
 1. 今日/昨日美股收盤：S&P 500、Nasdaq、Dow 漲跌幅與主要個股
@@ -284,13 +282,12 @@ PROMPT = f"""
 6. 總體經濟：Fed 動態、美債殖利率、PCE/CPI 最新數據、CME FedWatch 降息機率
 7. SpaceX SPCX 等重大 IPO 進度
 8. 台指期夜盤最新走勢：當日夜盤開盤價、最新價、漲跌點數、成交量、與日盤收盤的差距
-9. {'（台股 VXTW 已由 API 提供，跳過此項）' if tw_fear_available else '台股恐懼指數（VXTW）近 6 個月趨勢數據：請搜尋 TAIFEX 或相關來源，取得每月或每週指數值'}
-10. LLY Foundayo（orforglipron）週處方量（TRx）趨勢：
+9. LLY Foundayo（orforglipron）週處方量（TRx）趨勢：
     - Foundayo 是 Eli Lilly orforglipron 的商品名，為口服 GLP-1 小分子藥物，與 Mounjaro/Zepbound（tirzepatide 注射劑）是完全不同的產品線，絕對不可混用或替代
     - 搜尋最近 8–12 週的 Foundayo / orforglipron 週處方量數據（來源：IQVIA、Symphony Health、投行研報、財經新聞）
     - 取得每週 TRx 絕對數量與週增長率（WoW%）
     - 若暫無處方量數據（如仍在商業化初期），搜尋 orforglipron 上市進度、處方量放量速度分析師預估或醫療通路鋪貨狀況，並在圖表區說明目前所處商業化階段
-11. AI 基礎建設驗證指標（三項，每項均需搜尋最新數據）：
+10. AI 基礎建設驗證指標（三項，每項均需搜尋最新數據）：
    - CSP capex 同比變化：Microsoft/Amazon/Google/Meta 最新季度雲端資本支出金額與 YoY 成長率
    - AI 伺服器出貨量月度趨勢：最新月份全球 AI 伺服器出貨量或出貨量預估（來源：TrendForce / IDC）
    - HBM 合約價與現貨價利差：最新 HBM3e 或 HBM3 合約價、現貨價，及兩者利差（來源：DRAMeXchange / TrendForce）
@@ -306,7 +303,7 @@ PROMPT = f"""
 - 英雄橫幅（2 欄，最重要的 2 個事件）
 - 每日必看 5 大預警指標模組（VIX/HY利差/10Y殖利率/AI龍頭線型/台股槓桿）
 - 數據驗證區（✓ 已確認 / ⚠ 預估）
-- AI 基礎建設驗證指標區塊（每次必須包含，使用搜尋任務 9 的數據）：
+- AI 基礎建設驗證指標區塊（每次必須包含，使用搜尋任務 10 的數據）：
   - 3 格並排卡片，每格一個指標
   - 格 1「CSP Capex YoY」：顯示 MSFT/AMZN/GOOGL/META 各自最新季度 capex 金額與 YoY%，用小 bar 或數值對比呈現
   - 格 2「AI 伺服器出貨量」：顯示最新月份數字與月度趨勢方向（↑↓），標明來源與月份
@@ -314,19 +311,17 @@ PROMPT = f"""
   - 每格底部標明資料來源與日期
 - KPI 指標看板（4 格）
 - 視覺圖表區（Chart.js 4.4.1 + datalabels 2.2.0）
-- LLY Foundayo 週處方量區塊（使用搜尋任務 10 的數據）：
+- LLY Foundayo 週處方量區塊（使用搜尋任務 9 的數據）：
   - 上方：Chart.js 折線圖，X 軸為週別（如 W1/W2...），Y 軸為 TRx 數量（千份）
   - 下方：長條圖或標注，顯示每週 WoW 增長率（%），正增長綠色、負增長紅色
   - 右上角顯示最新一週 TRx 數值與 WoW%（大字突出）
   - 【重要】Foundayo = orforglipron（口服小分子 GLP-1），與 Mounjaro/Zepbound（tirzepatide 注射劑）是獨立產品線，圖表內容嚴禁混用
   - 若 TRx 數據尚不可得（商業化初期），改以文字卡片說明：當前商業化階段、分析師 TRx 放量預估、鋪貨進度
   - 標明資料來源（IQVIA / Symphony Health / 投行）與資料截止日期
-- 恐懼指數近 6 個月趨勢圖區塊（使用上方 fear_data JSON）：
-  - 左右並排兩張 Chart.js 折線圖：左「台股恐懼指數（VXTW）」、右「美股恐懼指數（VIX）」
-  - X 軸：近 6 個月日期；Y 軸：指數值
+- 美股 VIX 恐懼指數近 6 個月趨勢圖區塊（使用上方 fear_data JSON）：
+  - Chart.js 折線圖，X 軸：近 6 個月日期；Y 軸：VIX 指數值
   - 加入水平參考線：VIX 20（警戒）、VIX 30（恐慌），標示顏色
   - 線條顏色：數值高於 25 時轉紅，低於 15 時轉綠，中間為琥珀色
-  - 若某市場資料為空陣列，顯示「資料暫無，請參考最新搜尋結果」提示
 - 台指期夜盤動態區塊：
   - 顯示夜盤最新報價、漲跌點數與百分比、成交量
   - 與日盤收盤差距（用顏色標示漲跌：漲綠跌紅）
