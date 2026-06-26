@@ -99,8 +99,12 @@ jobs:
             echo "LINE 個人通知已發送"
           fi
           if [ -n "$LINE_GROUP_ID" ]; then
-            send_line "$LINE_GROUP_ID"
-            echo "LINE 群組通知已發送"
+            IFS=',' read -ra GROUP_IDS <<< "$LINE_GROUP_ID"
+            for GID in "${GROUP_IDS[@]}"; do
+              GID=$(echo "$GID" | xargs)
+              send_line "$GID"
+              echo "LINE 群組通知已發送：$GID"
+            done
           fi
 
       - name: Send Email notification
