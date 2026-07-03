@@ -24,6 +24,29 @@ def _val_class(change):
     return ""
 
 
+def _safe_css_token(value, allowed, default):
+    """
+    AI 回傳的 tone/status 字串會直接當 CSS class 插進模板；若 AI 打錯字或幻覺出
+    不在允許清單內的值，用這個函式收斂成安全的預設值，避免樣式跑掉或殘留可疑字串。
+    """
+    return value if value in allowed else default
+
+
+TONE_VALUES = {"green", "amber", "red", "blue"}
+STATUS_VALUES = {"green", "amber", "red"}
+
+
+def _sanitize_header_pills(header_pills):
+    return [{**pill, "tone": _safe_css_token(pill.get("tone"), TONE_VALUES, "blue")} for pill in header_pills]
+
+
+def _sanitize_institutional_summary(institutional_summary):
+    return [
+        {**item, "tone": _safe_css_token(item.get("tone"), {"green", "red"}, "")}
+        for item in institutional_summary
+    ]
+
+
 def build_ticker_data(quotes):
     """把 fetch_quotes() 結果轉成 ticker 跑馬燈用的 list[dict]。"""
     order = ["TWII", "2330", "2317", "2454", "0050", "SPX", "NVDA", "AVGO",
@@ -119,6 +142,17 @@ def build_earnings_context(earnings_list):
     return earnings_list  # 已是 list[dict]，欄位與模板需要的一致，不需轉換
 
 
+def _sanitize_warning_indicators(warning_indicators):
+    return {
+        key: {**item, "status": _safe_css_token(item.get("status"), STATUS_VALUES, "amber")}
+        for key, item in warning_indicators.items()
+    }
+
+
+def _sanitize_hero_events(hero_events):
+    return [{**hero, "theme": _safe_css_token(hero.get("theme"), STATUS_VALUES, "amber")} for hero in hero_events]
+
+
 def build_template_context(*, date_label, weekday_cn, tw_holiday_note,
                             quotes, fear_data, pe_data, institutional_data,
                             earnings_list, narrative_json):
@@ -134,12 +168,12 @@ def build_template_context(*, date_label, weekday_cn, tw_holiday_note,
         "pe_data": build_pe_data(pe_data),
         "institutional": build_institutional_context(institutional_data),
         "earnings": build_earnings_context(earnings_list),
-        "header_pills": narrative_json["header_pills"],
+        "header_pills": _sanitize_header_pills(narrative_json["header_pills"]),
         "data_validation": narrative_json["data_validation"],
-        "hero_events": narrative_json["hero_events"],
-        "warning_indicators": narrative_json["warning_indicators"],
+        "hero_events": _sanitize_hero_events(narrative_json["hero_events"]),
+        "warning_indicators": _sanitize_warning_indicators(narrative_json["warning_indicators"]),
         "night_session": narrative_json["night_session"],
-        "institutional_summary": narrative_json["institutional_summary"],
+        "institutional_summary": _sanitize_institutional_summary(narrative_json["institutional_summary"]),
         "news": narrative_json["news"],
         "ai_infra_html": narrative_json["ai_infra_html"],
         "theme_cards": narrative_json["theme_cards"],

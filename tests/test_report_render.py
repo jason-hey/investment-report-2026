@@ -219,6 +219,15 @@ def test_build_template_context_and_render_produces_valid_html():
     assert "LLY Foundayo 測試敘述內容" in html
     assert "NVIDIA" in html  # earnings_list 透過 build_earnings_context 傳入
 
+    # Task 8 事後補齊的 5 個欄位（header_pills/data_validation/ai_infra_html/
+    # lly_foundayo.extra_html/institutional_summary）也要確認實際出現在輸出中，
+    # 不能只靠 validate_html() 這種粗略檢查（那不會抓到迴圈變數名稱打錯字）
+    assert "測試重點一" in html
+    assert "測試已確認項目" in html
+    assert "infra-test" in html
+    assert "lly-extra-test" in html
+    assert "買超 +測試億" in html
+
 
 def test_build_vix_history_extracts_us_history():
     from scripts.report_render import build_vix_history
@@ -236,6 +245,28 @@ def test_build_pe_data_adds_chart_color():
     result = build_pe_data(pe_data)
     assert result["tw"][0]["color"] == "#4f8ef7"
     assert result["tw"][0]["current_trailing_pe"] == 33.4
+
+
+def test_build_template_context_sanitizes_unrecognized_tone_and_status_values():
+    from scripts.report_render import build_template_context
+
+    narrative = _fake_narrative_json()
+    narrative.pop("daily_brief")
+    narrative["header_pills"][0]["tone"] = "purple-typo"
+    narrative["institutional_summary"][0]["tone"] = "not-a-color"
+    narrative["warning_indicators"]["vix"]["status"] = "SUPER_BULLISH"
+    narrative["hero_events"][0]["theme"] = "rainbow"
+
+    context = build_template_context(
+        date_label="2026.07.03", weekday_cn="週五", tw_holiday_note="",
+        quotes={}, fear_data={}, pe_data={"tw": [], "us": []}, institutional_data=None,
+        earnings_list=[], narrative_json=narrative,
+    )
+
+    assert context["header_pills"][0]["tone"] == "blue"
+    assert context["institutional_summary"][0]["tone"] == ""
+    assert context["warning_indicators"]["vix"]["status"] == "amber"
+    assert context["hero_events"][0]["theme"] == "amber"
 
 
 def test_build_institutional_context_handles_none():
