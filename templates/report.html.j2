@@ -833,6 +833,7 @@ canvas { max-width:100%; }
       <span class="sec-title-icon">🏦</span> 法人連三日同向買賣超排行
       <span class="sec-subtitle">資料截止 2026-07-01（最新可取得）</span>
     </div>
+    <div class="header-sub">資料截止：{{ institutional.as_of_dates[-1] if institutional.as_of_dates else "—" }}（TWSE OpenAPI，估算金額）</div>
     <!-- Summary -->
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
       <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px">
@@ -862,16 +863,15 @@ canvas { max-width:100%; }
           <table class="inst-table">
             <thead><tr><th>#</th><th>股號</th><th>股名</th><th>三日買超(億)</th><th>三日張數</th></tr></thead>
             <tbody>
-              <tr><td>1</td><td>2330</td><td>台積電</td><td class="inst-amt-buy">+68.5</td><td class="inst-amt-buy">+29,100</td></tr>
-              <tr><td>2</td><td>2317</td><td>鴻　海</td><td class="inst-amt-buy">+12.3</td><td class="inst-amt-buy">+51,600</td></tr>
-              <tr><td>3</td><td>2454</td><td>聯發科</td><td class="inst-amt-buy">+9.8</td><td class="inst-amt-buy">+2,300</td></tr>
-              <tr><td>4</td><td>2610</td><td>華　航</td><td class="inst-amt-buy">+8.1</td><td class="inst-amt-buy">+43,200</td></tr>
-              <tr><td>5</td><td>1301</td><td>台　塑</td><td class="inst-amt-buy">+6.4</td><td class="inst-amt-buy">+19,800</td></tr>
-              <tr><td>6</td><td>2308</td><td>台達電</td><td class="inst-amt-buy">+5.9</td><td class="inst-amt-buy">+3,100</td></tr>
-              <tr><td>7</td><td>5876</td><td>上海商銀</td><td class="inst-amt-buy">+5.2</td><td class="inst-amt-buy">+15,600</td></tr>
-              <tr><td>8</td><td>2618</td><td>長榮航</td><td class="inst-amt-buy">+4.7</td><td class="inst-amt-buy">+22,100</td></tr>
-              <tr><td>9</td><td>2881</td><td>富邦金</td><td class="inst-amt-buy">+4.1</td><td class="inst-amt-buy">+9,800</td></tr>
-              <tr><td>10</td><td>3711</td><td>日月光</td><td class="inst-amt-buy">+3.8</td><td class="inst-amt-buy">+8,400</td></tr>
+              {% for row in institutional.foreign_buy_top10 %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.code }}</td>
+                <td>{{ row.name }}</td>
+                <td class="inst-amt-buy">{{ "{:,}".format(row.est_amount_ntd) if row.est_amount_ntd else "—" }}</td>
+                <td class="inst-amt-buy">{{ row.lots_3d }}</td>
+              </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
@@ -880,16 +880,15 @@ canvas { max-width:100%; }
           <table class="inst-table">
             <thead><tr><th>#</th><th>股號</th><th>股名</th><th>三日賣超(億)</th><th>三日張數</th></tr></thead>
             <tbody>
-              <tr><td>1</td><td>2303</td><td>聯　電</td><td class="inst-amt-sell">-8.2</td><td class="inst-amt-sell">-72,300</td></tr>
-              <tr><td>2</td><td>2337</td><td>旺　宏</td><td class="inst-amt-sell">-6.1</td><td class="inst-amt-sell">-31,400</td></tr>
-              <tr><td>3</td><td>2882</td><td>國泰金</td><td class="inst-amt-sell">-5.8</td><td class="inst-amt-sell">-28,600</td></tr>
-              <tr><td>4</td><td>2885</td><td>元大金</td><td class="inst-amt-sell">-4.9</td><td class="inst-amt-sell">-38,100</td></tr>
-              <tr><td>5</td><td>2890</td><td>永豐金</td><td class="inst-amt-sell">-4.2</td><td class="inst-amt-sell">-29,800</td></tr>
-              <tr><td>6</td><td>2888</td><td>新光金</td><td class="inst-amt-sell">-3.8</td><td class="inst-amt-sell">-41,200</td></tr>
-              <tr><td>7</td><td>2891</td><td>中信金</td><td class="inst-amt-sell">-3.5</td><td class="inst-amt-sell">-22,400</td></tr>
-              <tr><td>8</td><td>5347</td><td>世　界</td><td class="inst-amt-sell">-3.1</td><td class="inst-amt-sell">-12,300</td></tr>
-              <tr><td>9</td><td>2912</td><td>統一超</td><td class="inst-amt-sell">-2.8</td><td class="inst-amt-sell">-5,600</td></tr>
-              <tr><td>10</td><td>2357</td><td>華　碩</td><td class="inst-amt-sell">-2.5</td><td class="inst-amt-sell">-3,200</td></tr>
+              {% for row in institutional.foreign_sell_top10 %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.code }}</td>
+                <td>{{ row.name }}</td>
+                <td class="inst-amt-sell">{{ "{:,}".format(row.est_amount_ntd) if row.est_amount_ntd else "—" }}</td>
+                <td class="inst-amt-sell">{{ row.lots_3d }}</td>
+              </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
@@ -904,16 +903,15 @@ canvas { max-width:100%; }
           <table class="inst-table">
             <thead><tr><th>#</th><th>股號</th><th>股名</th><th>三日買超(億)</th><th>三日張數</th></tr></thead>
             <tbody>
-              <tr><td>1</td><td>2886</td><td>兆豐金</td><td class="inst-amt-buy">+5.3</td><td class="inst-amt-buy">+22,800</td></tr>
-              <tr><td>2</td><td>2883</td><td>開發金</td><td class="inst-amt-buy">+4.8</td><td class="inst-amt-buy">+38,100</td></tr>
-              <tr><td>3</td><td>2887</td><td>台新金</td><td class="inst-amt-buy">+4.1</td><td class="inst-amt-buy">+29,600</td></tr>
-              <tr><td>4</td><td>2884</td><td>玉山金</td><td class="inst-amt-buy">+3.7</td><td class="inst-amt-buy">+25,400</td></tr>
-              <tr><td>5</td><td>2892</td><td>第一金</td><td class="inst-amt-buy">+3.2</td><td class="inst-amt-buy">+18,700</td></tr>
-              <tr><td>6</td><td>2890</td><td>永豐金</td><td class="inst-amt-buy">+2.9</td><td class="inst-amt-buy">+21,200</td></tr>
-              <tr><td>7</td><td>2880</td><td>華南金</td><td class="inst-amt-buy">+2.6</td><td class="inst-amt-buy">+16,800</td></tr>
-              <tr><td>8</td><td>2409</td><td>友　達</td><td class="inst-amt-buy">+2.1</td><td class="inst-amt-buy">+48,300</td></tr>
-              <tr><td>9</td><td>3006</td><td>晶　豪</td><td class="inst-amt-buy">+1.8</td><td class="inst-amt-buy">+9,100</td></tr>
-              <tr><td>10</td><td>2474</td><td>可　成</td><td class="inst-amt-buy">+1.5</td><td class="inst-amt-buy">+4,200</td></tr>
+              {% for row in institutional.trust_buy_top10 %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.code }}</td>
+                <td>{{ row.name }}</td>
+                <td class="inst-amt-buy">{{ "{:,}".format(row.est_amount_ntd) if row.est_amount_ntd else "—" }}</td>
+                <td class="inst-amt-buy">{{ row.lots_3d }}</td>
+              </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
@@ -922,22 +920,21 @@ canvas { max-width:100%; }
           <table class="inst-table">
             <thead><tr><th>#</th><th>股號</th><th>股名</th><th>三日賣超(億)</th><th>三日張數</th></tr></thead>
             <tbody>
-              <tr><td>1</td><td>2303</td><td>聯　電</td><td class="inst-amt-sell">-4.5</td><td class="inst-amt-sell">-39,700</td></tr>
-              <tr><td>2</td><td>2885</td><td>元大金</td><td class="inst-amt-sell">-3.8</td><td class="inst-amt-sell">-29,400</td></tr>
-              <tr><td>3</td><td>1301</td><td>台　塑</td><td class="inst-amt-sell">-2.9</td><td class="inst-amt-sell">-9,800</td></tr>
-              <tr><td>4</td><td>2002</td><td>中　鋼</td><td class="inst-amt-sell">-2.4</td><td class="inst-amt-sell">-31,600</td></tr>
-              <tr><td>5</td><td>2891</td><td>中信金</td><td class="inst-amt-sell">-2.1</td><td class="inst-amt-sell">-13,400</td></tr>
-              <tr><td>6</td><td>2354</td><td>鴻準</td><td class="inst-amt-sell">-1.9</td><td class="inst-amt-sell">-6,200</td></tr>
-              <tr><td>7</td><td>1402</td><td>遠東新</td><td class="inst-amt-sell">-1.6</td><td class="inst-amt-sell">-8,900</td></tr>
-              <tr><td>8</td><td>5009</td><td>台灣化纖</td><td class="inst-amt-sell">-1.4</td><td class="inst-amt-sell">-11,200</td></tr>
-              <tr><td>9</td><td>2408</td><td>南　亞科</td><td class="inst-amt-sell">-1.2</td><td class="inst-amt-sell">-3,800</td></tr>
-              <tr><td>10</td><td>2344</td><td>華邦電</td><td class="inst-amt-sell">-1.1</td><td class="inst-amt-sell">-14,600</td></tr>
+              {% for row in institutional.trust_sell_top10 %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.code }}</td>
+                <td>{{ row.name }}</td>
+                <td class="inst-amt-sell">{{ "{:,}".format(row.est_amount_ntd) if row.est_amount_ntd else "—" }}</td>
+                <td class="inst-amt-sell">{{ row.lots_3d }}</td>
+              </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
       </div>
     </div>
-    <div class="inst-src">⚠ 連三日排行資料以 2026/07/01 三大法人資料為基礎推算，完整資料請參閱 CMoney / Goodinfo.tw / 證交所 · 部分數據為估計值</div>
+    <div class="inst-src">⚠ 連三日排行資料以 {{ institutional.as_of_dates[-1] if institutional.as_of_dates else "—" }} 三大法人資料為基礎推算，完整資料請參閱 CMoney / Goodinfo.tw / 證交所 · 部分數據為估計值</div>
   </div>
 </div>
 
@@ -1006,24 +1003,18 @@ canvas { max-width:100%; }
         <button class="earnings-filter-btn active" onclick="filterEarnings('all',this)">全部</button>
         <button class="earnings-filter-btn" onclick="filterEarnings('us',this)">🇺🇸 美股</button>
         <button class="earnings-filter-btn" onclick="filterEarnings('tw',this)">🇹🇼 台股</button>
-        <button class="earnings-filter-btn" onclick="filterEarnings('star',this)">★ 持倉</button>
       </div>
       <table class="earnings-table" id="earningsTable">
-        <thead><tr><th>日期</th><th>市場</th><th>代號</th><th>公司</th><th>預估 EPS</th><th>重要度</th><th>持倉</th></tr></thead>
+        <thead><tr><th>日期</th><th>代號</th><th>公司</th><th>市場</th></tr></thead>
         <tbody>
-          <tr data-market="us" data-star="0"><td>07/07</td><td>🇺🇸</td><td>TSMC ADR</td><td>台積電 ADR</td><td>$2.82</td><td>⭐⭐⭐</td><td>—</td></tr>
-          <tr data-market="us" data-star="1"><td>07/08</td><td>🇺🇸</td><td>LLY</td><td>Eli Lilly</td><td>$3.60</td><td>⭐⭐⭐</td><td><span class="earn-star">★</span></td></tr>
-          <tr data-market="us" data-star="1"><td>07/09</td><td>🇺🇸</td><td>AVGO</td><td>Broadcom</td><td>$1.72</td><td>⭐⭐⭐</td><td><span class="earn-star">★</span></td></tr>
-          <tr data-market="us" data-star="0"><td>07/09</td><td>🇺🇸</td><td>ORCL</td><td>Oracle</td><td>$1.88</td><td>⭐⭐⭐</td><td><span class="earn-star">★</span></td></tr>
-          <tr data-market="us" data-star="1"><td>07/10</td><td>🇺🇸</td><td>NVDA</td><td>NVIDIA</td><td>$0.88</td><td>⭐⭐⭐</td><td><span class="earn-star">★</span></td></tr>
-          <tr data-market="tw" data-star="1"><td>07/10</td><td>🇹🇼</td><td>2330</td><td>台積電 Q2</td><td>EPS ~$15.2</td><td>⭐⭐⭐</td><td><span class="earn-star">★</span></td></tr>
-          <tr data-market="us" data-star="0"><td>07/11</td><td>🇺🇸</td><td>JPM</td><td>JPMorgan Chase</td><td>$4.18</td><td>⭐⭐⭐</td><td>—</td></tr>
-          <tr data-market="us" data-star="0"><td>07/11</td><td>🇺🇸</td><td>GS</td><td>Goldman Sachs</td><td>$10.51</td><td>⭐⭐</td><td>—</td></tr>
-          <tr data-market="tw" data-star="1"><td>07/14</td><td>🇹🇼</td><td>2317</td><td>鴻海 Q2</td><td>EPS ~$1.85</td><td>⭐⭐</td><td><span class="earn-star">★</span></td></tr>
-          <tr data-market="tw" data-star="1"><td>07/15</td><td>🇹🇼</td><td>2454</td><td>聯發科 Q2</td><td>EPS ~$78</td><td>⭐⭐⭐</td><td><span class="earn-star">★</span></td></tr>
-          <tr data-market="us" data-star="0"><td>07/15</td><td>🇺🇸</td><td>BAC</td><td>Bank of America</td><td>$0.86</td><td>⭐⭐</td><td>—</td></tr>
-          <tr data-market="us" data-star="0"><td>07/16</td><td>🇺🇸</td><td>NFLX</td><td>Netflix</td><td>$7.04</td><td>⭐⭐</td><td>—</td></tr>
-          <tr data-market="us" data-star="0"><td>07/17</td><td>🇺🇸</td><td>MRVL</td><td>Marvell Tech</td><td>$0.95</td><td>⭐⭐⭐</td><td>—</td></tr>
+          {% for e in earnings %}
+          <tr data-market="{{ 'tw' if e.market == '台股' else 'us' }}">
+            <td>{{ e.date }}</td>
+            <td>{{ e.symbol }}</td>
+            <td>{{ e.name }}</td>
+            <td>{{ e.market }}</td>
+          </tr>
+          {% endfor %}
         </tbody>
       </table>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-secondary);margin-top:8px">⚠ 財報日期/EPS 預估為市場共識，實際可能調整 · ★ 表示個人持倉標的</div>

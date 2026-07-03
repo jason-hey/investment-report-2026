@@ -63,6 +63,9 @@ def test_render_report_produces_html_with_ticker_and_kpi_data():
                         "change_class": "green", "change_text": "+274 (+0.59%)", "extra": None}] * 8,
         "vix_history": [{"date": "2026-07-01", "value": 16.5}],
         "pe_data": {"tw": [], "us": []},
+        "institutional": {"as_of_dates": [], "foreign_buy_top10": [], "foreign_sell_top10": [],
+                           "trust_buy_top10": [], "trust_sell_top10": []},
+        "earnings": [],
     }
     html = render_report(context)
     assert "46,744" in html
@@ -85,3 +88,27 @@ def test_build_pe_data_adds_chart_color():
     result = build_pe_data(pe_data)
     assert result["tw"][0]["color"] == "#4f8ef7"
     assert result["tw"][0]["current_trailing_pe"] == 33.4
+
+
+def test_build_institutional_context_handles_none():
+    from scripts.report_render import build_institutional_context
+
+    result = build_institutional_context(None)
+    assert result["foreign_buy_top10"] == []
+    assert result["as_of_dates"] == []
+
+
+def test_build_institutional_context_passes_through_data():
+    from scripts.report_render import build_institutional_context
+
+    data = {"as_of_dates": ["2026-07-01"], "foreign_buy_top10": [{"code": "2330", "name": "台積電",
+             "lots_3d": 100.0, "est_amount_ntd": 24000000}],
+             "foreign_sell_top10": [], "trust_buy_top10": [], "trust_sell_top10": []}
+    assert build_institutional_context(data) == data
+
+
+def test_build_earnings_context_passes_through_list():
+    from scripts.report_render import build_earnings_context
+
+    earnings = [{"date": "2026-07-08", "symbol": "LLY", "name": "Eli Lilly", "market": "美股"}]
+    assert build_earnings_context(earnings) == earnings

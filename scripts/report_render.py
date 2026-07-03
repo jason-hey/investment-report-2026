@@ -90,6 +90,18 @@ def build_pe_data(pe_data):
     return result
 
 
+def build_institutional_context(institutional_data):
+    """institutional_data 為 None 時（假日等原因預抓失敗）回傳空排行，模板顯示 0 筆。"""
+    if not institutional_data:
+        return {"as_of_dates": [], "foreign_buy_top10": [], "foreign_sell_top10": [],
+                "trust_buy_top10": [], "trust_sell_top10": []}
+    return institutional_data
+
+
+def build_earnings_context(earnings_list):
+    return earnings_list  # 已是 list[dict]，欄位與模板需要的一致，不需轉換
+
+
 def render_report(context):
     """用 templates/report.html.j2 渲染最終 HTML 字串。"""
     env = Environment(loader=FileSystemLoader("templates"), autoescape=False)
