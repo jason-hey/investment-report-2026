@@ -357,7 +357,6 @@ canvas { max-width:100%; }
 .earnings-table th { padding:8px 12px; color:var(--text-secondary); font-weight:500; border-bottom:1px solid var(--border); text-align:left; }
 .earnings-table td { padding:8px 12px; border-bottom:1px solid rgba(30,30,58,0.4); color:var(--text-primary); }
 .earnings-table tr:hover td { background:rgba(255,255,255,0.02); }
-.earn-star { color:var(--accent-gold); }
 
 /* ─── NEWS ─── */
 .news-tabs { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:14px; }
@@ -831,7 +830,6 @@ canvas { max-width:100%; }
   <div class="container">
     <div class="sec-title">
       <span class="sec-title-icon">🏦</span> 法人連三日同向買賣超排行
-      <span class="sec-subtitle">資料截止 2026-07-01（最新可取得）</span>
     </div>
     <div class="header-sub">資料截止：{{ institutional.as_of_dates[-1] if institutional.as_of_dates else "—" }}（TWSE OpenAPI，估算金額）</div>
     <!-- Summary -->
@@ -868,8 +866,8 @@ canvas { max-width:100%; }
                 <td>{{ loop.index }}</td>
                 <td>{{ row.code }}</td>
                 <td>{{ row.name }}</td>
-                <td class="inst-amt-buy">{{ "{:,}".format(row.est_amount_ntd) if row.est_amount_ntd else "—" }}</td>
-                <td class="inst-amt-buy">{{ row.lots_3d }}</td>
+                <td class="inst-amt-buy">{{ "{:,.2f}".format(row.est_amount_ntd / 100000000) if row.est_amount_ntd else "—" }}</td>
+                <td class="inst-amt-buy">{{ "{:+,.1f}".format(row.lots_3d) }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -885,8 +883,8 @@ canvas { max-width:100%; }
                 <td>{{ loop.index }}</td>
                 <td>{{ row.code }}</td>
                 <td>{{ row.name }}</td>
-                <td class="inst-amt-sell">{{ "{:,}".format(row.est_amount_ntd) if row.est_amount_ntd else "—" }}</td>
-                <td class="inst-amt-sell">{{ row.lots_3d }}</td>
+                <td class="inst-amt-sell">{{ "{:,.2f}".format(row.est_amount_ntd / 100000000) if row.est_amount_ntd else "—" }}</td>
+                <td class="inst-amt-sell">{{ "{:+,.1f}".format(row.lots_3d) }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -908,8 +906,8 @@ canvas { max-width:100%; }
                 <td>{{ loop.index }}</td>
                 <td>{{ row.code }}</td>
                 <td>{{ row.name }}</td>
-                <td class="inst-amt-buy">{{ "{:,}".format(row.est_amount_ntd) if row.est_amount_ntd else "—" }}</td>
-                <td class="inst-amt-buy">{{ row.lots_3d }}</td>
+                <td class="inst-amt-buy">{{ "{:,.2f}".format(row.est_amount_ntd / 100000000) if row.est_amount_ntd else "—" }}</td>
+                <td class="inst-amt-buy">{{ "{:+,.1f}".format(row.lots_3d) }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -925,8 +923,8 @@ canvas { max-width:100%; }
                 <td>{{ loop.index }}</td>
                 <td>{{ row.code }}</td>
                 <td>{{ row.name }}</td>
-                <td class="inst-amt-sell">{{ "{:,}".format(row.est_amount_ntd) if row.est_amount_ntd else "—" }}</td>
-                <td class="inst-amt-sell">{{ row.lots_3d }}</td>
+                <td class="inst-amt-sell">{{ "{:,.2f}".format(row.est_amount_ntd / 100000000) if row.est_amount_ntd else "—" }}</td>
+                <td class="inst-amt-sell">{{ "{:+,.1f}".format(row.lots_3d) }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -1709,7 +1707,6 @@ function filterEarnings(filter, btn) {
   const rows = document.querySelectorAll('#earningsTable tbody tr');
   rows.forEach(r => {
     if (filter === 'all') { r.style.display = ''; return; }
-    if (filter === 'star') { r.style.display = r.dataset.star === '1' ? '' : 'none'; return; }
     r.style.display = r.dataset.market === filter ? '' : 'none';
   });
 }
