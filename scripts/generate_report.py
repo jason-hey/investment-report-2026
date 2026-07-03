@@ -8,7 +8,27 @@ import json
 import os
 import re
 import shutil
+import sys
 from datetime import datetime, timezone, timedelta
+
+# 本檔案與 scripts/data_fetchers.py 大量使用 emoji（⚠️ 等）在 print() 訊息裡。
+# Windows 本機執行時（CLAUDE.md「Running the Report Generator Locally」有記載這個用法），
+# 若終端機/管線不是 UTF-8（例如預設的 cp950），這些 print 會直接拋 UnicodeEncodeError
+# 讓整個腳本中途崩潰。GitHub Actions（ubuntu-latest）預設就是 UTF-8 不受影響，但本機
+# 執行值得加這道防線；stdout 不支援 reconfigure（例如非互動式管線）時安靜跳過即可。
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+# CLAUDE.md 與 .github/workflows/daily-update.yml 都是用「python scripts/generate_report.py」
+# （repo 根目錄執行）啟動本檔案。Python 遇到這種呼叫方式時，會把「腳本所在目錄」
+# （scripts/）放進 sys.path[0]，而不是目前工作目錄——這代表下面的
+# `from scripts.data_fetchers import ...` 找不到 scripts 這個套件（不是在 scripts/ 目錄
+# 裡面找 scripts.xxx，會直接 ModuleNotFoundError），整個 pipeline 會在最開頭就崩潰。
+# pytest 之所以能正常 import 是因為它自己會把 repo 根目錄加進 sys.path，掩蓋了這個問題。
+# 這裡明確把 repo 根目錄（本檔案的上一層）加進 sys.path，兩種啟動方式都能正常運作。
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 
 from scripts.data_fetchers import (
     is_prev_us_day_holiday,
