@@ -178,6 +178,23 @@ def fetch_all_pe_data():
     return result
 
 
+# ── 三地市場分析 Prompt：讀取獨立 prompt 檔並注入主 prompt ──────────────────
+
+def load_market_analysis_prompt(date_str, weekday_cn):
+    """讀取 doc/Prompt/daily_market_analysis_prompt.md，去除檔頭使用說明，代入今日日期。"""
+    path = "doc/Prompt/daily_market_analysis_prompt.md"
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except FileNotFoundError:
+        print(f"  ⚠️ 找不到 {path}，跳過三地市場深度分析區塊")
+        return None
+
+    parts = content.split("---\n\n", 1)
+    body = parts[1] if len(parts) > 1 else content
+    return body.replace("{{TODAY}}", f"{date_str}，{weekday_cn}")
+
+
 # ── 恐懼指數：VIX（美股）近 6 個月日資料 ──────────────────────
 
 FEAR_INDEX_TICKERS = {
@@ -252,6 +269,9 @@ print("  正在用 yfinance 抓取恐懼指數（近 6 個月）...")
 fear_data = fetch_all_fear_index()
 fear_json = _json.dumps(fear_data, ensure_ascii=False)
 
+print("  正在讀取三地市場深度分析 prompt...")
+market_analysis_prompt = load_market_analysis_prompt(date_str, weekday_cn)
+
 PROMPT = f"""
 今天是 {date_label}（{weekday_cn}），台灣台中。
 請為我生成一份完整的「每日投資情報 HTML 網頁」。
@@ -296,6 +316,13 @@ PROMPT = f"""
    - CSP capex 同比變化：Microsoft/Amazon/Google/Meta 最新季度雲端資本支出金額與 YoY 成長率
    - AI 伺服器出貨量月度趨勢：最新月份全球 AI 伺服器出貨量或出貨量預估（來源：TrendForce / IDC）
    - HBM 合約價與現貨價利差：最新 HBM3e 或 HBM3 合約價、現貨價，及兩者利差（來源：DRAMeXchange / TrendForce）
+
+## 額外任務：三地市場深度分析（獨立完整執行，結果嵌入 HTML 新區塊）
+除了上方任務外，請完整執行以下這份獨立的「每日三地市場分析」規格（含台股/美股/韓股搜尋、資料規則、信心等級標註 F/G/E/I/W、洗盤 vs 出貨七維度快檢），並將完整分析結果整理成 HTML 報告中的一個新區塊（區塊標題：「三地市場深度分析」）。此區塊需完整保留下方七大結構（核心結論、事件鏈、美股、韓股、台股、洗盤vs出貨七維度快檢表格、行動清單），並在區塊末尾附上「今日資料缺口」清單。以下為完整規格：
+
+---
+{market_analysis_prompt if market_analysis_prompt else "（找不到 doc/Prompt/daily_market_analysis_prompt.md，此區塊略過）"}
+---
 
 ## HTML 設計規格
 - 深色主題（背景 #04040d，IBM Plex Mono + Inter 字體）
@@ -355,6 +382,12 @@ PROMPT = f"""
   - 底部標明資料來源（CMoney / Goodinfo / 證交所）與截止日期
 - 未來 2 週財報速覽（Filter 按鈕：全部/美股/台股/★持倉）
 - 財經新聞中心（Tab：4 個主題）
+- 三地市場深度分析區塊（置於財經新聞中心之後、風險矩陣之前；使用上方「額外任務」的完整分析內容）：
+  - 依序完整呈現：核心結論、事件鏈、美股、韓股、台股、洗盤vs出貨七維度快檢表格、行動清單、今日資料缺口
+  - 信心等級（F/G/E/I/W）以小色塊標籤呈現在每個數據點旁：F 綠、G 藍、E 黃、I 紫、W 灰（灰底不可過暗，需符合文字色階規則）
+  - 洗盤vs出貨七維度快檢用表格呈現（維度｜今日觀察｜傾向），並在表格下方明顯標示機率權重（如「洗盤 70% / 出貨 30%」）與升級/降級條件
+  - 行動清單用 checklist 樣式（若 X 發生 → 做 Y），附價位與日期
+  - 比較性數據一律用表格，分析文字用完整散文段落，避免碎片化 bullet
 - 風險矩陣表格
 - 投資主題機會（5 張卡片）
 - 大師策略總結（3 欄）
