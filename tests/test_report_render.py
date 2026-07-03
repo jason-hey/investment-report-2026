@@ -61,7 +61,27 @@ def test_render_report_produces_html_with_ticker_and_kpi_data():
         "ticker_data": [{"sym": "加權指數", "price": "46,744", "chg": "+274", "pct": "+0.59%", "up": True}],
         "kpi_cards": [{"label": "台股加權指數", "val": "46,744", "val_class": "green",
                         "change_class": "green", "change_text": "+274 (+0.59%)", "extra": None}] * 8,
+        "vix_history": [{"date": "2026-07-01", "value": 16.5}],
+        "pe_data": {"tw": [], "us": []},
     }
     html = render_report(context)
     assert "46,744" in html
     assert "</html>" in html.lower()
+
+
+def test_build_vix_history_extracts_us_history():
+    from scripts.report_render import build_vix_history
+
+    fear_data = {"us": {"symbol": "^VIX", "name": "美股 VIX 恐懼指數",
+                        "history": [{"date": "2026-07-01", "value": 16.5}]}}
+    assert build_vix_history(fear_data) == [{"date": "2026-07-01", "value": 16.5}]
+
+
+def test_build_pe_data_adds_chart_color():
+    from scripts.report_render import build_pe_data
+
+    pe_data = {"tw": [{"symbol": "2330.TW", "name": "台積電", "trailing_3y": [],
+                       "trailing_1y": [], "current_trailing_pe": 33.4, "current_forward_pe": 19.6}]}
+    result = build_pe_data(pe_data)
+    assert result["tw"][0]["color"] == "#4f8ef7"
+    assert result["tw"][0]["current_trailing_pe"] == 33.4

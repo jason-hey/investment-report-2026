@@ -1,6 +1,8 @@
 """Jinja2 模板渲染：把預抓資料 + AI 敘述 JSON 組成模板變數，渲染出最終 HTML。"""
 from jinja2 import Environment, FileSystemLoader
 
+PE_COLORS = {"2330.TW": "#4f8ef7", "SPY": "#00d4ff", "NVDA": "#00e676", "LLY": "#ffa726"}
+
 
 def _norm_zero(value):
     """把 -0.0 正規化成 0.0，避免 f'{value:g}' 印出誤導的負號（例如 '+-0'）。"""
@@ -71,6 +73,21 @@ def build_kpi_cards(quotes):
             "extra": None,
         })
     return cards
+
+
+def build_vix_history(fear_data):
+    """fear_data 來自 data_fetchers.fetch_all_fear_index()，取 us.history。"""
+    return fear_data.get("us", {}).get("history", [])
+
+
+def build_pe_data(pe_data):
+    """把 data_fetchers.fetch_all_pe_data() 的輸出加上圖表顏色，其餘欄位原樣保留。"""
+    result = {}
+    for market, items in pe_data.items():
+        result[market] = []
+        for item in items:
+            result[market].append({**item, "color": PE_COLORS.get(item["symbol"], "#c8d0ec")})
+    return result
 
 
 def render_report(context):
