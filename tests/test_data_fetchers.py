@@ -135,3 +135,19 @@ def test_fetch_sector_rotation_returns_1d_and_1w_change(monkeypatch):
     assert set(first.keys()) == {"symbol", "name", "change_pct_1d", "change_pct_1w"}
     assert round(first["change_pct_1d"], 2) == round((106.0 - 104.0) / 104.0 * 100, 2)
     assert round(first["change_pct_1w"], 2) == round((106.0 - 100.0) / 100.0 * 100, 2)
+
+
+def test_fetch_oil_prices_returns_wti_and_brent_history(monkeypatch):
+    import scripts.data_fetchers as df
+
+    def fake_history(symbol, display_name, period="6mo"):
+        return [{"date": "2026-07-01", "value": 68.5}, {"date": "2026-07-02", "value": 69.1}]
+
+    monkeypatch.setattr(df, "fetch_fear_index_history", fake_history)
+    result = df.fetch_oil_prices()
+
+    assert result["wti"]["symbol"] == "CL=F"
+    assert result["wti"]["name"] == "WTI 原油"
+    assert result["wti"]["history"] == [{"date": "2026-07-01", "value": 68.5}, {"date": "2026-07-02", "value": 69.1}]
+    assert result["brent"]["symbol"] == "BZ=F"
+    assert result["brent"]["name"] == "Brent 原油"

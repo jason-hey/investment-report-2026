@@ -546,3 +546,24 @@ def fetch_sector_rotation():
             print(f"  ⚠️ {name}({symbol}) 板塊輪動抓取失敗: {e}")
     print(f"  產業輪動：成功 {len(result)}/{len(SECTOR_ETF_TICKERS)} 檔")
     return result
+
+
+# ── 油價走勢：WTI + Brent 近 6 個月日資料，格式比照 fetch_all_fear_index() ──
+
+OIL_TICKERS = {
+    "wti": ("CL=F", "WTI 原油"),
+    "brent": ("BZ=F", "Brent 原油"),
+}
+
+
+def fetch_oil_prices():
+    """抓取 WTI 與 Brent 近 6 個月日收盤價，格式與 fetch_all_fear_index() 一致
+    （皆為 fetch_fear_index_history() 的產物），模板端可沿用同一套繪圖邏輯。"""
+    result = {}
+    for key, (symbol, name) in OIL_TICKERS.items():
+        result[key] = {
+            "symbol": symbol,
+            "name": name,
+            "history": fetch_fear_index_history(symbol, name),
+        }
+    return result
