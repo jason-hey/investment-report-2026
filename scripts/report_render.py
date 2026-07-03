@@ -194,7 +194,7 @@ def build_template_context(*, date_label, weekday_cn, tw_holiday_note,
     """把所有預抓資料 + AI 敘述 JSON 組成 render_report() 需要的完整 context dict。
 
     korea_data/heatmap_data/sector_rotation_data/oil_data 4 個新參數給預設值
-    （而非必填），因為 scripts/generate_report.py 尚未在 Task 7 把對應的抓取函式接進
+    （而非必填），因為 scripts/generate_report.py 尚未在 Task 8 把對應的抓取函式接進
     呼叫端——維持預設值可讓既有呼叫端（含 tests/conftest.py 匯入 generate_report.py
     時真的會執行到的那個呼叫）在新增資料源正式接上前，仍照舊正常運作。
     """
