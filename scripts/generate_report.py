@@ -118,7 +118,10 @@ PE_TICKERS = {
 
 def fetch_pe_history(symbol, display_name):
     """
-    用 current trailingPE + 歷史收盤價計算每月 Trailing P/E 趨勢。
+    用季度財報的 Diluted/Basic EPS 計算各期「真實」TTM（近四季）EPS，
+    再除以對應期間的歷史股價，得到真實 Trailing P/E 趨勢。
+    （舊做法是用「目前 trailingPE 反推固定 EPS」去除歷史股價，等於假設 EPS 三年不變，
+    對 EPS 成長快的公司如 NVDA 會嚴重失真——這裡改用逐季真實 TTM EPS。）
     同時抓取 forwardPE 當前值。
     回傳 dict: {
         "trailing_3y": [{"date":"2023-06","pe":18.5}, ...],
@@ -133,28 +136,51 @@ def fetch_pe_history(symbol, display_name):
     try:
         ticker = yf.Ticker(symbol)
         info = ticker.info or {}
-        trailing_pe = info.get("trailingPE")
         forward_pe = info.get("forwardPE")
-        current_price = info.get("regularMarketPrice") or info.get("currentPrice")
+        forward_pe = round(forward_pe, 1) if forward_pe and forward_pe > 0 else None
 
-        if forward_pe and forward_pe > 0:
-            forward_pe = round(forward_pe, 1)
-        else:
-            forward_pe = None
-
-        if not trailing_pe or not current_price or trailing_pe <= 0 or current_price <= 0:
-            print(f"  ⚠️ {display_name} 無 Trailing P/E 資料，跳過歷史趨勢")
+        q_income = ticker.quarterly_income_stmt
+        eps_row_name = next(
+            (name for name in ("Diluted EPS", "Basic EPS")
+             if q_income is not None and not q_income.empty and name in q_income.index),
+            None
+        )
+        if eps_row_name is None:
+            print(f"  ⚠️ {display_name} 無季度 EPS 資料，跳過歷史趨勢")
             return {"trailing_3y": [], "forward_pe": forward_pe}
 
-        implied_eps = current_price / trailing_pe
+        eps_by_quarter = q_income.loc[eps_row_name].dropna().sort_index()
+        if len(eps_by_quarter) < 4:
+            print(f"  ⚠️ {display_name} 季度 EPS 資料不足 4 季，無法計算 TTM，跳過歷史趨勢")
+            return {"trailing_3y": [], "forward_pe": forward_pe}
+
+        # 每一季的 TTM EPS = 該季 + 前 3 季合計；依公布日期由舊到新排序
+        ttm_points = []
+        for i in range(3, len(eps_by_quarter)):
+            ttm_eps = float(eps_by_quarter.iloc[i - 3:i + 1].sum())
+            if ttm_eps > 0:
+                ttm_points.append((eps_by_quarter.index[i].date(), ttm_eps))
+
+        if not ttm_points:
+            print(f"  ⚠️ {display_name} TTM EPS 皆為負值，跳過歷史趨勢")
+            return {"trailing_3y": [], "forward_pe": forward_pe}
 
         hist = ticker.history(period="3y", interval="1mo")
         trailing_3y = []
         if not hist.empty:
             for dt, row in hist.iterrows():
-                pe = row["Close"] / implied_eps
-                if 0 < pe < 1000:
-                    trailing_3y.append({"date": dt.strftime("%Y-%m"), "pe": round(pe, 1)})
+                month_date = dt.date()
+                # 找出這個月之前「最近一次公布」的 TTM EPS（財報公布前不套用未公布的數字）
+                applicable_eps = None
+                for report_date, ttm_eps in ttm_points:
+                    if report_date <= month_date:
+                        applicable_eps = ttm_eps
+                    else:
+                        break
+                if applicable_eps:
+                    pe = row["Close"] / applicable_eps
+                    if 0 < pe < 1000:
+                        trailing_3y.append({"date": dt.strftime("%Y-%m"), "pe": round(pe, 1)})
 
         return {"trailing_3y": trailing_3y, "forward_pe": forward_pe}
     except Exception as e:
@@ -184,6 +210,110 @@ def fetch_all_pe_data():
                 })
                 print(f"  P/E {name}: Trailing={current_trailing} Forward={forward_pe} ({len(trailing_3y)}個月趨勢)")
     return result
+
+
+# ── 法人連三日買賣超排行：用 TWSE OpenAPI 預抓，避免 AI 網路搜尋出精確數字時幻覺 ──
+
+def _fetch_twse_t86(date_yyyymmdd):
+    """抓取指定日期的台股三大法人買賣超日報（每檔個股，股數）。查無資料（假日）回傳 None。"""
+    import requests
+    resp = requests.get(
+        "https://www.twse.com.tw/rwd/zh/fund/T86",
+        params={"date": date_yyyymmdd, "selectType": "ALL", "response": "json"},
+        timeout=15,
+    )
+    data = resp.json()
+    if data.get("stat") != "OK":
+        return None
+
+    fields = data["fields"]
+    idx = {name: i for i, name in enumerate(fields)}
+
+    def to_int(s):
+        s = (s or "").strip()
+        return int(s.replace(",", "")) if s not in ("", "--") else 0
+
+    rows = {}
+    for row in data["data"]:
+        code = row[idx["證券代號"]].strip()
+        rows[code] = {
+            "name": row[idx["證券名稱"]].strip(),
+            "foreign_net": to_int(row[idx["外陸資買賣超股數(不含外資自營商)"]]) + to_int(row[idx["外資自營商買賣超股數"]]),
+            "trust_net": to_int(row[idx["投信買賣超股數"]]),
+        }
+    return rows
+
+
+def _fetch_twse_close_prices():
+    """抓取最新一個交易日全部台股收盤價，用來估算法人買賣超金額（估算值，非逐日精確金額）。"""
+    import requests
+    try:
+        resp = requests.get("https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL", timeout=15)
+        return {row["Code"]: float(row["ClosingPrice"]) for row in resp.json() if row.get("ClosingPrice")}
+    except Exception as e:
+        print(f"  ⚠️ 收盤價抓取失敗（{e}），法人排行將不含估算金額")
+        return {}
+
+
+def fetch_institutional_3day_ranking(base_date):
+    """
+    用 TWSE OpenAPI 抓取最近 3 個交易日的三大法人（外資／投信）買賣超日報，
+    找出「連三日同向買賣超」（3 天方向一致）個股，依 3 日合計張數排名前 10。
+    金額用最新收盤價估算（非逐日精確金額，僅供參考）。
+    任何一步失敗都回傳 None，由呼叫端退回讓 AI 自行搜尋。
+    """
+    try:
+        trading_days = []
+        cursor = base_date - timedelta(days=1)
+        attempts = 0
+        while len(trading_days) < 3 and attempts < 10:
+            attempts += 1
+            if cursor.weekday() < 5:
+                day_data = _fetch_twse_t86(cursor.strftime("%Y%m%d"))
+                if day_data:
+                    trading_days.append((cursor.strftime("%Y-%m-%d"), day_data))
+            cursor -= timedelta(days=1)
+
+        if len(trading_days) < 3:
+            print(f"  ⚠️ 僅取得 {len(trading_days)} 個交易日的法人資料，跳過連三日排行預抓（改由 AI 搜尋）")
+            return None
+
+        trading_days.sort(key=lambda x: x[0])  # 由舊到新
+        dates = [d for d, _ in trading_days]
+        common_codes = set(trading_days[0][1]) & set(trading_days[1][1]) & set(trading_days[2][1])
+        close_prices = _fetch_twse_close_prices()
+
+        def rank_for(field):
+            results = []
+            for code in common_codes:
+                nets = [day_data[code][field] for _, day_data in trading_days]
+                if all(n > 0 for n in nets) or all(n < 0 for n in nets):
+                    total_shares = sum(nets)
+                    price = close_prices.get(code)
+                    results.append({
+                        "code": code,
+                        "name": trading_days[-1][1][code]["name"],
+                        "lots_3d": round(total_shares / 1000, 1),
+                        "est_amount_ntd": round(total_shares * price) if price else None,
+                    })
+            buys = sorted([r for r in results if r["lots_3d"] > 0], key=lambda r: -r["lots_3d"])[:10]
+            sells = sorted([r for r in results if r["lots_3d"] < 0], key=lambda r: r["lots_3d"])[:10]
+            return buys, sells
+
+        foreign_buy, foreign_sell = rank_for("foreign_net")
+        trust_buy, trust_sell = rank_for("trust_net")
+        print(f"  法人連三日排行：外資買{len(foreign_buy)}/賣{len(foreign_sell)}，投信買{len(trust_buy)}/賣{len(trust_sell)}（{dates[0]}~{dates[-1]}）")
+
+        return {
+            "as_of_dates": dates,
+            "foreign_buy_top10": foreign_buy,
+            "foreign_sell_top10": foreign_sell,
+            "trust_buy_top10": trust_buy,
+            "trust_sell_top10": trust_sell,
+        }
+    except Exception as e:
+        print(f"  ⚠️ 法人連三日排行預抓失敗（{e}），改由 AI 搜尋")
+        return None
 
 
 # ── 三地市場分析 Prompt：讀取獨立 prompt 檔並注入主 prompt ──────────────────
@@ -289,8 +419,35 @@ print("  正在用 yfinance 抓取恐懼指數（近 6 個月）...")
 fear_data = fetch_all_fear_index()
 fear_json = _json.dumps(fear_data, ensure_ascii=False)
 
+print("  正在用 TWSE OpenAPI 抓取法人連三日買賣超排行...")
+institutional_data = fetch_institutional_3day_ranking(today)
+institutional_json = _json.dumps(institutional_data, ensure_ascii=False) if institutional_data else None
+
 print("  正在讀取三地市場深度分析 prompt...")
 market_analysis_prompt = load_market_analysis_prompt(date_str, weekday_cn)
+
+if institutional_json:
+    institutional_prefetch_block = f"""
+## 【已預先抓取】法人連三日買賣超排行（直接用於圖表，勿再搜尋，勿自行編造股號或數字）
+以下 JSON 來自 TWSE OpenAPI 三大法人買賣超日報，已計算連續 3 個交易日同向買賣超個股：
+
+{institutional_json}
+
+欄位說明：as_of_dates = 計算所用的 3 個交易日；lots_3d = 3 日合計買賣超張數（正=買超，負=賣超）；
+est_amount_ntd = 用最新收盤價估算的金額（新台幣元，非逐日精確金額，屬估算值，null 表示無收盤價可估算）。
+"""
+    institutional_task_line = (
+        "3. 台股三大法人動向：搜尋外資/投信/自營商「整體」買賣超金額（連三日個股排行已預先抓取，不需再搜尋，"
+        "直接使用上方 JSON，勿自行編造股號或金額）"
+    )
+else:
+    institutional_prefetch_block = ""
+    institutional_task_line = """3. 台股三大法人動向：外資/投信/自營商整體買賣超金額；並分別搜尋「連三日同向買賣超排行」：
+   - 外資連三日買超前 10 名個股（股號、股名、三日買超金額、三日買超張數）
+   - 外資連三日賣超前 10 名個股（股號、股名、三日賣超金額、三日賣超張數）
+   - 投信連三日買超前 10 名個股（股號、股名、三日買超金額、三日買超張數）
+   - 投信連三日賣超前 10 名個股（股號、股名、三日賣超金額、三日賣超張數）
+   （資料來源建議：CMoney、goodinfo.tw、twse.com.tw、anue.com、moneyDJ）"""
 
 PROMPT = f"""
 今天是 {date_label}（{weekday_cn}），台灣台中。
@@ -312,16 +469,11 @@ PROMPT = f"""
 {fear_json}
 
 欄位說明：history = 每日 [{{"date":"YYYY-MM-DD","value":數值}}] 陣列。
-
+{institutional_prefetch_block}
 ## 必須完成的搜尋任務（依序執行，至少 8 次搜尋）
 1. 今日/昨日美股收盤：S&P 500、Nasdaq、Dow 漲跌幅與主要個股
 2. 台股今日行情：加權指數、台積電（2330）、鴻海（2317）、聯發科（2454）
-3. 台股三大法人動向：外資/投信/自營商整體買賣超金額；並分別搜尋「連三日同向買賣超排行」：
-   - 外資連三日買超前 10 名個股（股號、股名、三日買超金額、三日買超張數）
-   - 外資連三日賣超前 10 名個股（股號、股名、三日賣超金額、三日賣超張數）
-   - 投信連三日買超前 10 名個股（股號、股名、三日買超金額、三日買超張數）
-   - 投信連三日賣超前 10 名個股（股號、股名、三日賣超金額、三日賣超張數）
-   （資料來源建議：CMoney、goodinfo.tw、twse.com.tw、anue.com、moneyDJ）
+{institutional_task_line}
 4. 今日最重要的 AI/半導體新聞（NVDA/TSMC/AVGO/MRVL）
 5. 地緣政治：伊朗局勢最新進展、油價動態
 6. 總體經濟：Fed 動態、美債殖利率、PCE/CPI 最新數據、CME FedWatch 降息機率
@@ -398,8 +550,8 @@ PROMPT = f"""
     - 左欄：綠色標題列「連三日買超前十」，表格欄位：排名 ｜ 股號 ｜ 股名 ｜ 三日買超(金額) ｜ 三日買超(張)，金額數字綠色
     - 右欄：紅色標題列「連三日賣超前十」，表格欄位：排名 ｜ 股號 ｜ 股名 ｜ 三日賣超(金額) ｜ 三日賣超(張)，金額數字紅色
   - 表格背景深色，交替列略微區隔，字體使用 IBM Plex Mono
-  - 若搜尋結果不足 10 筆，顯示實際取得的筆數
-  - 底部標明資料來源（CMoney / Goodinfo / 證交所）與截止日期
+  - 若資料不足 10 筆，顯示實際取得的筆數
+  - 若使用上方【已預先抓取】法人資料：金額欄位是用最新收盤價估算（est_amount_ntd 為 null 時該欄顯示「—」），底部標明「資料來源：TWSE OpenAPI（估算金額）」與截止日期（as_of_dates）；若該區塊改為 AI 搜尋取得，底部標明實際搜尋來源（CMoney / Goodinfo / 證交所）與截止日期
 - 未來 2 週財報速覽（Filter 按鈕：全部/美股/台股/★持倉）
 - 財經新聞中心（Tab：4 個主題）
 - 三地市場深度分析區塊（置於財經新聞中心之後、風險矩陣之前；使用上方「額外任務」的完整分析內容）：
