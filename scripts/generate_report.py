@@ -19,7 +19,9 @@ from scripts.data_fetchers import (
     fetch_institutional_3day_ranking,
     load_market_analysis_prompt,
     fetch_all_fear_index,
+    fetch_quotes,
 )
+from scripts.report_render import build_template_context, render_report
 
 # AI 敘述 JSON 的必要欄位（見 JSON_OUTPUT_SPEC）；Task 9 的 render_report() 依賴這些欄位齊全。
 REQUIRED_JSON_FIELDS = [
@@ -83,6 +85,12 @@ institutional_json = json.dumps(institutional_data, ensure_ascii=False) if insti
 
 print("  正在讀取三地市場深度分析 prompt...")
 market_analysis_prompt = load_market_analysis_prompt(date_str, weekday_cn)
+
+print("  正在用 yfinance 抓取即時報價（ticker/KPI 用）...")
+quotes = fetch_quotes()
+if not quotes:
+    raise RuntimeError("fetch_quotes() 全部標的皆抓取失敗，中止發布以避免整份 ticker/KPI 儀表板顯示 N/A")
+quotes_json = json.dumps(quotes, ensure_ascii=False)
 
 if institutional_json:
     institutional_prefetch_block = f"""
@@ -208,10 +216,16 @@ PROMPT = f"""
 {fear_json}
 
 欄位說明：history = 每日 [{{"date":"YYYY-MM-DD","value":數值}}] 陣列。
+
+## 【已預先抓取】即時報價（ticker 跑馬燈與 KPI 儀表板已用這份資料算好，不需要再搜尋這些數字本身；
+寫 daily_brief / hero_events / warning_indicators 等敘述文字時，引用這裡的真實數字，不要自己編造或用搜尋到的其他數字）
+{quotes_json}
+
+欄位說明：每個標的為 {{"symbol", "name", "price", "change", "change_pct"}}；US10Y（10Y 美債殖利率）的 price 已換算成實際百分比。
 {institutional_prefetch_block}
-## 必須完成的搜尋任務（依序執行，至少 8 次搜尋）
-1. 今日/昨日美股收盤：S&P 500、Nasdaq、Dow 漲跌幅與主要個股
-2. 台股今日行情：加權指數、台積電（2330）、鴻海（2317）、聯發科（2454）
+## 必須完成的搜尋任務（依序執行，至少 8 次搜尋；指數/個股「數字」已由上方預先抓取，這裡搜尋的是背後原因、新聞與尚未涵蓋的項目）
+1. 今日/昨日美股收盤：S&P 500、Nasdaq、Dow 漲跌背後原因與主要個股表現（漲跌%數字以上方預先抓取的即時報價為準）
+2. 台股今日行情：加權指數、台積電（2330）、鴻海（2317）、聯發科（2454）漲跌背後原因（數字以上方預先抓取的即時報價為準）
 {institutional_task_line}
 4. 今日最重要的 AI/半導體新聞（NVDA/TSMC/AVGO/MRVL）
 5. 地緣政治：伊朗局勢最新進展、油價動態
@@ -350,9 +364,36 @@ def validate_html(html: str) -> list[str]:
     return problems
 
 
-# TODO(Task 9): 呼叫 scripts.report_render.render_report(narrative_json, fetch_quotes(), ...)
-# 產出完整 HTML後，比照舊版流程呼叫 validate_html()、寫入 index.html、備份到 Backup/{date_str}.html。
-# 這裡先不寫檔，只從已驗證的 narrative_json 取出摘要供通知使用。
+print("  正在渲染模板...")
+context = build_template_context(
+    date_label=date_label,
+    weekday_cn=weekday_cn,
+    tw_holiday_note=tw_holiday_note,
+    quotes=quotes,
+    fear_data=fear_data,
+    pe_data=pe_data,
+    institutional_data=institutional_data,
+    earnings_list=earnings_data,
+    narrative_json=narrative_json,
+)
+html_content = render_report(context)
+
+validation_problems = validate_html(html_content)
+if validation_problems:
+    raise RuntimeError(
+        "報告驗證失敗，中止發布以避免半份報告上線：\n  - " + "\n  - ".join(validation_problems)
+    )
+print("  ✅ 報告驗證通過")
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+backup_dir = "Backup"
+os.makedirs(backup_dir, exist_ok=True)
+shutil.copy("index.html", f"{backup_dir}/{date_str}.html")
+
+print(f"  ✅ 報告已寫入 index.html（{len(html_content):,} bytes）")
+print(f"  ✅ 已備份至 Backup/{date_str}.html")
 
 summary_text = (narrative_json.get("daily_brief") or "").strip()
 if summary_text:
