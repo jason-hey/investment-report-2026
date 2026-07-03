@@ -94,11 +94,11 @@
 - 結構：以日期為 key，記錄當天入選清單（股票代號、得分、命中訊號）。
 - 每次執行時：讀取「前一交易日」的入選清單 → 用 yfinance 抓這些股票「今天」的實際漲跌 → 算出命中率，呈現在報告的「昨日選股回顧」區塊，並累積歷史勝率統計（例如近 20 個交易日整體命中率）→ 再把「今天」新入選的清單寫回 JSON，供下次執行使用。
 
-## D. 通知內容強化
+## D. 通知內容強化（實作計畫階段發現：此項已完成，範圍縮減為「搬遷」）
 
-- 在 AI 回傳的敘述 JSON 中新增 `daily_brief` 欄位（2–3 行當日重點：大盤漲跌、最重要事件）。
-- `generate_report.py` 產生報告後，把 `daily_brief` 寫到一個小檔案（供 GitHub Actions workflow 的後續步驟讀取，例如 workspace 內的暫存文字檔）。
-- `.github/workflows/daily-update.yml` 的 Telegram / LINE 步驟改為讀取該檔案內容，附加在通知訊息最前面，取代目前「只有連結」的訊息。Email 通知（`scripts/send_email.py`）比照辦理。
+寫這份 spec 時參考的是 `doc/2026-07-03-improvement-analysis.html` 文字描述（#12：通知只有連結），但實際檢視現行程式碼（commit `8f1fc57`）發現這項已經做了：`generate_report.py` 目前會從 AI 輸出的 HTML 裡用 `<!--SUMMARY ... SUMMARY-->` 註解 regex 抓出 2–3 行摘要，透過 `GITHUB_OUTPUT` 傳給 workflow，Telegram / LINE / Email 三個通知步驟都已經會把摘要接在訊息最前面（見 `daily-update.yml` 第 62–130 行、`send_email.py` 第 19–26 行）。
+
+因此 D 不需要新增功能，只需要在 A 的架構改動中把「摘要來源」從 regex-on-HTML-comment 改成「直接讀 AI 回傳 JSON 的 `daily_brief` 欄位」，`GITHUB_OUTPUT` 寫入邏輯與 workflow 端完全不動。
 
 ## 測試與驗證方式
 
