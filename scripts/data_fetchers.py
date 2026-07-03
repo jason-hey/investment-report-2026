@@ -2,6 +2,7 @@
 每日報告用的所有資料預抓函式：yfinance（財報日曆／P/E／VIX／即時報價）、
 TWSE OpenAPI（法人連三日買賣超）、假日判斷、市場分析 prompt 讀取。
 """
+import math
 from datetime import datetime, timedelta
 import yfinance as yf
 
@@ -366,7 +367,7 @@ def fetch_fear_index_history(symbol, display_name, period="6mo"):
             {"date": dt.strftime("%Y-%m-%d"), "value": round(row["Close"], 2)}
             for dt, row in hist.iterrows()
         ]
-        print(f"  恐懼指數 {display_name}: {len(results)} 天資料")
+        print(f"  {display_name}: {len(results)} 天資料")
         return results
     except Exception as e:
         print(f"  ⚠️ {display_name} 抓取失敗: {e}")
@@ -408,6 +409,17 @@ QUOTE_TICKERS = {
 }
 
 
+def _has_nan_close(*closes):
+    """
+    收盤價含 NaN 時回傳 True。yfinance 對「今天尚未真正收盤/結算」的最後一列
+    常見回傳 NaN 而不是缺列——len(hist) < 2 這個檢查抓不到這種情況（列數正常，
+    只是值是 NaN），若不擋下來，NaN 會原樣流進 Jinja context，在報告上顯示成
+    "NaN" 字樣或讓 tojson 輸出壞掉的 JSON。每天 08:00（台灣時間）執行時，美股
+    /韓股當天的交易日可能還沒完全結算，這個情況並非罕見邊界案例。
+    """
+    return any(math.isnan(c) for c in closes)
+
+
 def fetch_quotes():
     """
     抓取 QUOTE_TICKERS 全部標的最新收盤價與日漲跌（%）。
@@ -422,6 +434,9 @@ def fetch_quotes():
                 continue
             prev_close = float(hist["Close"].iloc[-2])
             last_close = float(hist["Close"].iloc[-1])
+            if _has_nan_close(prev_close, last_close):
+                print(f"  ⚠️ {name}({symbol}) 收盤價為 NaN（可能尚未收盤結算），略過")
+                continue
             # ^TNX（10Y 美債殖利率）Yahoo/CBOE 回傳的是殖利率 x10（例如 4.48% 顯示為 44.8），
             # 換算成實際百分比才能直接當殖利率呈現；change_pct 是比值不受影響，不需調整。
             if symbol == "^TNX":
@@ -462,6 +477,9 @@ def fetch_korea_market():
                 continue
             prev_close = float(hist["Close"].iloc[-2])
             last_close = float(hist["Close"].iloc[-1])
+            if _has_nan_close(prev_close, last_close):
+                print(f"  ⚠️ {name}({symbol}) 收盤價為 NaN（可能尚未收盤結算），略過")
+                continue
             change = last_close - prev_close
             change_pct = (change / prev_close * 100) if prev_close else 0.0
             result[key] = {
@@ -480,12 +498,19 @@ def fetch_korea_market():
 # ── 美股熱力圖：固定清單依當日漲跌 % 著色 ──────────────────────────────
 
 US_HEATMAP_TICKERS = [
+    # 大型科技
     "AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "NFLX", "CRM",
+    # 半導體 / AI
     "NVDA", "AVGO", "AMD", "TSM", "MU", "QCOM", "INTC", "MRVL", "AMAT", "LRCX",
+    # 雲端 / 軟體
     "ORCL", "ADBE", "NOW", "PANW", "SNOW",
+    # 金融
     "JPM", "GS", "MS", "BAC", "V", "MA",
+    # 醫療 / 消費
     "LLY", "UNH", "JNJ", "WMT", "COST", "NKE", "MCD",
+    # 工業 / 能源
     "XOM", "CVX", "BA", "CAT",
+    # 通訊
     "T", "VZ",
 ]
 
@@ -502,6 +527,9 @@ def fetch_us_heatmap():
                 continue
             prev_close = float(hist["Close"].iloc[-2])
             last_close = float(hist["Close"].iloc[-1])
+            if _has_nan_close(prev_close, last_close):
+                print(f"  ⚠️ {symbol} 收盤價為 NaN（可能尚未收盤結算），略過")
+                continue
             change_pct = (last_close - prev_close) / prev_close * 100 if prev_close else 0.0
             result.append({"symbol": symbol, "change_pct": round(change_pct, 2)})
         except Exception as e:
@@ -520,9 +548,12 @@ SECTOR_ETF_TICKERS = [
 
 
 def fetch_sector_rotation():
-    """抓取 11 檔 SPDR 產業 ETF 近 1-2 週日線，算出當日與一週漲跌 %。
-    period="2wk" 抓夠一週交易日（含假日緩衝）；用第一筆與最後一筆算一週漲跌，
-    最後兩筆算當日漲跌。"""
+    """抓取 11 檔 SPDR 產業 ETF 近 2 週日線，算出當日與一週漲跌 %。
+    period="2wk" 是日曆 2 週，實際回傳的交易日筆數會隨當週有無假日在 9-10 筆左右
+    （兩個接近完整的 5 個交易日的星期）——若直接拿「這個區間的第一筆」當作「一週前」，
+    實際量測的是接近 2 週前、而非 1 週前的價格，"一週漲跌" 的標籤會系統性失真。
+    改成固定往回數 5 個交易日（index -6，「今天」是 -1）代表「一週前」，資料筆數不足
+    5 個交易日時才退回用「這個區間最早的一筆」（比什麼都沒有好，但不是常態）。"""
     result = []
     for symbol, name in SECTOR_ETF_TICKERS:
         try:
@@ -533,7 +564,11 @@ def fetch_sector_rotation():
             closes = hist["Close"]
             last = float(closes.iloc[-1])
             prev_day = float(closes.iloc[-2])
-            week_ago = float(closes.iloc[0])
+            week_ago_idx = -6 if len(closes) >= 6 else 0
+            week_ago = float(closes.iloc[week_ago_idx])
+            if _has_nan_close(last, prev_day, week_ago):
+                print(f"  ⚠️ {name}({symbol}) 收盤價為 NaN（可能尚未收盤結算），略過")
+                continue
             change_pct_1d = (last - prev_day) / prev_day * 100 if prev_day else 0.0
             change_pct_1w = (last - week_ago) / week_ago * 100 if week_ago else 0.0
             result.append({

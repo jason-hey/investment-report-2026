@@ -43,6 +43,33 @@ def test_fetch_quotes_returns_price_and_change_for_each_ticker(monkeypatch):
     assert round(us10y["change_pct"], 2) == 5.0
 
 
+def test_fetch_quotes_skips_ticker_with_nan_close(monkeypatch):
+    """
+    迴歸測試（實測用真實 yfinance 資料發現）：每天 08:00（台灣時間）執行時，美股/
+    韓股當天的交易日可能還沒完全收盤結算，yfinance 對這種「今天」列常回傳
+    Close=NaN，列數本身正常（len(hist) >= 2 這個檢查抓不到）。NaN 若沒被擋下來
+    會原樣流進模板 context，顯示成 "NaN" 字樣或讓 tojson 輸出壞掉的 JSON。
+    """
+    import math
+    import scripts.data_fetchers as df
+    import pandas as pd
+
+    class FakeTicker:
+        def __init__(self, symbol):
+            self.symbol = symbol
+
+        def history(self, period, interval):
+            return pd.DataFrame(
+                {"Close": [100.0, math.nan]},
+                index=pd.to_datetime(["2026-07-01", "2026-07-02"]),
+            )
+
+    monkeypatch.setattr(df.yf, "Ticker", FakeTicker)
+    result = df.fetch_quotes()
+
+    assert result == {}
+
+
 def test_fetch_earnings_calendar_includes_tw_holdings(monkeypatch):
     import scripts.data_fetchers as df
     from datetime import datetime, timezone, timedelta
@@ -135,6 +162,38 @@ def test_fetch_sector_rotation_returns_1d_and_1w_change(monkeypatch):
     assert set(first.keys()) == {"symbol", "name", "change_pct_1d", "change_pct_1w"}
     assert round(first["change_pct_1d"], 2) == round((106.0 - 104.0) / 104.0 * 100, 2)
     assert round(first["change_pct_1w"], 2) == round((106.0 - 100.0) / 100.0 * 100, 2)
+
+
+def test_fetch_sector_rotation_uses_fixed_5_trading_days_for_1w_not_whole_window(monkeypatch):
+    """
+    迴歸測試（實測用真實 yfinance 資料發現）：period="2wk" 是日曆 2 週，實際回傳的
+    交易日筆數常常有 9-10 筆（沒遇到假日時接近兩個完整的 5 日工作週），不是「剛好
+    一週」。若直接拿這個區間「第一筆」當作一週前的價格，change_pct_1w 量測的其實
+    接近 2 週前的價格，跟標籤不符。這裡用 9 筆假資料驗證：一週前應該是「今天」往回
+    數第 6 筆（index -6），不是整個區間最早的第 0 筆。
+    """
+    import scripts.data_fetchers as df
+    import pandas as pd
+
+    class FakeTicker:
+        def __init__(self, symbol):
+            self.symbol = symbol
+
+        def history(self, period, interval):
+            # 9 個交易日收盤價（index 0-8）：today=index -1=106.0；5 個交易日前
+            # （today 往回數 6 個位置）= index -6 = index 3 = 40.0
+            closes = [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 106.0]
+            return pd.DataFrame(
+                {"Close": closes},
+                index=pd.date_range("2026-06-22", periods=9, freq="D"),
+            )
+
+    monkeypatch.setattr(df.yf, "Ticker", FakeTicker)
+    result = df.fetch_sector_rotation()
+
+    first = result[0]
+    # 一週前應為 index -6 = 40.0，不是整個區間第一筆（index 0 = 10.0）
+    assert round(first["change_pct_1w"], 2) == round((106.0 - 40.0) / 40.0 * 100, 2)
 
 
 def test_fetch_oil_prices_returns_wti_and_brent_history(monkeypatch):
