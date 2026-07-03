@@ -148,13 +148,12 @@ def build_korea_context(korea_data):
 
 
 def _heatmap_color_class(change_pct):
-    """依漲跌 % 分 5 級著色。漲勢門檻取 ±0.5% / ±2%；跌勢的「強下跌」門檻放寬到 -3%
-    （而非對稱的 -2%），因為 -2% 上下的跌幅在美股屬常見波動而非顯著恐慌性下殺。"""
-    if change_pct >= 2:
+    """依漲跌 % 分 5 級著色，門檻對稱：±0.5% 與 ±2.5%。"""
+    if change_pct >= 2.5:
         return "heat-strong-up"
     if change_pct >= 0.5:
         return "heat-up"
-    if change_pct <= -3:
+    if change_pct <= -2.5:
         return "heat-strong-down"
     if change_pct <= -0.5:
         return "heat-down"

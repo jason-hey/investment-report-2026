@@ -348,6 +348,16 @@ def test_build_heatmap_context_adds_color_class():
     assert by_symbol["MSFT"]["color_class"] == "heat-flat"
 
 
+def test_heatmap_color_class_boundary_values():
+    """鎖定 5 級著色的 4 個門檻邊界（±0.5% / ±2.5%），避免日後 > 跟 >= 打錯字沒被抓到。"""
+    from scripts.report_render import _heatmap_color_class
+
+    assert _heatmap_color_class(2.5) == "heat-strong-up"
+    assert _heatmap_color_class(0.5) == "heat-up"
+    assert _heatmap_color_class(-0.5) == "heat-down"
+    assert _heatmap_color_class(-2.5) == "heat-strong-down"
+
+
 def test_build_sector_rotation_context_sorts_by_1d_change_desc():
     from scripts.report_render import build_sector_rotation_context
 
