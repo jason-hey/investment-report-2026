@@ -375,7 +375,7 @@ QUOTE_TICKERS = {
     "2454":  ("2454.TW", "聯發科"),
     "0050":  ("0050.TW", "0050"),
     "SPX":   ("^GSPC", "S&P 500"),
-    "NASDAQ":("^IXIC", "Nasdaq"),
+    "NASDAQ": ("^IXIC", "Nasdaq"),
     "DOW":   ("^DJI", "Dow"),
     "NVDA":  ("NVDA", "NVIDIA"),
     "AVGO":  ("AVGO", "Broadcom"),
@@ -403,6 +403,11 @@ def fetch_quotes():
                 continue
             prev_close = float(hist["Close"].iloc[-2])
             last_close = float(hist["Close"].iloc[-1])
+            # ^TNX（10Y 美債殖利率）Yahoo/CBOE 回傳的是殖利率 x10（例如 4.48% 顯示為 44.8），
+            # 換算成實際百分比才能直接當殖利率呈現；change_pct 是比值不受影響，不需調整。
+            if symbol == "^TNX":
+                prev_close /= 10
+                last_close /= 10
             change = last_close - prev_close
             change_pct = (change / prev_close * 100) if prev_close else 0.0
             result[key] = {

@@ -34,3 +34,10 @@ def test_fetch_quotes_returns_price_and_change_for_each_ticker(monkeypatch):
     assert twii["price"] == 105.0
     assert twii["change"] == 5.0
     assert round(twii["change_pct"], 2) == 5.0
+
+    # ^TNX（10Y 美債殖利率）Yahoo/CBOE 回傳的是殖利率 x10，price/change 需除以 10 換算成實際百分比
+    us10y = result["US10Y"]
+    assert us10y["symbol"] == "^TNX"
+    assert us10y["price"] == 10.5
+    assert us10y["change"] == 0.5
+    assert round(us10y["change_pct"], 2) == 5.0
