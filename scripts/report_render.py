@@ -90,12 +90,29 @@ def build_pe_data(pe_data):
     return result
 
 
+def _fmt_institutional_row(row):
+    """幫每一筆法人排行資料加上模板要顯示的字串：金額換算億元、張數加正負號與千分位。"""
+    amount = row.get("est_amount_ntd")
+    lots = _norm_zero(row["lots_3d"])
+    return {
+        **row,
+        "amount_display": f"{amount / 100_000_000:,.2f}" if amount is not None else "—",
+        "lots_display": f"{lots:+,.1f}",
+    }
+
+
 def build_institutional_context(institutional_data):
     """institutional_data 為 None 時（假日等原因預抓失敗）回傳空排行，模板顯示 0 筆。"""
     if not institutional_data:
         return {"as_of_dates": [], "foreign_buy_top10": [], "foreign_sell_top10": [],
                 "trust_buy_top10": [], "trust_sell_top10": []}
-    return institutional_data
+    return {
+        **institutional_data,
+        "foreign_buy_top10": [_fmt_institutional_row(r) for r in institutional_data["foreign_buy_top10"]],
+        "foreign_sell_top10": [_fmt_institutional_row(r) for r in institutional_data["foreign_sell_top10"]],
+        "trust_buy_top10": [_fmt_institutional_row(r) for r in institutional_data["trust_buy_top10"]],
+        "trust_sell_top10": [_fmt_institutional_row(r) for r in institutional_data["trust_sell_top10"]],
+    }
 
 
 def build_earnings_context(earnings_list):

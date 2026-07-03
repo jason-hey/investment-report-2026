@@ -866,8 +866,8 @@ canvas { max-width:100%; }
                 <td>{{ loop.index }}</td>
                 <td>{{ row.code }}</td>
                 <td>{{ row.name }}</td>
-                <td class="inst-amt-buy">{{ "{:,.2f}".format(row.est_amount_ntd / 100000000) if row.est_amount_ntd else "—" }}</td>
-                <td class="inst-amt-buy">{{ "{:+,.1f}".format(row.lots_3d) }}</td>
+                <td class="inst-amt-buy">{{ row.amount_display }}</td>
+                <td class="inst-amt-buy">{{ row.lots_display }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -883,8 +883,8 @@ canvas { max-width:100%; }
                 <td>{{ loop.index }}</td>
                 <td>{{ row.code }}</td>
                 <td>{{ row.name }}</td>
-                <td class="inst-amt-sell">{{ "{:,.2f}".format(row.est_amount_ntd / 100000000) if row.est_amount_ntd else "—" }}</td>
-                <td class="inst-amt-sell">{{ "{:+,.1f}".format(row.lots_3d) }}</td>
+                <td class="inst-amt-sell">{{ row.amount_display }}</td>
+                <td class="inst-amt-sell">{{ row.lots_display }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -906,8 +906,8 @@ canvas { max-width:100%; }
                 <td>{{ loop.index }}</td>
                 <td>{{ row.code }}</td>
                 <td>{{ row.name }}</td>
-                <td class="inst-amt-buy">{{ "{:,.2f}".format(row.est_amount_ntd / 100000000) if row.est_amount_ntd else "—" }}</td>
-                <td class="inst-amt-buy">{{ "{:+,.1f}".format(row.lots_3d) }}</td>
+                <td class="inst-amt-buy">{{ row.amount_display }}</td>
+                <td class="inst-amt-buy">{{ row.lots_display }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -923,8 +923,8 @@ canvas { max-width:100%; }
                 <td>{{ loop.index }}</td>
                 <td>{{ row.code }}</td>
                 <td>{{ row.name }}</td>
-                <td class="inst-amt-sell">{{ "{:,.2f}".format(row.est_amount_ntd / 100000000) if row.est_amount_ntd else "—" }}</td>
-                <td class="inst-amt-sell">{{ "{:+,.1f}".format(row.lots_3d) }}</td>
+                <td class="inst-amt-sell">{{ row.amount_display }}</td>
+                <td class="inst-amt-sell">{{ row.lots_display }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -1015,7 +1015,7 @@ canvas { max-width:100%; }
           {% endfor %}
         </tbody>
       </table>
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-secondary);margin-top:8px">⚠ 財報日期/EPS 預估為市場共識，實際可能調整 · ★ 表示個人持倉標的</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-secondary);margin-top:8px">⚠ 財報日期為 Yahoo Finance 預估，實際公布日可能調整</div>
     </div>
   </div>
 </div>

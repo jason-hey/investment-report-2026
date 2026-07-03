@@ -72,6 +72,30 @@ def test_render_report_produces_html_with_ticker_and_kpi_data():
     assert "</html>" in html.lower()
 
 
+def test_render_report_renders_institutional_table_rows():
+    from scripts.report_render import render_report, build_institutional_context
+
+    institutional = build_institutional_context({
+        "as_of_dates": ["2026-07-01", "2026-07-02", "2026-07-03"],
+        "foreign_buy_top10": [{"code": "2330", "name": "台積電", "lots_3d": 29100.0, "est_amount_ntd": 6985000000}],
+        "foreign_sell_top10": [{"code": "2317", "name": "鴻海", "lots_3d": -39700.0, "est_amount_ntd": 950000000}],
+        "trust_buy_top10": [], "trust_sell_top10": [],
+    })
+    context = {
+        "date_label": "2026.07.03", "weekday_cn": "週五", "tw_holiday_note": "",
+        "ticker_data": [], "kpi_cards": [{"label": "x", "val": "1", "val_class": "",
+                          "change_class": "", "change_text": "+0 (+0.00%)", "extra": None}] * 8,
+        "vix_history": [], "pe_data": {"tw": [], "us": []},
+        "institutional": institutional, "earnings": [],
+    }
+    html = render_report(context)
+    assert "69.85" in html
+    assert "+29,100.0" in html
+    assert "9.50" in html
+    assert "-39,700.0" in html
+    assert "2026-07-03" in html  # as_of_dates 顯示最新一筆
+
+
 def test_build_vix_history_extracts_us_history():
     from scripts.report_render import build_vix_history
 
@@ -98,13 +122,41 @@ def test_build_institutional_context_handles_none():
     assert result["as_of_dates"] == []
 
 
-def test_build_institutional_context_passes_through_data():
+def test_build_institutional_context_adds_display_fields():
     from scripts.report_render import build_institutional_context
 
     data = {"as_of_dates": ["2026-07-01"], "foreign_buy_top10": [{"code": "2330", "name": "台積電",
-             "lots_3d": 100.0, "est_amount_ntd": 24000000}],
+             "lots_3d": 29100.0, "est_amount_ntd": 6985000000}],
+             "foreign_sell_top10": [{"code": "2317", "name": "鴻海",
+             "lots_3d": -39700.0, "est_amount_ntd": 950000000}],
+             "trust_buy_top10": [], "trust_sell_top10": []}
+    result = build_institutional_context(data)
+    buy_row = result["foreign_buy_top10"][0]
+    sell_row = result["foreign_sell_top10"][0]
+    assert buy_row["amount_display"] == "69.85"
+    assert buy_row["lots_display"] == "+29,100.0"
+    assert sell_row["amount_display"] == "9.50"
+    assert sell_row["lots_display"] == "-39,700.0"
+    # 原始欄位仍保留，模板其他地方（如 code/name）還會用到
+    assert buy_row["code"] == "2330"
+
+
+def test_build_institutional_context_missing_amount_shows_dash():
+    from scripts.report_render import build_institutional_context
+
+    data = {"as_of_dates": [], "foreign_buy_top10": [{"code": "2330", "name": "台積電",
+             "lots_3d": 100.0, "est_amount_ntd": None}],
              "foreign_sell_top10": [], "trust_buy_top10": [], "trust_sell_top10": []}
-    assert build_institutional_context(data) == data
+    assert build_institutional_context(data)["foreign_buy_top10"][0]["amount_display"] == "—"
+
+
+def test_build_institutional_context_normalizes_negative_zero_lots():
+    from scripts.report_render import build_institutional_context
+
+    data = {"as_of_dates": [], "foreign_buy_top10": [{"code": "2330", "name": "台積電",
+             "lots_3d": -0.0, "est_amount_ntd": 100000000}],
+             "foreign_sell_top10": [], "trust_buy_top10": [], "trust_sell_top10": []}
+    assert build_institutional_context(data)["foreign_buy_top10"][0]["lots_display"] == "+0.0"
 
 
 def test_build_earnings_context_passes_through_list():
