@@ -142,6 +142,40 @@ def build_earnings_context(earnings_list):
     return earnings_list  # 已是 list[dict]，欄位與模板需要的一致，不需轉換
 
 
+def build_korea_context(korea_data):
+    """korea_data 來自 data_fetchers.fetch_korea_market()，原樣傳遞（欄位已符合模板需求）。"""
+    return korea_data
+
+
+def _heatmap_color_class(change_pct):
+    """依漲跌 % 分 5 級著色。漲勢門檻取 ±0.5% / ±2%；跌勢的「強下跌」門檻放寬到 -3%
+    （而非對稱的 -2%），因為 -2% 上下的跌幅在美股屬常見波動而非顯著恐慌性下殺。"""
+    if change_pct >= 2:
+        return "heat-strong-up"
+    if change_pct >= 0.5:
+        return "heat-up"
+    if change_pct <= -3:
+        return "heat-strong-down"
+    if change_pct <= -0.5:
+        return "heat-down"
+    return "heat-flat"
+
+
+def build_heatmap_context(heatmap_data):
+    """幫每檔股票加上依漲跌 % 決定的 CSS 著色class。"""
+    return [{**item, "color_class": _heatmap_color_class(item["change_pct"])} for item in heatmap_data]
+
+
+def build_sector_rotation_context(sector_data):
+    """依當日漲跌% 由高到低排序，資金輪動表格由強到弱呈現。"""
+    return sorted(sector_data, key=lambda item: item["change_pct_1d"], reverse=True)
+
+
+def build_oil_context(oil_data):
+    """oil_data 來自 data_fetchers.fetch_oil_prices()，原樣傳遞。"""
+    return oil_data
+
+
 def _sanitize_warning_indicators(warning_indicators):
     return {
         key: {**item, "status": _safe_css_token(item.get("status"), STATUS_VALUES, "amber")}

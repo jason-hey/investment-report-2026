@@ -319,3 +319,44 @@ def test_build_earnings_context_passes_through_list():
 
     earnings = [{"date": "2026-07-08", "symbol": "LLY", "name": "Eli Lilly", "market": "美股"}]
     assert build_earnings_context(earnings) == earnings
+
+
+def test_build_korea_context_passes_through_data():
+    from scripts.report_render import build_korea_context
+
+    data = {"KOSPI": {"symbol": "^KS11", "name": "KOSPI 指數", "price": 3100.0, "change": 25.0, "change_pct": 0.81}}
+    assert build_korea_context(data) == data
+
+
+def test_build_heatmap_context_adds_color_class():
+    from scripts.report_render import build_heatmap_context
+
+    data = [
+        {"symbol": "AAPL", "change_pct": 3.5},
+        {"symbol": "TSLA", "change_pct": -2.1},
+        {"symbol": "MSFT", "change_pct": 0.05},
+    ]
+    result = build_heatmap_context(data)
+    by_symbol = {item["symbol"]: item for item in result}
+    assert by_symbol["AAPL"]["color_class"] == "heat-strong-up"
+    assert by_symbol["TSLA"]["color_class"] == "heat-down"
+    assert by_symbol["MSFT"]["color_class"] == "heat-flat"
+
+
+def test_build_sector_rotation_context_sorts_by_1d_change_desc():
+    from scripts.report_render import build_sector_rotation_context
+
+    data = [
+        {"symbol": "XLE", "name": "能源", "change_pct_1d": -1.2, "change_pct_1w": 2.0},
+        {"symbol": "XLK", "name": "科技", "change_pct_1d": 2.5, "change_pct_1w": 5.0},
+    ]
+    result = build_sector_rotation_context(data)
+    assert [item["symbol"] for item in result] == ["XLK", "XLE"]
+
+
+def test_build_oil_context_passes_through_data():
+    from scripts.report_render import build_oil_context
+
+    data = {"wti": {"symbol": "CL=F", "name": "WTI 原油", "history": [{"date": "2026-07-01", "value": 68.5}]},
+            "brent": {"symbol": "BZ=F", "name": "Brent 原油", "history": []}}
+    assert build_oil_context(data) == data
