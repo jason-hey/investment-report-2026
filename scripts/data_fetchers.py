@@ -3,6 +3,7 @@
 TWSE OpenAPI（法人連三日買賣超）、假日判斷、市場分析 prompt 讀取。
 """
 from datetime import datetime, timedelta
+import yfinance as yf
 
 # ── 美股假日判斷：前一交易日為假日則跳過報告 ────────────────────────────────
 
@@ -362,4 +363,56 @@ def fetch_all_fear_index():
             "name":   name,
             "history": fetch_fear_index_history(symbol, name),
         }
+    return result
+
+
+# ── 即時報價：ticker 跑馬燈 / KPI 儀表板用，取代 AI 手key 數字 ──────────────
+
+QUOTE_TICKERS = {
+    "TWII":  ("^TWII", "加權指數"),
+    "2330":  ("2330.TW", "台積電"),
+    "2317":  ("2317.TW", "鴻海"),
+    "2454":  ("2454.TW", "聯發科"),
+    "0050":  ("0050.TW", "0050"),
+    "SPX":   ("^GSPC", "S&P 500"),
+    "NASDAQ":("^IXIC", "Nasdaq"),
+    "DOW":   ("^DJI", "Dow"),
+    "NVDA":  ("NVDA", "NVIDIA"),
+    "AVGO":  ("AVGO", "Broadcom"),
+    "LLY":   ("LLY", "Eli Lilly"),
+    "ORCL":  ("ORCL", "Oracle"),
+    "SMH":   ("SMH", "SMH ETF"),
+    "IAUM":  ("IAUM", "IAUM 黃金"),
+    "VIX":   ("^VIX", "VIX"),
+    "US10Y": ("^TNX", "10Y 美債殖利率"),
+    "WTI":   ("CL=F", "WTI 原油"),
+}
+
+
+def fetch_quotes():
+    """
+    抓取 QUOTE_TICKERS 全部標的最新收盤價與日漲跌（%）。
+    單一標的失敗不影響其他標的；該標的從結果中省略，由呼叫端決定如何顯示缺值。
+    """
+    result = {}
+    for key, (symbol, name) in QUOTE_TICKERS.items():
+        try:
+            hist = yf.Ticker(symbol).history(period="5d", interval="1d")
+            if hist.empty or len(hist) < 2:
+                print(f"  ⚠️ {name}({symbol}) 報價資料不足，略過")
+                continue
+            prev_close = float(hist["Close"].iloc[-2])
+            last_close = float(hist["Close"].iloc[-1])
+            change = last_close - prev_close
+            change_pct = (change / prev_close * 100) if prev_close else 0.0
+            result[key] = {
+                "symbol": symbol,
+                "name": name,
+                "price": round(last_close, 2),
+                "change": round(change, 2),
+                "change_pct": round(change_pct, 2),
+            }
+        except Exception as e:
+            print(f"  ⚠️ {name}({symbol}) 報價抓取失敗: {e}")
+    print(f"  即時報價：成功 {len(result)}/{len(QUOTE_TICKERS)} 檔")
     return result
