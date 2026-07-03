@@ -4,7 +4,6 @@ Daily Investment Report Generator
 使用串流模式（SDK 要求：max_tokens 較大時必須用 streaming，避免長時間請求被中斷）
 """
 import anthropic
-import json
 import os
 import re
 import shutil
