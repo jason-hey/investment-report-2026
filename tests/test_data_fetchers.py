@@ -41,3 +41,23 @@ def test_fetch_quotes_returns_price_and_change_for_each_ticker(monkeypatch):
     assert us10y["price"] == 10.5
     assert us10y["change"] == 0.5
     assert round(us10y["change_pct"], 2) == 5.0
+
+
+def test_fetch_earnings_calendar_includes_tw_holdings(monkeypatch):
+    import scripts.data_fetchers as df
+    from datetime import datetime, timezone, timedelta
+
+    class FakeTicker:
+        def __init__(self, symbol):
+            self.symbol = symbol
+            self.calendar = {"Earnings Date": ["2026-07-10"]}
+            self.info = {"longName": f"{symbol} Inc"}
+
+    monkeypatch.setattr("yfinance.Ticker", FakeTicker)
+    base_date = datetime(2026, 7, 3, tzinfo=timezone(timedelta(hours=8)))
+    results = df.fetch_earnings_calendar(base_date, days_ahead=14)
+
+    tw_rows = [r for r in results if r["market"] == "台股"]
+    assert {r["symbol"] for r in tw_rows} == {"2330", "2317", "2454"}
+    us_rows = [r for r in results if r["market"] == "美股"]
+    assert len(us_rows) == len(df.EARNINGS_WATCH)

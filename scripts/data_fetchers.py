@@ -45,9 +45,50 @@ EARNINGS_WATCH = [
     "FDX", "NKE", "ACN", "JPM", "GS", "MS", "WMT", "COST",
 ]
 
+# 台股個人持倉：(yfinance 代號, 顯示代號)，市場標記為「台股」
+TW_EARNINGS_WATCH = [
+    ("2330.TW", "2330"),
+    ("2317.TW", "2317"),
+    ("2454.TW", "2454"),
+]
+
+
+def _fetch_earnings_for_symbol(yf, symbol, display_symbol, market, base_date, end_date):
+    """查詢單一標的的財報日期，回傳落在區間內的第一筆（或 None）。"""
+    try:
+        ticker = yf.Ticker(symbol)
+        cal = ticker.calendar
+        if not cal:
+            return None
+
+        dates = cal.get("Earnings Date", [])
+        if not isinstance(dates, list):
+            dates = [dates]
+
+        for ed in dates:
+            # 統一轉成 date 物件
+            if hasattr(ed, "date"):
+                ed = ed.date()
+            elif isinstance(ed, str):
+                ed = datetime.strptime(ed[:10], "%Y-%m-%d").date()
+            else:
+                continue
+
+            if base_date.date() <= ed <= end_date.date():
+                info = ticker.info or {}
+                return {
+                    "date":   ed.strftime("%Y-%m-%d"),
+                    "symbol": display_symbol,
+                    "name":   info.get("longName", display_symbol),
+                    "market": market,
+                }
+    except Exception as e:
+        print(f"  ⚠️ {display_symbol} 財報查詢失敗: {e}")
+    return None
+
 
 def fetch_earnings_calendar(base_date, days_ahead=14):
-    """用 yfinance 抓未來 days_ahead 天內的財報日期，回傳排序好的 list。"""
+    """用 yfinance 抓未來 days_ahead 天內的財報日期（美股 + 台股持倉），回傳排序好的 list。"""
     try:
         import yfinance as yf
     except ImportError:
@@ -58,36 +99,14 @@ def fetch_earnings_calendar(base_date, days_ahead=14):
     results = []
 
     for symbol in EARNINGS_WATCH:
-        try:
-            ticker = yf.Ticker(symbol)
-            cal = ticker.calendar
-            if not cal:
-                continue
+        row = _fetch_earnings_for_symbol(yf, symbol, symbol, "美股", base_date, end_date)
+        if row:
+            results.append(row)
 
-            dates = cal.get("Earnings Date", [])
-            if not isinstance(dates, list):
-                dates = [dates]
-
-            for ed in dates:
-                # 統一轉成 date 物件
-                if hasattr(ed, "date"):
-                    ed = ed.date()
-                elif isinstance(ed, str):
-                    ed = datetime.strptime(ed[:10], "%Y-%m-%d").date()
-                else:
-                    continue
-
-                if base_date.date() <= ed <= end_date.date():
-                    info = ticker.info or {}
-                    results.append({
-                        "date":   ed.strftime("%Y-%m-%d"),
-                        "symbol": symbol,
-                        "name":   info.get("longName", symbol),
-                        "market": "美股",
-                    })
-                    break  # 只取最近一筆
-        except Exception as e:
-            print(f"  ⚠️ {symbol} 財報查詢失敗: {e}")
+    for yf_symbol, display_symbol in TW_EARNINGS_WATCH:
+        row = _fetch_earnings_for_symbol(yf, yf_symbol, display_symbol, "台股", base_date, end_date)
+        if row:
+            results.append(row)
 
     results.sort(key=lambda x: x["date"])
     return results
