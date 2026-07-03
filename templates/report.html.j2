@@ -244,6 +244,17 @@ body {
 .chart-sub { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-secondary); margin-bottom:14px; }
 canvas { max-width:100%; }
 
+/* ─── US HEATMAP ─── */
+.heatmap-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(90px, 1fr)); gap:6px; }
+.heatmap-cell { border-radius:6px; padding:10px 6px; text-align:center; font-family:'IBM Plex Mono',monospace; }
+.heatmap-symbol { font-size:12px; font-weight:700; color:var(--text-primary); }
+.heatmap-pct { font-size:11px; margin-top:2px; }
+.heat-strong-up { background:rgba(0,230,118,0.35); }
+.heat-up { background:rgba(0,230,118,0.15); }
+.heat-flat { background:var(--bg3); }
+.heat-down { background:rgba(255,61,113,0.15); }
+.heat-strong-down { background:rgba(255,61,113,0.35); }
+
 /* ─── TABS ─── */
 .tab-bar { display:flex; gap:4px; margin-bottom:14px; }
 .tab-btn {
@@ -630,6 +641,85 @@ canvas { max-width:100%; }
       <div style="position:relative;height:340px">
         <canvas id="peChart"></canvas>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ KOREA MARKET ══════════════════════ -->
+<div class="section">
+  <div class="container">
+    <div class="sec-title">
+      <span class="sec-title-icon">🇰🇷</span> 韓國股市
+      <span class="sec-subtitle">{{ date_label }}</span>
+    </div>
+    <div class="kpi-grid">
+      {% for key in ["KOSPI", "SAMSUNG", "SK_HYNIX"] %}
+      {% if korea and korea.get(key) %}
+      {% set item = korea[key] %}
+      <div class="kpi-card">
+        <div class="kpi-label">{{ item.name }}</div>
+        <div class="kpi-val {{ 'green' if item.change >= 0 else 'red' }}">{{ '{:,g}'.format(item.price) }}</div>
+        <div class="kpi-sub"><span class="kpi-change {{ 'green' if item.change >= 0 else 'red' }}">{{ '{:+,g}'.format(item.change) }} ({{ '{:+.2f}'.format(item.change_pct) }}%)</span></div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ US HEATMAP ══════════════════════ -->
+<div class="section">
+  <div class="container">
+    <div class="sec-title">
+      <span class="sec-title-icon">🗺️</span> 美股熱力圖
+      <span class="sec-subtitle">{{ date_label }} 當日漲跌</span>
+    </div>
+    <div class="heatmap-grid">
+      {% for item in heatmap %}
+      <div class="heatmap-cell {{ item.color_class }}">
+        <div class="heatmap-symbol">{{ item.symbol }}</div>
+        <div class="heatmap-pct">{{ '{:+.2f}'.format(item.change_pct) }}%</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SECTOR ROTATION ══════════════════════ -->
+<div class="section">
+  <div class="container">
+    <div class="sec-title">
+      <span class="sec-title-icon">🔄</span> 美股資金板塊輪動
+      <span class="sec-subtitle">11 檔 SPDR 產業 ETF · 依當日表現排序</span>
+    </div>
+    <div class="chart-card">
+      <table class="risk-table">
+        <thead><tr><th>產業</th><th>代號</th><th>當日</th><th>一週</th></tr></thead>
+        <tbody>
+          {% for item in sector_rotation %}
+          <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.symbol }}</td>
+            <td class="{{ 'green' if item.change_pct_1d >= 0 else 'red' }}">{{ '{:+.2f}'.format(item.change_pct_1d) }}%</td>
+            <td class="{{ 'green' if item.change_pct_1w >= 0 else 'red' }}">{{ '{:+.2f}'.format(item.change_pct_1w) }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ OIL CHART ══════════════════════ -->
+<div class="section">
+  <div class="container">
+    <div class="sec-title">
+      <span class="sec-title-icon">🛢️</span> 油價走勢 — 近 6 個月
+      <span class="sec-subtitle">{{ oil.wti.history[0].date if (oil and oil.wti and oil.wti.history) else "—" }} ～ {{ oil.wti.history[-1].date if (oil and oil.wti and oil.wti.history) else "—" }}</span>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">WTI / Brent 原油價格（美元/桶）</div>
+      <canvas id="oilChart" height="90"></canvas>
     </div>
   </div>
 </div>
@@ -1245,6 +1335,46 @@ function switchPEPeriod(period, btn) {
   buildPEChart();
 }
 buildPEChart();
+
+// ─── OIL CHART ───
+const oilWtiRaw = {{ (oil.wti.history if (oil and oil.wti) else []) | tojson }};
+const oilBrentRaw = {{ (oil.brent.history if (oil and oil.brent) else []) | tojson }};
+const oilLabels = oilWtiRaw.map(d => { const p = d.date.split('-'); return `${p[1]}/${p[2]}`; });
+const oilCtx = document.getElementById('oilChart').getContext('2d');
+new Chart(oilCtx, {
+  type: 'line',
+  data: {
+    labels: oilLabels,
+    datasets: [
+      {
+        label: 'WTI', data: oilWtiRaw.map(d => d.value),
+        borderColor: '#ffa726', backgroundColor: 'transparent',
+        borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.3,
+      },
+      {
+        label: 'Brent', data: oilBrentRaw.map(d => d.value),
+        borderColor: '#00d4ff', backgroundColor: 'transparent',
+        borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.3,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: true, labels: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 10 } } },
+      datalabels: { display: false },
+      tooltip: {
+        backgroundColor: 'rgba(4,4,13,0.92)', titleColor: '#c8d0ec', bodyColor: '#f0f2fc',
+        borderColor: '#2a2a4a', borderWidth: 1,
+      }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#c8d0ec', maxTicksLimit: 12, font: { family: 'IBM Plex Mono', size: 10 } }, border: { color: 'rgba(255,255,255,0.08)' } },
+      y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#c8d0ec', font: { family: 'IBM Plex Mono', size: 10 } }, border: { color: 'rgba(255,255,255,0.08)' } }
+    }
+  }
+});
 
 // ─── LLY Foundayo Charts ───
 // weekly_trx / wow_pct 來自 AI 敘述 JSON（lly_foundayo），trx 為實際週處方量（份），

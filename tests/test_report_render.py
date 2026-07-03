@@ -233,6 +233,12 @@ def test_build_template_context_and_render_produces_valid_html():
     assert "lly-extra-test" in html
     assert "買超 +測試億" in html
 
+    # Task 7 新增的 4 個區塊（韓國股市/美股熱力圖/資金板塊輪動/油價走勢）
+    assert "KOSPI 指數" in html
+    assert "AAPL" in html
+    assert "XLK" in html
+    assert "68.5" in html
+
 
 def test_build_vix_history_extracts_us_history():
     from scripts.report_render import build_vix_history
