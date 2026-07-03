@@ -24,8 +24,8 @@ from scripts.data_fetchers import (
 # AI 敘述 JSON 的必要欄位（見 JSON_OUTPUT_SPEC）；Task 9 的 render_report() 依賴這些欄位齊全。
 REQUIRED_JSON_FIELDS = [
     "daily_brief", "header_pills", "data_validation", "hero_events",
-    "warning_indicators", "night_session", "news", "ai_infra_html",
-    "theme_cards", "strategy_cards", "risk_matrix_rows",
+    "warning_indicators", "night_session", "institutional_summary", "news",
+    "ai_infra_html", "theme_cards", "strategy_cards", "risk_matrix_rows",
     "market_deep_dive_html", "lly_foundayo",
 ]
 
@@ -135,6 +135,12 @@ JSON_OUTPUT_SPEC = """
   "night_session": {"price": "<夜盤最新價>", "change_pts": "<漲跌點數>", "change_pct": "<漲跌%>",
                      "volume": "<成交量>", "vs_day_close_note": "<與日盤收盤比較的一句話>",
                      "source_note": "<資料來源與時間>"},
+  "institutional_summary": [
+    {"label": "外資", "text": "<搜尋任務 3 的外資整體買賣超金額，例如「買超 +323.76 億」>", "tone": "green 或 red", "emphasize": false},
+    {"label": "投信", "text": "<投信整體買賣超金額>", "tone": "green 或 red", "emphasize": false},
+    {"label": "自營商", "text": "<自營商整體買賣超金額>", "tone": "green 或 red", "emphasize": false},
+    {"label": "三大合計", "text": "<三大法人合計買賣超金額>", "tone": "green 或 red", "emphasize": true}
+  ],
   "news": {
     "ai_semi": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
     "macro": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],

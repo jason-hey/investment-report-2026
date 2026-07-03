@@ -38,6 +38,7 @@ def _fake_narrative_json():
         "hero_events": [],
         "warning_indicators": {},
         "night_session": {},
+        "institutional_summary": [],
         "news": {},
         "ai_infra_html": "",
         "theme_cards": [],

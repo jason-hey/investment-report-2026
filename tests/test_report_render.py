@@ -84,6 +84,12 @@ def _fake_narrative_json():
         "night_session": {"price": "46,880", "change_pts": "+136", "change_pct": "+0.29%",
                            "volume": "12,345", "vs_day_close_note": "夜盤升水測試備註",
                            "source_note": "資料來源測試備註"},
+        "institutional_summary": [
+            {"label": "外資", "text": "買超 +測試億", "tone": "green", "emphasize": False},
+            {"label": "投信", "text": "買超 +測試億", "tone": "green", "emphasize": False},
+            {"label": "自營商", "text": "買超 +測試億", "tone": "green", "emphasize": False},
+            {"label": "三大合計", "text": "+測試億", "tone": "green", "emphasize": True},
+        ],
         "news": {
             "ai_semi": [{"title": "AI半導體測試新聞標題", "summary": "測試摘要內容",
                          "source": "TestSource", "date": "2026-07-03"}],
