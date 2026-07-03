@@ -40,6 +40,10 @@ from scripts.data_fetchers import (
     load_market_analysis_prompt,
     fetch_all_fear_index,
     fetch_quotes,
+    fetch_korea_market,
+    fetch_us_heatmap,
+    fetch_sector_rotation,
+    fetch_oil_prices,
 )
 from scripts.report_render import build_template_context, render_report
 
@@ -111,6 +115,20 @@ quotes = fetch_quotes()
 if not quotes:
     raise RuntimeError("fetch_quotes() 全部標的皆抓取失敗，中止發布以避免整份 ticker/KPI 儀表板顯示 N/A")
 quotes_json = json.dumps(quotes, ensure_ascii=False)
+
+# 以下 4 個區塊全部是「Python 算好、不經過 AI」的資料（韓股/熱力圖/板塊輪動/油價），
+# 不需要注入 prompt——跟 quotes 不同，這幾個區塊目前沒有對應的 AI 敘述文字需求。
+print("  正在用 yfinance 抓取韓國股市...")
+korea_data = fetch_korea_market()
+
+print("  正在用 yfinance 抓取美股熱力圖資料...")
+heatmap_data = fetch_us_heatmap()
+
+print("  正在用 yfinance 抓取美股產業輪動資料...")
+sector_rotation_data = fetch_sector_rotation()
+
+print("  正在用 yfinance 抓取油價走勢...")
+oil_data = fetch_oil_prices()
 
 if institutional_json:
     institutional_prefetch_block = f"""
@@ -395,6 +413,10 @@ context = build_template_context(
     institutional_data=institutional_data,
     earnings_list=earnings_data,
     narrative_json=narrative_json,
+    korea_data=korea_data,
+    heatmap_data=heatmap_data,
+    sector_rotation_data=sector_rotation_data,
+    oil_data=oil_data,
 )
 html_content = render_report(context)
 

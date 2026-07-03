@@ -84,6 +84,10 @@ def _stub_and_import_generate_report():
         "load_market_analysis_prompt": data_fetchers.load_market_analysis_prompt,
         "fetch_all_fear_index": data_fetchers.fetch_all_fear_index,
         "fetch_quotes": data_fetchers.fetch_quotes,
+        "fetch_korea_market": data_fetchers.fetch_korea_market,
+        "fetch_us_heatmap": data_fetchers.fetch_us_heatmap,
+        "fetch_sector_rotation": data_fetchers.fetch_sector_rotation,
+        "fetch_oil_prices": data_fetchers.fetch_oil_prices,
     }
     original_anthropic_cls = anthropic.Anthropic
     had_api_key = "ANTHROPIC_API_KEY" in os.environ
@@ -144,6 +148,13 @@ def _stub_and_import_generate_report():
         # 視為中止發布的條件（見 Task 9），空 dict 會讓 stubbed import 本身失敗。
         data_fetchers.fetch_quotes = lambda *_a, **_k: {
             "TWII": {"symbol": "^TWII", "name": "加權指數", "price": 0.0, "change": 0.0, "change_pct": 0.0}
+        }
+        data_fetchers.fetch_korea_market = lambda *_a, **_k: {}
+        data_fetchers.fetch_us_heatmap = lambda *_a, **_k: []
+        data_fetchers.fetch_sector_rotation = lambda *_a, **_k: []
+        data_fetchers.fetch_oil_prices = lambda *_a, **_k: {
+            "wti": {"symbol": "CL=F", "name": "WTI 原油", "history": []},
+            "brent": {"symbol": "BZ=F", "name": "Brent 原油", "history": []},
         }
         anthropic.Anthropic = _FakeAnthropicClient
 
