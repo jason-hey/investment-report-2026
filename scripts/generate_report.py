@@ -23,8 +23,9 @@ from scripts.data_fetchers import (
 
 # AI 敘述 JSON 的必要欄位（見 JSON_OUTPUT_SPEC）；Task 9 的 render_report() 依賴這些欄位齊全。
 REQUIRED_JSON_FIELDS = [
-    "daily_brief", "hero_events", "warning_indicators", "night_session",
-    "news", "theme_cards", "strategy_cards", "risk_matrix_rows",
+    "daily_brief", "header_pills", "data_validation", "hero_events",
+    "warning_indicators", "night_session", "news", "ai_infra_html",
+    "theme_cards", "strategy_cards", "risk_matrix_rows",
     "market_deep_dive_html", "lly_foundayo",
 ]
 
@@ -112,6 +113,12 @@ JSON_OUTPUT_SPEC = """
 
 {
   "daily_brief": "3 行、每行純文字不加符號，總長度 150 字以內：第一行大盤漲跌重點；第二行今日最重要新聞或事件；第三行對持倉組合最需要注意的一點。3 行用 \\n 分隔存成同一個字串。",
+  "header_pills": [
+    {"icon": "🦅", "text": "<一句話重點1>", "tone": "green 或 amber 或 red 或 blue"}
+  ],
+  "data_validation": [
+    {"status": "confirmed 或 estimated", "label": "<資料項目與來源，例如「台股收盤（TWSE 官方）」>"}
+  ],
   "hero_events": [
     {"flag": "🇺🇸", "label": "今日重大事件 #1 — <一句話標題>", "theme": "green 或 amber 或 red",
      "headline": "<完整標題句>", "body": "<完整段落敘述，含資料來源標註>"},
@@ -134,6 +141,7 @@ JSON_OUTPUT_SPEC = """
     "geo": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
     "ipo": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}]
   },
+  "ai_infra_html": "<使用搜尋任務 10 的三項數據（CSP capex YoY、AI 伺服器出貨量、HBM 合約價與現貨價利差），直接輸出「AI 基礎建設驗證指標」這個區塊的 HTML 片段（3 格並排卡片，不含外層 <html>/<body>），沿用你過去產出這個區塊時的既有格式規則>",
   "theme_cards": [
     {"icon": "🤖", "title": "<主題名稱>", "body": "<兩三句話說明>", "tickers": ["NVDA", "AVGO"]}
   ],
@@ -145,10 +153,13 @@ JSON_OUTPUT_SPEC = """
   ],
   "market_deep_dive_html": "<完整執行下方三地市場深度分析規格後，直接輸出這個區塊的 HTML 片段（不含外層 <html>/<body>，只要這個區塊本身的 div 結構），沿用你過去產出這個區塊時的既有格式規則（信心等級標籤、洗盤vs出貨表格等）>",
   "lly_foundayo": {"weekly_trx": [{"week": "W1", "trx": 1390}], "wow_pct": [{"week": "W2", "pct": 12.3}],
-                    "commentary": "<敘述>", "stage_note": "<若無 TRx 數據時的商業化階段說明>"}
+                    "commentary": "<敘述>", "stage_note": "<若無 TRx 數據時的商業化階段說明>",
+                    "extra_html": "<商業化階段 / 分析師全年預估 / 與 NVO 競品對比 3 格卡片 + Medicare 覆蓋里程碑說明的 HTML 片段，沿用你過去產出這個區塊時的既有格式規則>"}
 }
 
 上面是結構範例，不是要照抄的內容；實際筆數規則如下（範例中只示範 1 筆）：
+- header_pills 固定輸出 4 則，每則一句話重點（今日最值得注意的事實），對應頁首的重點提示列
+- data_validation 列出今天報告中「已確認」與「估計值」的資料項目各幾筆均可，只要涵蓋當天實際用到的關鍵資料來源（台股/美股收盤、法人排行、夜盤等）
 - news 的 ai_semi/macro/geo/ipo 各自視實際搜尋結果填入多筆，該分類若搜尋不到內容也要回傳空陣列 `[]`，不可省略欄位本身
 - theme_cards 固定輸出 5 張，依序涵蓋：AI 算力基礎建設、台灣半導體供應鏈、口服 GLP-1、AI 電力/資料中心、黃金/實物資產
 - strategy_cards 固定輸出 3 張，依序為：巴菲特框架、動能策略、防禦配置

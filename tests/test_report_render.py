@@ -53,11 +53,88 @@ def test_build_kpi_cards_normalizes_negative_zero_change():
     assert card["val_class"] == ""
 
 
+def _fake_narrative_json():
+    """符合 REQUIRED_JSON_FIELDS 的最小假資料（見 scripts/generate_report.py 的 JSON_OUTPUT_SPEC），
+    用來驗證完整 context 能渲染出通過 validate_html() 的 HTML。"""
+    return {
+        "daily_brief": "大盤上漲收復失土\n重大新聞為台積電法說優於預期\n持倉留意升息預期升溫",
+        "header_pills": [
+            {"icon": "🦅", "text": "測試重點一", "tone": "green"},
+            {"icon": "⚡", "text": "測試重點二", "tone": "amber"},
+            {"icon": "📈", "text": "測試重點三", "tone": "green"},
+            {"icon": "🤖", "text": "測試重點四", "tone": "blue"},
+        ],
+        "data_validation": [
+            {"status": "confirmed", "label": "測試已確認項目"},
+            {"status": "estimated", "label": "測試估計項目"},
+        ],
+        "hero_events": [
+            {"flag": "🇺🇸", "label": "今日重大事件 #1 — 測試事件一", "theme": "green",
+             "headline": "測試標題一：美股創高", "body": "測試內文一：詳細敘述美股表現"},
+            {"flag": "🇹🇼", "label": "今日重大事件 #2 — 測試事件二", "theme": "amber",
+             "headline": "測試標題二：台股翻紅", "body": "測試內文二：詳細敘述台股表現"},
+        ],
+        "warning_indicators": {
+            "vix": {"status": "green", "note": "VIX 判讀說明"},
+            "hy_spread": {"status": "green", "value_text": "~290 bp", "note": "利差判讀說明"},
+            "us10y": {"status": "amber", "note": "殖利率判讀說明"},
+            "ai_leaders": {"status": "amber", "note": "AI 龍頭線型判讀說明"},
+            "tw_leverage": {"status": "amber", "value_text": "6,110 億", "note": "融資餘額判讀說明"},
+        },
+        "night_session": {"price": "46,880", "change_pts": "+136", "change_pct": "+0.29%",
+                           "volume": "12,345", "vs_day_close_note": "夜盤升水測試備註",
+                           "source_note": "資料來源測試備註"},
+        "news": {
+            "ai_semi": [{"title": "AI半導體測試新聞標題", "summary": "測試摘要內容",
+                         "source": "TestSource", "date": "2026-07-03"}],
+            "macro": [{"title": "總經測試新聞標題", "summary": "測試摘要內容",
+                       "source": "TestSource", "date": "2026-07-03"}],
+            "geo": [{"title": "地緣測試新聞標題", "summary": "測試摘要內容",
+                     "source": "TestSource", "date": "2026-07-03"}],
+            "ipo": [{"title": "IPO測試新聞標題", "summary": "測試摘要內容",
+                     "source": "TestSource", "date": "2026-07-03"}],
+        },
+        "theme_cards": [
+            {"icon": "🤖", "title": "測試主題一", "body": "測試說明一", "tickers": ["NVDA"]},
+            {"icon": "🏭", "title": "測試主題二", "body": "測試說明二", "tickers": ["2330"]},
+            {"icon": "💊", "title": "測試主題三", "body": "測試說明三", "tickers": ["LLY"]},
+            {"icon": "🏗️", "title": "測試主題四", "body": "測試說明四", "tickers": ["ORCL"]},
+            {"icon": "🥇", "title": "測試主題五", "body": "測試說明五", "tickers": ["IAUM"]},
+        ],
+        "strategy_cards": [
+            {"name": "🔬 巴菲特框架 — 測試", "quote": "測試名言一", "points": ["測試觀點1", "測試觀點2"]},
+            {"name": "📈 動能策略 — 測試", "quote": "測試名言二", "points": ["測試觀點1", "測試觀點2"]},
+            {"name": "🛡️ 防禦配置 — 測試", "quote": "測試名言三", "points": ["測試觀點1", "測試觀點2"]},
+        ],
+        "risk_matrix_rows": [
+            {"risk": "測試風險項目", "likelihood": "高", "impact": "中", "mitigation": "測試因應方式"},
+        ],
+        "ai_infra_html": '<div class="infra-test">AI 基礎建設驗證指標測試內容片段</div>',
+        "market_deep_dive_html": '<div class="deep-dive-test">三地市場深度分析測試內容片段</div>',
+        "lly_foundayo": {
+            "weekly_trx": [{"week": "W1", "trx": 1390}, {"week": "W2", "trx": 3200}],
+            "wow_pct": [{"week": "W2", "pct": 130.2}],
+            "commentary": "LLY Foundayo 測試敘述內容",
+            "stage_note": "",
+            "extra_html": '<div class="lly-extra-test">LLY 額外資訊測試內容片段</div>',
+        },
+    }
+
+
+def _narrative_context_fields():
+    """_fake_narrative_json() 扣掉 daily_brief（該欄位不進模板 context，只給通知用）。"""
+    data = _fake_narrative_json()
+    data.pop("daily_brief")
+    return data
+
+
 def test_render_report_produces_html_with_ticker_and_kpi_data():
     from scripts.report_render import render_report
 
+    quotes = {"TWII": {"symbol": "^TWII", "name": "加權指數", "price": 46744.0, "change": 274.0, "change_pct": 0.59}}
     context = {
         "date_label": "2026.07.03", "weekday_cn": "週五", "tw_holiday_note": "",
+        "quotes": quotes,
         "ticker_data": [{"sym": "加權指數", "price": "46,744", "chg": "+274", "pct": "+0.59%", "up": True}],
         "kpi_cards": [{"label": "台股加權指數", "val": "46,744", "val_class": "green",
                         "change_class": "green", "change_text": "+274 (+0.59%)", "extra": None}] * 8,
@@ -66,6 +143,7 @@ def test_render_report_produces_html_with_ticker_and_kpi_data():
         "institutional": {"as_of_dates": [], "foreign_buy_top10": [], "foreign_sell_top10": [],
                            "trust_buy_top10": [], "trust_sell_top10": []},
         "earnings": [],
+        **_narrative_context_fields(),
     }
     html = render_report(context)
     assert "46,744" in html
@@ -83,10 +161,12 @@ def test_render_report_renders_institutional_table_rows():
     })
     context = {
         "date_label": "2026.07.03", "weekday_cn": "週五", "tw_holiday_note": "",
+        "quotes": {},
         "ticker_data": [], "kpi_cards": [{"label": "x", "val": "1", "val_class": "",
                           "change_class": "", "change_text": "+0 (+0.00%)", "extra": None}] * 8,
         "vix_history": [], "pe_data": {"tw": [], "us": []},
         "institutional": institutional, "earnings": [],
+        **_narrative_context_fields(),
     }
     html = render_report(context)
     assert "69.85" in html
@@ -94,6 +174,44 @@ def test_render_report_renders_institutional_table_rows():
     assert "9.50" in html
     assert "-39,700.0" in html
     assert "2026-07-03" in html  # as_of_dates 顯示最新一筆
+
+
+def test_build_template_context_and_render_produces_valid_html():
+    from scripts.report_render import build_template_context, render_report
+
+    quotes = {"TWII": {"symbol": "^TWII", "name": "加權指數", "price": 46744.0, "change": 274.0, "change_pct": 0.59},
+              "VIX": {"symbol": "^VIX", "name": "VIX", "price": 16.15, "change": 0.23, "change_pct": 1.45},
+              "US10Y": {"symbol": "^TNX", "name": "10Y美債殖利率", "price": 4.48, "change": 0.02, "change_pct": 0.45}}
+    narrative = _fake_narrative_json()
+    context = build_template_context(
+        date_label="2026.07.03", weekday_cn="週五", tw_holiday_note="",
+        quotes=quotes,
+        fear_data={"us": {"symbol": "^VIX", "name": "VIX", "history": [{"date": "2026-07-01", "value": 16.5}]}},
+        pe_data={"tw": [], "us": []},
+        institutional_data=None,
+        earnings_list=[{"date": "2026-07-10", "symbol": "NVDA", "name": "NVIDIA", "market": "美股"}],
+        narrative_json=narrative,
+    )
+    html = render_report(context)
+
+    from scripts.generate_report import validate_html
+    assert validate_html(html) == []
+
+    # 沒有殘留未渲染的 Jinja 標記
+    assert "{{" not in html
+    assert "{%" not in html
+
+    # 抽查幾個敘述 JSON 裡的獨特字串確實出現在輸出中
+    assert "測試標題一：美股創高" in html
+    assert "VIX 判讀說明" in html
+    assert "夜盤升水測試備註" in html
+    assert "AI半導體測試新聞標題" in html
+    assert "測試主題一" in html
+    assert "巴菲特框架 — 測試" in html
+    assert "測試風險項目" in html
+    assert "三地市場深度分析測試內容片段" in html
+    assert "LLY Foundayo 測試敘述內容" in html
+    assert "NVIDIA" in html  # earnings_list 透過 build_earnings_context 傳入
 
 
 def test_build_vix_history_extracts_us_history():

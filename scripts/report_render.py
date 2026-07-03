@@ -119,6 +119,36 @@ def build_earnings_context(earnings_list):
     return earnings_list  # 已是 list[dict]，欄位與模板需要的一致，不需轉換
 
 
+def build_template_context(*, date_label, weekday_cn, tw_holiday_note,
+                            quotes, fear_data, pe_data, institutional_data,
+                            earnings_list, narrative_json):
+    """把所有預抓資料 + AI 敘述 JSON 組成 render_report() 需要的完整 context dict。"""
+    return {
+        "date_label": date_label,
+        "weekday_cn": weekday_cn,
+        "tw_holiday_note": tw_holiday_note,
+        "quotes": quotes,
+        "ticker_data": build_ticker_data(quotes),
+        "kpi_cards": build_kpi_cards(quotes),
+        "vix_history": build_vix_history(fear_data),
+        "pe_data": build_pe_data(pe_data),
+        "institutional": build_institutional_context(institutional_data),
+        "earnings": build_earnings_context(earnings_list),
+        "header_pills": narrative_json["header_pills"],
+        "data_validation": narrative_json["data_validation"],
+        "hero_events": narrative_json["hero_events"],
+        "warning_indicators": narrative_json["warning_indicators"],
+        "night_session": narrative_json["night_session"],
+        "news": narrative_json["news"],
+        "ai_infra_html": narrative_json["ai_infra_html"],
+        "theme_cards": narrative_json["theme_cards"],
+        "strategy_cards": narrative_json["strategy_cards"],
+        "risk_matrix_rows": narrative_json["risk_matrix_rows"],
+        "market_deep_dive_html": narrative_json["market_deep_dive_html"],
+        "lly_foundayo": narrative_json["lly_foundayo"],
+    }
+
+
 def render_report(context):
     """用 templates/report.html.j2 渲染最終 HTML 字串。"""
     env = Environment(loader=FileSystemLoader("templates"), autoescape=False)

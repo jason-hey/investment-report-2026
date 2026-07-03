@@ -33,10 +33,13 @@ def _fake_narrative_json():
     """符合 REQUIRED_JSON_FIELDS 的最小假資料，讓 validate_narrative_json() 通過。"""
     return {
         "daily_brief": "test daily brief",
+        "header_pills": [],
+        "data_validation": [],
         "hero_events": [],
         "warning_indicators": {},
         "night_session": {},
         "news": {},
+        "ai_infra_html": "",
         "theme_cards": [],
         "strategy_cards": [],
         "risk_matrix_rows": [],

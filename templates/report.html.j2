@@ -134,6 +134,7 @@ body {
 }
 .hero-card.theme-green::before { background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); }
 .hero-card.theme-amber::before { background: linear-gradient(90deg, var(--accent-amber), var(--accent-red)); }
+.hero-card.theme-red::before { background: linear-gradient(90deg, var(--accent-red), var(--accent-amber)); }
 .hero-label { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px; }
 .hero-headline { font-size:17px; font-weight:700; color:var(--text-primary); line-height:1.4; margin-bottom:10px; }
 .hero-body { font-size:13px; color:var(--text-secondary); line-height:1.7; }
@@ -369,6 +370,7 @@ canvas { max-width:100%; }
 .news-dot { width:6px; height:6px; border-radius:50%; margin-top:6px; flex-shrink:0; }
 .news-content { flex:1; }
 .news-headline { font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:3px; line-height:1.4; }
+.news-summary { font-size:12px; color:var(--text-secondary); line-height:1.5; margin-bottom:4px; }
 .news-meta { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-secondary); }
 .news-tag { display:inline-block; padding:1px 7px; border-radius:10px; font-size:10px; margin-right:6px; }
 .tag-bull { background:rgba(0,230,118,0.12); color:var(--accent-green); }
@@ -460,13 +462,12 @@ canvas { max-width:100%; }
           {% endif %}
         </div>
         <div class="header-h1">📊 每日投資情報</div>
-        <div class="header-sub">2026.07.03（週五）· 台灣台中 · 資料截止：台股收盤 / 美股 07/02 收盤</div>
+        <div class="header-sub">{{ date_label }}（{{ weekday_cn }}）· 台灣台中 · 資料截止：台股收盤 / 美股收盤</div>
       </div>
       <div class="header-pills">
-        <div class="pill pill-red"><span class="pill-icon">🦅</span><span>美股今日休市（獨立紀念日）</span></div>
-        <div class="pill pill-amber"><span class="pill-icon">⚡</span><span>Fed Warsh 通膨鷹派 升息預期 >60%</span></div>
-        <div class="pill pill-green"><span class="pill-icon">📈</span><span>台股 46,744 ↑ +0.58%</span></div>
-        <div class="pill pill-blue"><span class="pill-icon">🤖</span><span>TSMC FY26 Revenue +30% YoY 確認</span></div>
+        {% for pill in header_pills %}
+        <div class="pill pill-{{ pill.tone }}"><span class="pill-icon">{{ pill.icon }}</span><span>{{ pill.text }}</span></div>
+        {% endfor %}
       </div>
     </div>
   </div>
@@ -476,30 +477,13 @@ canvas { max-width:100%; }
 <div class="section" style="background:var(--bg);">
   <div class="container">
     <div class="hero-grid">
-      <!-- Hero 1 -->
-      <div class="hero-card theme-green">
-        <div class="hero-label">🇺🇸 今日重大事件 #1 — 非農就業 + 美股混合收盤</div>
-        <div class="hero-headline">6 月非農就業僅 +5.7 萬，大幅低於預期；Dow 創歷史新高，Nasdaq 跌逾 1%</div>
-        <div style="display:flex;gap:20px;margin:10px 0;flex-wrap:wrap;">
-          <div><div class="hero-label" style="margin:0">Dow</div><div class="hero-number green" style="font-size:20px;">52,900</div><div class="header-sub" style="color:var(--accent-green)">+1.14%</div></div>
-          <div><div class="hero-label" style="margin:0">S&P 500</div><div class="hero-number" style="font-size:20px;color:var(--text-primary)">≈7,456</div><div class="header-sub" style="color:var(--text-secondary)">≈ flat</div></div>
-          <div><div class="hero-label" style="margin:0">Nasdaq</div><div class="hero-number red" style="font-size:20px;">25,740</div><div class="header-sub" style="color:var(--accent-red)">-1.15%</div></div>
-          <div><div class="hero-label" style="margin:0">VIX</div><div class="hero-number amber" style="font-size:20px;">16.15</div><div class="header-sub" style="color:var(--accent-amber)">+1.45%</div></div>
-        </div>
-        <div class="hero-body">就業數據弱化（失業率降至 4.2%），科技股殺壓明顯，防禦性板塊（公用、醫療、消費必需）逆勢漲逾 2%。Warsh 鷹派立場仍在，升息預期 >60%（Sep）。<br><span style="color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;font-size:10px">來源：TheStreet / Edward Jones 2026-07-02</span></div>
+      {% for hero in hero_events %}
+      <div class="hero-card theme-{{ hero.theme }}">
+        <div class="hero-label">{{ hero.flag }} {{ hero.label }}</div>
+        <div class="hero-headline">{{ hero.headline }}</div>
+        <div class="hero-body">{{ hero.body }}</div>
       </div>
-      <!-- Hero 2 -->
-      <div class="hero-card theme-amber">
-        <div class="hero-label">🇹🇼 今日重大事件 #2 — 台股收盤 / Fed Warsh 鷹派</div>
-        <div class="hero-headline">台股翻紅 +274 點至 46,744；Warsh 稱「物價仍過高」，10Y 殖利率守 4.48%</div>
-        <div style="display:flex;gap:20px;margin:10px 0;flex-wrap:wrap;">
-          <div><div class="hero-label" style="margin:0">加權指數</div><div class="hero-number green" style="font-size:20px;">46,744</div><div class="header-sub" style="color:var(--accent-green)">+274 ▲ 0.58%</div></div>
-          <div><div class="hero-label" style="margin:0">台積電</div><div class="hero-number green" style="font-size:20px;">~2,400</div><div class="header-sub" style="color:var(--accent-green)">強勢領漲</div></div>
-          <div><div class="hero-label" style="margin:0">10Y UST</div><div class="hero-number amber" style="font-size:20px;">4.48%</div><div class="header-sub" style="color:var(--accent-amber)">↑ 高位持穩</div></div>
-          <div><div class="hero-label" style="margin:0">Fed Rate</div><div class="hero-number" style="font-size:20px;color:var(--text-primary)">3.5-3.75%</div><div class="header-sub" style="color:var(--accent-amber)">按兵不動</div></div>
-        </div>
-        <div class="hero-body">Fed Warsh 於 ECB 年會（葡萄牙辛特拉）確認通膨「仍過高」，不急於降息，九名 FOMC 委員支持年內升息一碼。BofA 預測全年升息三碼至 4.25-4.5%。台股在半導體/AI 族群帶動下反彈，成交量 11,601 億元。<br><span style="color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;font-size:10px">來源：CNBC / TradingEconomics 2026-07-02</span></div>
-      </div>
+      {% endfor %}
     </div>
   </div>
 </div>
@@ -509,38 +493,38 @@ canvas { max-width:100%; }
   <div class="container">
     <div class="sec-title">
       <span class="sec-title-icon">⚠️</span> 每日必看 5 大預警指標
-      <span class="sec-subtitle">截止 2026-07-02 美股收盤</span>
+      <span class="sec-subtitle">{{ date_label }}</span>
     </div>
+    {% set status_badge = {'green': 'status-ok', 'amber': 'status-warn', 'red': 'status-danger'} %}
     <div class="warning-grid">
       <div class="w-card">
         <div class="w-card-label">VIX 恐懼指數</div>
-        <div class="w-card-val amber">16.15</div>
-        <div class="w-card-sub">↑ +1.45% · 非農疲弱後小揚</div>
-        <div class="w-card-status status-ok">✓ 低位穩定</div>
+        <div class="w-card-val {{ warning_indicators.vix.status }}">{{ "%.2f"|format(quotes.VIX.price) if quotes.VIX else "N/A" }}</div>
+        <div class="w-card-sub">{{ warning_indicators.vix.note }}</div>
+        <div class="w-card-status {{ status_badge.get(warning_indicators.vix.status, 'status-warn') }}">{{ warning_indicators.vix.status | upper }}</div>
       </div>
       <div class="w-card">
         <div class="w-card-label">HY 信用利差</div>
-        <div class="w-card-val green">~290 bp</div>
-        <div class="w-card-sub">IG 約 85bp，風險偏好尚可</div>
-        <div class="w-card-status status-ok">✓ 緊縮區間</div>
+        <div class="w-card-val {{ warning_indicators.hy_spread.status }}">{{ warning_indicators.hy_spread.value_text }}</div>
+        <div class="w-card-sub">{{ warning_indicators.hy_spread.note }}</div>
+        <div class="w-card-status {{ status_badge.get(warning_indicators.hy_spread.status, 'status-warn') }}">{{ warning_indicators.hy_spread.status | upper }}</div>
       </div>
       <div class="w-card">
         <div class="w-card-label">10Y 美債殖利率</div>
-        <div class="w-card-val amber">4.48%</div>
-        <div class="w-card-sub">Warsh 鷹派演說後高位持穩</div>
-        <div class="w-card-status status-warn">⚠ 升息預期升溫</div>
+        <div class="w-card-val {{ warning_indicators.us10y.status }}">{{ "%.2f"|format(quotes.US10Y.price) if quotes.US10Y else "N/A" }}%</div>
+        <div class="w-card-sub">{{ warning_indicators.us10y.note }}</div>
+        <div class="w-card-status {{ status_badge.get(warning_indicators.us10y.status, 'status-warn') }}">{{ warning_indicators.us10y.status | upper }}</div>
       </div>
       <div class="w-card">
         <div class="w-card-label">AI 龍頭線型</div>
-        <div class="w-card-val amber">混合</div>
-        <div class="w-card-sub">TSMC +30%YoY；NVDA 近30日-13%</div>
-        <div class="w-card-status status-warn">⚠ 短線分歧</div>
+        <div class="w-card-sub">{{ warning_indicators.ai_leaders.note }}</div>
+        <div class="w-card-status {{ status_badge.get(warning_indicators.ai_leaders.status, 'status-warn') }}">{{ warning_indicators.ai_leaders.status | upper }}</div>
       </div>
       <div class="w-card">
-        <div class="w-card-label">台股槓桿ETF</div>
-        <div class="w-card-val amber">高水位</div>
-        <div class="w-card-sub">融資餘額 6,110 億，槓桿需監控</div>
-        <div class="w-card-status status-warn">⚠ 注意去槓桿風險</div>
+        <div class="w-card-label">台股融資餘額</div>
+        <div class="w-card-val {{ warning_indicators.tw_leverage.status }}">{{ warning_indicators.tw_leverage.value_text }}</div>
+        <div class="w-card-sub">{{ warning_indicators.tw_leverage.note }}</div>
+        <div class="w-card-status {{ status_badge.get(warning_indicators.tw_leverage.status, 'status-warn') }}">{{ warning_indicators.tw_leverage.status | upper }}</div>
       </div>
     </div>
   </div>
@@ -549,16 +533,9 @@ canvas { max-width:100%; }
 <!-- ══════════════════════ DATA VALIDATION ══════════════════════ -->
 <div class="container" style="padding-bottom:8px">
   <div class="val-grid">
-    <div class="val-item"><span class="val-ok">✓</span>台股收盤（TWSE 官方）</div>
-    <div class="val-item"><span class="val-ok">✓</span>美股 07/02 收盤（Yahoo/TheStreet）</div>
-    <div class="val-item"><span class="val-ok">✓</span>VIX 資料（預載 JSON）</div>
-    <div class="val-item"><span class="val-ok">✓</span>P/E 資料（預載 JSON）</div>
-    <div class="val-item"><span class="val-ok">✓</span>Fed Warsh 立場（CNBC 2026-07-01）</div>
-    <div class="val-item"><span class="val-ok">✓</span>Foundayo TRx（Fierce Pharma / IQVIA）</div>
-    <div class="val-item"><span class="val-ok">✓</span>CSP Capex（Tom's Hardware / Yahoo Finance）</div>
-    <div class="val-item"><span class="val-ok">✓</span>HBM3e 價格趨勢（TrendForce）</div>
-    <div class="val-item"><span class="val-est">⚠</span>台指期夜盤（估計值，參考歷史日盤±）</div>
-    <div class="val-item"><span class="val-est">⚠</span>法人連三日排行（07/01 最新資料）</div>
+    {% for item in data_validation %}
+    <div class="val-item"><span class="{{ 'val-ok' if item.status == 'confirmed' else 'val-est' }}">{{ '✓' if item.status == 'confirmed' else '⚠' }}</span>{{ item.label }}</div>
+    {% endfor %}
   </div>
 </div>
 
@@ -597,125 +574,7 @@ canvas { max-width:100%; }
       <span class="sec-title-icon">🏗️</span> AI 基礎建設驗證指標
       <span class="sec-subtitle">CSP Capex · AI 伺服器出貨 · HBM 價差</span>
     </div>
-    <div class="infra-grid">
-      <!-- Card 1: CSP Capex -->
-      <div class="infra-card">
-        <div class="infra-card-top">
-          <div>
-            <div class="infra-card-title">📡 CSP Capex YoY</div>
-            <div style="font-size:11px;color:var(--text-secondary);margin-top:2px">2026 全年指引 · Q1 實際數據</div>
-          </div>
-          <div class="infra-card-badge status-ok">↑ 全線擴張</div>
-        </div>
-        <div class="infra-row">
-          <div>
-            <div class="infra-company">AMZN（AWS）</div>
-            <div class="bar-bg" style="width:100px"><div class="bar-fill" style="width:100%;background:var(--accent-cyan)"></div></div>
-          </div>
-          <div style="text-align:right">
-            <div class="infra-num">$200B</div>
-            <div class="infra-yoy">YoY 2026指引</div>
-          </div>
-        </div>
-        <div class="infra-row">
-          <div>
-            <div class="infra-company">MSFT（Azure）</div>
-            <div class="bar-bg" style="width:100px"><div class="bar-fill" style="width:95%;background:var(--accent-blue)"></div></div>
-          </div>
-          <div style="text-align:right">
-            <div class="infra-num">$190B</div>
-            <div class="infra-yoy">Q3 Capex +84% YoY</div>
-          </div>
-        </div>
-        <div class="infra-row">
-          <div>
-            <div class="infra-company">GOOGL（Cloud）</div>
-            <div class="bar-bg" style="width:100px"><div class="bar-fill" style="width:90%;background:var(--accent-green)"></div></div>
-          </div>
-          <div style="text-align:right">
-            <div class="infra-num">$175-185B</div>
-            <div class="infra-yoy">Q1 $35.67B +100%+</div>
-          </div>
-        </div>
-        <div class="infra-row">
-          <div>
-            <div class="infra-company">META（MTIA）</div>
-            <div class="bar-bg" style="width:100px"><div class="bar-fill" style="width:65%;background:var(--accent-purple)"></div></div>
-          </div>
-          <div style="text-align:right">
-            <div class="infra-num">$125-145B</div>
-            <div class="infra-yoy">↑ 記憶體成本上漲</div>
-          </div>
-        </div>
-        <div style="margin-top:12px;padding:8px;background:rgba(0,230,118,0.05);border-radius:6px;border:1px solid rgba(0,230,118,0.2)">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent-green);font-weight:700">四大合計：~$725B</div>
-          <div style="font-size:11px;color:var(--text-secondary)">YoY +77%，2025年約$410B</div>
-        </div>
-        <div class="infra-src">來源：Tom's Hardware / Yahoo Finance / TrendForce · 2026-04-30</div>
-      </div>
-
-      <!-- Card 2: AI Server -->
-      <div class="infra-card">
-        <div class="infra-card-top">
-          <div>
-            <div class="infra-card-title">🖥️ AI 伺服器出貨量</div>
-            <div style="font-size:11px;color:var(--text-secondary);margin-top:2px">2026 全年預估 · TrendForce</div>
-          </div>
-          <div class="infra-card-badge status-ok">↑ 超 20% 成長</div>
-        </div>
-        <div style="text-align:center;padding:16px 0">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:36px;font-weight:700;color:var(--accent-cyan)">+20%+</div>
-          <div style="font-size:13px;color:var(--text-secondary);margin-top:4px">2026 全年 AI 伺服器出貨量 YoY</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="background:var(--bg3);border-radius:8px;padding:10px">
-            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">驅動因素</div>
-            <div style="font-size:12px;color:var(--text-primary)">CSP + 主權雲 AI 需求強勁，GB300/VR200 平台全面部署</div>
-          </div>
-          <div style="background:var(--bg3);border-radius:8px;padding:10px">
-            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">HBM 需求同步</div>
-            <div style="font-size:12px;color:var(--text-primary)">HBM 用量 2026 持續 >70% YoY 成長（B300/GB300/VR平台）</div>
-          </div>
-          <div style="background:var(--bg3);border-radius:8px;padding:10px">
-            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">訓練→推理轉型</div>
-            <div style="font-size:12px;color:var(--text-primary)">AI 伺服器從訓練轉推理，通用伺服器 DDR5 需求同步爆發</div>
-          </div>
-        </div>
-        <div class="infra-src">來源：TrendForce 2025-10-30 / 2026-03-31 報告</div>
-      </div>
-
-      <!-- Card 3: HBM Price -->
-      <div class="infra-card">
-        <div class="infra-card-top">
-          <div>
-            <div class="infra-card-title">💾 HBM3e 合約 vs 現貨</div>
-            <div style="font-size:11px;color:var(--text-secondary);margin-top:2px">價差動態 · TrendForce</div>
-          </div>
-          <div class="infra-card-badge status-ok" style="color:var(--accent-green)">供需偏緊</div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-          <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
-            <div style="font-size:10px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace">HBM3e 合約價趨勢</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700;color:var(--accent-green);margin-top:4px">↑ 上漲</div>
-            <div style="font-size:11px;color:var(--text-secondary)">2026 年小幅上揚</div>
-          </div>
-          <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
-            <div style="font-size:10px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace">對比 DDR5 倍數</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700;color:var(--accent-amber);margin-top:4px">1-2x</div>
-            <div style="font-size:11px;color:var(--text-secondary)">年底縮至（原 4-5x）</div>
-          </div>
-        </div>
-        <div style="background:rgba(0,230,118,0.05);border:1px solid rgba(0,230,118,0.2);border-radius:8px;padding:10px;margin-bottom:8px">
-          <div style="font-size:11px;color:var(--accent-green);font-weight:700;margin-bottom:4px">📈 2026 供需格局</div>
-          <div style="font-size:11px;color:var(--text-secondary);line-height:1.6">• HBM3e 售完至 2026 年底（TrendForce）<br>• Samsung/SK Hynix 2026 合約價上調 ~20%<br>• 供給側：SK Hynix 優先轉產 HBM4，HBM3e 供給偏緊<br>• 需求側：NVDA H200 中國出口解禁拉動</div>
-        </div>
-        <div style="background:rgba(255,167,38,0.05);border:1px solid rgba(255,167,38,0.2);border-radius:8px;padding:10px">
-          <div style="font-size:11px;color:var(--accent-amber);font-weight:700;margin-bottom:4px">🔄 HBM4 接棒</div>
-          <div style="font-size:11px;color:var(--text-secondary)">HBM4 收入佔比預估 2026H2 達 55%，HBM3e 45%</div>
-        </div>
-        <div class="infra-src">來源：TrendForce DRAMeXchange 2025-12-18 / 2026-06-01</div>
-      </div>
-    </div>
+    {{ ai_infra_html | safe }}
   </div>
 </div>
 
@@ -724,7 +583,7 @@ canvas { max-width:100%; }
   <div class="container">
     <div class="sec-title">
       <span class="sec-title-icon">😱</span> 美股 VIX 恐懼指數 — 近 6 個月趨勢
-      <span class="sec-subtitle">2026-01-02 ～ 2026-07-02</span>
+      <span class="sec-subtitle">{{ vix_history[0].date if vix_history else "—" }} ～ {{ vix_history[-1].date if vix_history else "—" }}</span>
     </div>
     <div class="chart-card">
       <div class="chart-title">CBOE VIX 恐懼指數</div>
@@ -762,13 +621,15 @@ canvas { max-width:100%; }
       </div>
       <div id="pe-overlay-tw" class="pe-overlay">
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-secondary);margin-bottom:6px">當前 P/E 對比</div>
-        <div class="pe-ov-row"><span class="pe-ov-name" style="color:#4f8ef7">台積電</span><span>Trailing: 33.4</span><span>Fwd: 19.6</span></div>
+        {% for item in pe_data.tw %}
+        <div class="pe-ov-row"><span class="pe-ov-name" style="color:{{ item.color }}">{{ item.name }}</span><span>Trailing: {{ item.current_trailing_pe if item.current_trailing_pe is not none else "N/A" }}</span><span>Fwd: {{ item.current_forward_pe if item.current_forward_pe is not none else "N/A" }}</span></div>
+        {% endfor %}
       </div>
       <div id="pe-overlay-us" class="pe-overlay" style="display:none">
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-secondary);margin-bottom:6px">當前 P/E 對比</div>
-        <div class="pe-ov-row"><span class="pe-ov-name" style="color:#00d4ff">S&P500</span><span>Trailing: 26.7</span><span>Fwd: N/A</span></div>
-        <div class="pe-ov-row"><span class="pe-ov-name" style="color:#00e676">NVDA</span><span>Trailing: 29.9</span><span>Fwd: 15.3</span></div>
-        <div class="pe-ov-row"><span class="pe-ov-name" style="color:#ffa726">LLY</span><span>Trailing: 43.2</span><span>Fwd: 27.3</span></div>
+        {% for item in pe_data.us %}
+        <div class="pe-ov-row"><span class="pe-ov-name" style="color:{{ item.color }}">{{ item.name }}</span><span>Trailing: {{ item.current_trailing_pe if item.current_trailing_pe is not none else "N/A" }}</span><span>Fwd: {{ item.current_forward_pe if item.current_forward_pe is not none else "N/A" }}</span></div>
+        {% endfor %}
       </div>
       <div style="position:relative;height:340px">
         <canvas id="peChart"></canvas>
@@ -784,33 +645,33 @@ canvas { max-width:100%; }
       <span class="sec-title-icon">🌙</span> 台指期夜盤動態
       <span class="sec-subtitle">夜盤時段 15:00–05:00（台灣時間）</span>
     </div>
+    {% set night_up = night_session.change_pts is string and not night_session.change_pts.strip().startswith('-') %}
     <div class="futures-card">
       <div class="futures-main">
         <div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-secondary);margin-bottom:4px">台指期 07 月合約 夜盤（07/03 開盤後估值）</div>
-          <div class="futures-price green">~46,880</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-secondary);margin-bottom:4px">台指期 夜盤最新報價</div>
+          <div class="futures-price {{ 'green' if night_up else 'red' }}">{{ night_session.price }}</div>
           <div style="display:flex;gap:10px;align-items:center;margin-top:4px">
-            <div class="futures-chg green">▲ +136</div>
-            <div class="futures-chg green">(+0.29%)</div>
+            <div class="futures-chg {{ 'green' if night_up else 'red' }}">{{ night_session.change_pts }}</div>
+            <div class="futures-chg {{ 'green' if night_up else 'red' }}">({{ night_session.change_pct }})</div>
           </div>
         </div>
-        <div style="padding:10px;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.25);border-radius:8px;font-size:12px;color:var(--text-secondary)">
-          vs 日盤收盤 46,744<br>
-          <span style="color:var(--accent-green);font-weight:600">夜盤升水 +136 點</span>
+        <div style="padding:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text-secondary)">
+          {{ night_session.vs_day_close_note }}
         </div>
       </div>
       <div class="futures-meta-grid">
         <div class="futures-meta-item">
-          <div class="futures-meta-label">日盤收盤</div>
-          <div class="futures-meta-val">46,744</div>
+          <div class="futures-meta-label">夜盤最新</div>
+          <div class="futures-meta-val {{ 'green' if night_up else 'red' }}">{{ night_session.price }}</div>
         </div>
         <div class="futures-meta-item">
-          <div class="futures-meta-label">夜盤最新（估）</div>
-          <div class="futures-meta-val green">~46,880</div>
+          <div class="futures-meta-label">漲跌點數</div>
+          <div class="futures-meta-val {{ 'green' if night_up else 'red' }}">{{ night_session.change_pts }} ({{ night_session.change_pct }})</div>
         </div>
         <div class="futures-meta-item">
-          <div class="futures-meta-label">升/貼水</div>
-          <div class="futures-meta-val green">+136 升水</div>
+          <div class="futures-meta-label">成交量</div>
+          <div class="futures-meta-val" style="font-size:14px">{{ night_session.volume }}</div>
         </div>
         <div class="futures-meta-item">
           <div class="futures-meta-label">夜盤時段</div>
@@ -818,8 +679,7 @@ canvas { max-width:100%; }
         </div>
       </div>
       <div style="margin-top:12px;padding:10px;background:rgba(255,167,38,0.06);border:1px solid rgba(255,167,38,0.2);border-radius:8px;font-size:12px;color:var(--text-secondary)">
-        ⚠️ <strong style="color:var(--accent-amber)">注意：</strong>美股今日（07/03）因獨立紀念日休市，夜盤缺少美股對台指期的直接驅動。昨日 Dow 創歷史新高、Nasdaq 跌逾 1%，日韓股市表現牽引今夜台指期走向。<br>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px">⚠ 估計值 · 以日盤收盤為基礎推算 · 請以台期交即時行情為準</span>
+        {{ night_session.source_note }}
       </div>
     </div>
   </div>
@@ -950,41 +810,26 @@ canvas { max-width:100%; }
           <div style="font-size:11px;color:var(--text-secondary);margin-top:3px">FDA 核准：2026-04-01 ｜ 商業化開始：2026-04-06（LillyDirect）</div>
         </div>
         <div class="lly-latest-box">
-          <div class="lly-latest-trx">~17,000</div>
-          <div class="lly-latest-label">週 TRx（Week 6 估，IQVIA）</div>
-          <div class="lly-latest-wow green">WoW ≈ +45%（1→6週平均）</div>
+          <div class="lly-latest-trx">{{ "{:,}".format(lly_foundayo.weekly_trx[-1].trx) if lly_foundayo.weekly_trx else "N/A" }}</div>
+          <div class="lly-latest-label">週 TRx（最新一週，IQVIA）{% if lly_foundayo.weekly_trx %} · {{ lly_foundayo.weekly_trx[-1].week }}{% endif %}</div>
+          {% set last_wow = lly_foundayo.wow_pct[-1].pct if lly_foundayo.wow_pct else None %}
+          <div class="lly-latest-wow {{ 'green' if (last_wow is not none and last_wow >= 0) else 'red' if last_wow is not none else '' }}">{% if last_wow is not none %}WoW {{ "%+.0f"|format(last_wow) }}%{% else %}WoW N/A{% endif %}</div>
         </div>
       </div>
       <div class="lly-warning">
         ⚠️ <strong>重要說明：</strong>Foundayo（orforglipron）= 口服小分子 GLP-1，與 Mounjaro/Zepbound（tirzepatide 注射劑）為完全獨立產品線，數據不可混用。IQVIA TRx 數據可能低估實際量（LillyDirect/電信醫療通路未完整涵蓋，約 40-45% 缺口）。
       </div>
+      <div class="hero-body" style="margin-bottom:12px">{{ lly_foundayo.commentary }}</div>
+      {% if not lly_foundayo.weekly_trx %}
+      <div class="hero-body" style="margin-bottom:12px">{{ lly_foundayo.stage_note }}</div>
+      {% endif %}
       <div class="lly-chart-wrap">
         <canvas id="llyCChart"></canvas>
       </div>
       <div class="lly-wow-wrap">
         <canvas id="llyWowChart"></canvas>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px">
-        <div style="background:var(--bg3);border-radius:8px;padding:10px">
-          <div style="font-size:10px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace">商業化階段</div>
-          <div style="font-size:12px;color:var(--accent-amber);font-weight:600;margin-top:4px">早期上市爬坡期</div>
-          <div style="font-size:11px;color:var(--text-secondary)">處於商業化第 3 個月</div>
-        </div>
-        <div style="background:var(--bg3);border-radius:8px;padding:10px">
-          <div style="font-size:10px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace">Jefferies 2026 全年預估</div>
-          <div style="font-size:12px;color:var(--accent-green);font-weight:600;margin-top:4px">$1.6B（樂觀）</div>
-          <div style="font-size:11px;color:var(--text-secondary)">Q2 估 $146M（Jefferies）</div>
-        </div>
-        <div style="background:var(--bg3);border-radius:8px;padding:10px">
-          <div style="font-size:10px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace">競爭對比（Week 4）</div>
-          <div style="font-size:12px;color:var(--accent-red);font-weight:600;margin-top:4px">Foundayo 7,335 vs NVO 28,500</div>
-          <div style="font-size:11px;color:var(--text-secondary)">Wegovy pill 領先約 3.9x</div>
-        </div>
-      </div>
-      <div style="margin-top:10px;background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.2);border-radius:8px;padding:10px;font-size:11px;color:var(--text-secondary)">
-        📋 <strong style="color:var(--text-primary)">Medicare 覆蓋重要里程碑：</strong>自 2026-07-01 起，符合資格的 Medicare Part D 患者可透過 GLP-1 Bridge 計畫以每月 $50 取得 Foundayo，此將顯著加速處方量放量，H2 TRx 動能值得持續追蹤。<br>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px">來源：IQVIA / Fierce Pharma Oral GLP-1 Tracker / Jefferies / Lilly IR · 截至 Week 7（5月中旬）</span>
-      </div>
+      {{ lly_foundayo.extra_html | safe }}
     </div>
   </div>
 </div>
@@ -994,7 +839,7 @@ canvas { max-width:100%; }
   <div class="container">
     <div class="sec-title">
       <span class="sec-title-icon">📅</span> 未來 2 週財報速覽
-      <span class="sec-subtitle">2026-07-03 ～ 2026-07-17</span>
+      <span class="sec-subtitle">{{ date_label }} 起 2 週內</span>
     </div>
     <div class="chart-card">
       <div class="earnings-filter">
@@ -1025,7 +870,7 @@ canvas { max-width:100%; }
   <div class="container">
     <div class="sec-title">
       <span class="sec-title-icon">📰</span> 財經新聞中心
-      <span class="sec-subtitle">2026-07-03 重點彙整</span>
+      <span class="sec-subtitle">{{ date_label }} 重點彙整</span>
     </div>
     <div class="chart-card">
       <div class="news-tabs">
@@ -1036,141 +881,55 @@ canvas { max-width:100%; }
       </div>
 
       <div id="news-ai" class="news-panel active">
+        {% for item in news.ai_semi %}
         <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-green)"></div>
+          <div class="news-dot" style="background:var(--accent-blue)"></div>
           <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-bull">利多</span>TSMC 2026 全年美元營收預估 >30% YoY 成長，5月營收 NT$320.52B（+30.1% YoY）</div>
-            <div class="news-meta">Yahoo Finance / Zacks · 2026-07-02 · TSMC 2nm 量產推進中，HPC 占 Q1 營收 61%</div>
+            <div class="news-headline">{{ item.title }}</div>
+            <div class="news-summary">{{ item.summary }}</div>
+            <div class="news-meta">{{ item.source }} · {{ item.date }}</div>
           </div>
         </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-green)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-bull">利多</span>NVIDIA × TSMC 宣布 AI 進入晶圓廠合作：cuLitho/cuEST 提升微影效率 20-50%，製造 defect 檢測升級</div>
-            <div class="news-meta">NVIDIA Newsroom · 2026-06-01（GTC Taipei）· CUDA-X + Metropolis 部署中</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-amber)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-neutral">觀察</span>NVDA 近 30 日股價 -13.1%，TSMC 近 30 日 +4.5%；分析師下調 NVDA 至 Hold（Zacks 3），TSMC 升 Buy（Zacks 2）</div>
-            <div class="news-meta">Yahoo Finance 2026-07-02 · NVDA Fwd P/E 15.3x，估值相對消化中</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-green)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-bull">利多</span>Broadcom（AVGO）AI 自製晶片業務持續擴大，Google/Amazon 超大規模 ASIC 訂單穩固；2027 AI 收入目標 $100B</div>
-            <div class="news-meta">HeyGoTrade / 247WallSt · AVGO 為超大規模 ASIC 首選廠商</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-green)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-bull">利多</span>Marvell（MRVL）2026 年迄今漲幅達 89%，AI 收入占比望達 40-50%；Q2 財報（8月底）為關鍵觀察節點</div>
-            <div class="news-meta">HeyGoTrade 2026-05-13 · Microsoft/Amazon 自製晶片動能持續</div>
-          </div>
-        </div>
+        {% endfor %}
       </div>
 
       <div id="news-macro" class="news-panel">
+        {% for item in news.macro %}
         <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-red)"></div>
+          <div class="news-dot" style="background:var(--accent-blue)"></div>
           <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-bear">利空</span>6 月非農就業僅 +5.7 萬，遠低於市場預期 >10 萬；失業率降至 4.2%</div>
-            <div class="news-meta">Edward Jones / TheStreet · 2026-07-02 · 科技股 / Nasdaq 承壓</div>
+            <div class="news-headline">{{ item.title }}</div>
+            <div class="news-summary">{{ item.summary }}</div>
+            <div class="news-meta">{{ item.source }} · {{ item.date }}</div>
           </div>
         </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-red)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-bear">鷹派</span>Fed Warsh 於 ECB 辛特拉年會確認「物價仍過高」，不急於降息；9 月升息概率 >60%（CME FedWatch）</div>
-            <div class="news-meta">CNBC / TradingEconomics · 2026-07-01 · 10Y 殖利率 4.48%，2Y 4.18%</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-amber)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-neutral">觀察</span>BofA 預測 Fed 全年升息三碼（共 +75bp）至 4.25-4.5%，原預測為按兵不動；9 FOMC 成員支持年內升息</div>
-            <div class="news-meta">Fortune · 2026-06-22 · 2026 FOMC 點陣圖顯示升息 +25bp 一次</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-amber)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-neutral">觀察</span>6月 ADP 私部門就業 +9.8 萬（低於預期 11 萬）；2026 PCE 年末通膨中位預測 3.5%（前任官員調查）</div>
-            <div class="news-meta">CNBC · 2026-07-01 · Fed 2% 目標仍遙遠</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-green)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-bull">利多</span>S&P 500 Q2 季度漲幅 +15%（史上最高季報酬之一），科技板塊 Q2 +31%；US 股市 Q3 2026 開局積極</div>
-            <div class="news-meta">Edward Jones / Schwab · 2026-07-01 · 但升息陰影籠罩 H2</div>
-          </div>
-        </div>
+        {% endfor %}
       </div>
 
       <div id="news-geo" class="news-panel">
+        {% for item in news.geo %}
         <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-green)"></div>
+          <div class="news-dot" style="background:var(--accent-blue)"></div>
           <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-bull">緩和</span>美伊間接談判取得進展，荷姆茲海峽緊張局勢稍緩，原油供應通道風險降低；WTI 油價降至約 $68.6/桶</div>
-            <div class="news-meta">TradingEconomics · 2026-07-02 · 伊朗談判進展推動油價下行</div>
+            <div class="news-headline">{{ item.title }}</div>
+            <div class="news-summary">{{ item.summary }}</div>
+            <div class="news-meta">{{ item.source }} · {{ item.date }}</div>
           </div>
         </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-amber)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-neutral">觀察</span>中東局勢仍存不確定性；荷姆茲海峽在 6 月曾有貨船遇襲事件，引發亞股短暫避險，台股日前曾因此重挫逾 1700 點</div>
-            <div class="news-meta">ETtoday / Kiplinger · 2026-06-26 · 油價 6 月高峰後顯著回落</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-amber)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-neutral">觀察</span>韓股 6/26「黑色星期五」：KOSPI 重挫 5.81%、觸發熔斷；SK Hynix / 三星跌逾 9%，台股同日大跌 1683 點</div>
-            <div class="news-meta">大紀元 / ETtoday · 2026-06-26 · 半導體槓桿 ETF 去槓桿效應，台股需監控</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-green)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-bull">利多</span>台灣在 AI 供應鏈核心地位不變：TSMC × NVIDIA 深化合作（晶圓廠 AI 化），TSMC × Amkor 美國先進封裝長期合作協議</div>
-            <div class="news-meta">StockTitan · 2026-06-16 · 美國本土生產第一顆 Blackwell 晶圓已量產</div>
-          </div>
-        </div>
+        {% endfor %}
       </div>
 
       <div id="news-ipo" class="news-panel">
+        {% for item in news.ipo %}
         <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-amber)"></div>
+          <div class="news-dot" style="background:var(--accent-blue)"></div>
           <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-neutral">觀察</span>SpaceX IPO 動態：Morningstar 評估估值 $780B（低於 Musk 目標），路演本週啟動；xAI / X 商業前景存在不確定性</div>
-            <div class="news-meta">Reuters / TheStreet · 2026-06-02 · 另有報導 OpenAI IPO 計畫延遲</div>
+            <div class="news-headline">{{ item.title }}</div>
+            <div class="news-summary">{{ item.summary }}</div>
+            <div class="news-meta">{{ item.source }} · {{ item.date }}</div>
           </div>
         </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-green)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-bull">利多</span>Micron 2026 Q3 財報創歷史記錄：季度營收 $21.75B（+81.6% QoQ），AI 記憶體需求持續爆發</div>
-            <div class="news-meta">StockTitan · 2026-06-24 · Micron 與 GM 簽署供應保障協議</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-green)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-bull">利多</span>Bloom Energy（BE）：與 Brookfield 擴大合作，為 AI 基礎設施融資供電項目，盤前大漲 8%</div>
-            <div class="news-meta">Schwab · 2026-07-01 · 能源基礎設施成 AI 投資新主題</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <div class="news-dot" style="background:var(--accent-green)"></div>
-          <div class="news-content">
-            <div class="news-headline"><span class="news-tag tag-bull">利多</span>NVIDIA Data Center 連網業務（NVLink Fabric）Q4 FY26 網路收入 YoY +263%；Q1 FY27 指引 ~$78B</div>
-            <div class="news-meta">247WallSt · 2026-04-16 · GB200/GB300 Blackwell 系統大規模部署</div>
-          </div>
-        </div>
+        {% endfor %}
       </div>
     </div>
   </div>
@@ -1181,70 +940,23 @@ canvas { max-width:100%; }
   <div class="container">
     <div class="sec-title">
       <span class="sec-title-icon">⚖️</span> 風險矩陣
-      <span class="sec-subtitle">截至 2026-07-03</span>
+      <span class="sec-subtitle">截至 {{ date_label }}</span>
     </div>
     <div class="chart-card">
+      {% set risk_badge = {'高': ('risk-high', '🔴'), '中': ('risk-med', '🟡'), '低': ('risk-low', '🟢')} %}
       <table class="risk-table">
         <thead>
-          <tr><th>風險項目</th><th>類型</th><th>風險等級</th><th>影響週期</th><th>相關持倉</th><th>應對策略</th></tr>
+          <tr><th>風險項目</th><th>可能性</th><th>影響程度</th><th>因應方式</th></tr>
         </thead>
         <tbody>
+          {% for row in risk_matrix_rows %}
           <tr>
-            <td><strong>Fed 升息風險</strong><br><span style="font-size:11px;color:var(--text-secondary)">Warsh 鷹派，9月升息>60%</span></td>
-            <td>🌐 總體</td>
-            <td><span class="risk-level risk-high">🔴 高</span></td>
-            <td>3-6 個月</td>
-            <td>NVDA / LLY / ORCL（高P/E）</td>
-            <td>降低高估值比重，持有 IAUM 黃金對沖</td>
+            <td><strong>{{ row.risk }}</strong></td>
+            <td>{% set b = risk_badge.get(row.likelihood) %}{% if b %}<span class="risk-level {{ b[0] }}">{{ b[1] }} {{ row.likelihood }}</span>{% else %}{{ row.likelihood }}{% endif %}</td>
+            <td>{% set b = risk_badge.get(row.impact) %}{% if b %}<span class="risk-level {{ b[0] }}">{{ b[1] }} {{ row.impact }}</span>{% else %}{{ row.impact }}{% endif %}</td>
+            <td>{{ row.mitigation }}</td>
           </tr>
-          <tr>
-            <td><strong>台灣地緣政治</strong><br><span style="font-size:11px;color:var(--text-secondary)">美中台三角關係，TSMC 曝險</span></td>
-            <td>🗺️ 地緣</td>
-            <td><span class="risk-level risk-high">🔴 高</span></td>
-            <td>長期結構</td>
-            <td>2330 / 2317 / 2454 / 0050 / SMH</td>
-            <td>地理分散，注意 TSMC 美國廠進度</td>
-          </tr>
-          <tr>
-            <td><strong>AI 估值泡沫化</strong><br><span style="font-size:11px;color:var(--text-secondary)">TSMC P/E 33.4x，LLY 43.2x</span></td>
-            <td>📊 市場</td>
-            <td><span class="risk-level risk-med">🟡 中</span></td>
-            <td>中期</td>
-            <td>SMH / NVDA / 台積電</td>
-            <td>關注財報驗證，避免追高</td>
-          </tr>
-          <tr>
-            <td><strong>韓股去槓桿效應</strong><br><span style="font-size:11px;color:var(--text-secondary)">散戶槓桿 ETF 解槓牽連亞股</span></td>
-            <td>📉 系統</td>
-            <td><span class="risk-level risk-med">🟡 中</span></td>
-            <td>短期</td>
-            <td>台股整體 / 0050</td>
-            <td>監控融資餘額，設停損點</td>
-          </tr>
-          <tr>
-            <td><strong>Foundayo 爬坡速度</strong><br><span style="font-size:11px;color:var(--text-secondary)">週 TRx 落後 Wegovy pill 3.9x</span></td>
-            <td>💊 個股</td>
-            <td><span class="risk-level risk-med">🟡 中</span></td>
-            <td>中期</td>
-            <td>LLY</td>
-            <td>7月 Medicare 覆蓋啟動後持續追蹤 TRx</td>
-          </tr>
-          <tr>
-            <td><strong>中東油價衝擊</strong><br><span style="font-size:11px;color:var(--text-secondary)">美伊談判破裂風險</span></td>
-            <td>⚔️ 地緣</td>
-            <td><span class="risk-level risk-low">🟢 低-中</span></td>
-            <td>短期</td>
-            <td>全市場 / 通膨預期</td>
-            <td>IAUM（黃金）已有對沖</td>
-          </tr>
-          <tr>
-            <td><strong>HBM3e 價格競爭</strong><br><span style="font-size:11px;color:var(--text-secondary)">三供應商競爭，合約價下壓</span></td>
-            <td>💾 產業</td>
-            <td><span class="risk-level risk-low">🟢 低-中</span></td>
-            <td>中長期</td>
-            <td>SMH / AVGO（ASIC 間接）</td>
-            <td>HBM4 轉型為結構成長確認信號</td>
-          </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
@@ -1259,53 +971,16 @@ canvas { max-width:100%; }
       <span class="sec-subtitle">5 大結構性趨勢</span>
     </div>
     <div class="themes-grid">
+      {% for card in theme_cards %}
       <div class="theme-card">
-        <div class="theme-card-icon">🤖</div>
-        <div class="theme-card-title">AI 算力基礎建設</div>
-        <div class="theme-card-body">CSP 四大合計 $725B Capex，AI 伺服器 >20% YoY 出貨成長，NVLink 連網業務爆發。確定性最高的長期主題。</div>
+        <div class="theme-card-icon">{{ card.icon }}</div>
+        <div class="theme-card-title">{{ card.title }}</div>
+        <div class="theme-card-body">{{ card.body }}</div>
         <div class="theme-card-tickers">
-          <span class="theme-ticker">NVDA</span>
-          <span class="theme-ticker">AVGO</span>
-          <span class="theme-ticker">SMH</span>
-          <span class="theme-ticker">TSM</span>
+          {% for ticker in card.tickers %}<span class="theme-ticker">{{ ticker }}</span>{% endfor %}
         </div>
       </div>
-      <div class="theme-card">
-        <div class="theme-card-icon">🏭</div>
-        <div class="theme-card-title">台灣半導體供應鏈</div>
-        <div class="theme-card-body">TSMC 2nm 推進中，AI HPC 占 61% 營收，美國本土廠量產 Blackwell。AI 核心製造壟斷地位確立。</div>
-        <div class="theme-card-tickers">
-          <span class="theme-ticker">2330</span>
-          <span class="theme-ticker">2454</span>
-          <span class="theme-ticker">2317</span>
-          <span class="theme-ticker">0050</span>
-        </div>
-      </div>
-      <div class="theme-card">
-        <div class="theme-card-icon">💊</div>
-        <div class="theme-card-title">口服 GLP-1 革命</div>
-        <div class="theme-card-body">Foundayo 開啟口服 GLP-1 時代，Medicare 自 7/1 覆蓋。全年 $1.6B 預估，市場拓展空間巨大。注意 NVO 競爭。</div>
-        <div class="theme-card-tickers">
-          <span class="theme-ticker">LLY</span>
-        </div>
-      </div>
-      <div class="theme-card">
-        <div class="theme-card-icon">🏗️</div>
-        <div class="theme-card-title">AI 電力 / 資料中心</div>
-        <div class="theme-card-body">AI 電力需求估 1000 TWh（2026），核電 / 燃料電池 / REIT 受惠。Bloom Energy 與 Brookfield 合作為代表。</div>
-        <div class="theme-card-tickers">
-          <span class="theme-ticker">ORCL</span>
-          <span class="theme-ticker">AVGO</span>
-        </div>
-      </div>
-      <div class="theme-card">
-        <div class="theme-card-icon">🥇</div>
-        <div class="theme-card-title">黃金 / 實物資產</div>
-        <div class="theme-card-body">通膨持續高於 Fed 目標（PCE 3.5-3.8%），升息風險下美元強勢但黃金同步走高，地緣風險對沖。IAUM 配置有效。</div>
-        <div class="theme-card-tickers">
-          <span class="theme-ticker">IAUM</span>
-        </div>
-      </div>
+      {% endfor %}
     </div>
   </div>
 </div>
@@ -1318,40 +993,27 @@ canvas { max-width:100%; }
       <span class="sec-subtitle">三大投資框架 · 2026Q3</span>
     </div>
     <div class="strategy-grid">
+      {% for card in strategy_cards %}
       <div class="strategy-card">
-        <div class="strategy-name">🔬 巴菲特框架 — 安全邊際</div>
-        <div class="strategy-quote">「價格是你付出的，價值是你得到的。」</div>
+        <div class="strategy-name">{{ card.name }}</div>
+        <div class="strategy-quote">{{ card.quote }}</div>
         <ul class="strategy-points">
-          <li>TSMC Fwd P/E 19.6x：相較競爭壁壘估值合理，仍有空間</li>
-          <li>NVDA Fwd P/E 15.3x：考慮 73% 營收成長，相對低估</li>
-          <li>LLY Trailing 43.2x：高估值需 Foundayo 放量快速驗證</li>
-          <li>ORCL 雲端合約積壓持續，AI workload 受惠，估值偏貴需謹慎</li>
-          <li>黃金（IAUM）：實物資產在通膨環境中保值功能確認</li>
+          {% for point in card.points %}<li>{{ point }}</li>{% endfor %}
         </ul>
       </div>
-      <div class="strategy-card">
-        <div class="strategy-name">📈 動能策略 — 趨勢跟蹤</div>
-        <div class="strategy-quote">「趨勢是你的朋友，直到它不是為止。」</div>
-        <ul class="strategy-points">
-          <li>台股 46,744 重返高位，短線多頭架構維持，關注 47K 壓力</li>
-          <li>Dow 創歷史高點，但 Nasdaq 跌逾 1%，科技趨勢需重新確認</li>
-          <li>外資連日買超台積電、鴻海，籌碼面向好</li>
-          <li>AVGO / MRVL AI ASIC 動能強勁，2026 年迄今領漲</li>
-          <li>VIX 16.15 低位：風險偏好相對健康，可持有多頭部位</li>
-        </ul>
-      </div>
-      <div class="strategy-card">
-        <div class="strategy-name">🛡️ 防禦配置 — 風險管理</div>
-        <div class="strategy-quote">「先不要輸，再來談如何贏。」</div>
-        <ul class="strategy-points">
-          <li>9 月升息 >60% 確立：高 P/E 標的（LLY/ORCL）降低比重</li>
-          <li>IAUM 黃金持有：通膨 / 地緣 / 貨幣對沖三重功能</li>
-          <li>融資餘額 6,110 億高水位，注意去槓桿觸發跌幅放大</li>
-          <li>美股今日休市，週末無缺口風險；下週財報季啟動</li>
-          <li>關鍵觀察：07/10 台積電 Q2 法說 + 07/10 NVDA 財報</li>
-        </ul>
-      </div>
+      {% endfor %}
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ MARKET DEEP DIVE ══════════════════════ -->
+<div class="section" id="market-deep-dive">
+  <div class="container">
+    <div class="sec-title">
+      <span class="sec-title-icon">🔍</span> 三地市場深度分析
+      <span class="sec-subtitle">台股 / 美股 / 韓股</span>
+    </div>
+    {{ market_deep_dive_html | safe }}
   </div>
 </div>
 
@@ -1361,21 +1023,20 @@ canvas { max-width:100%; }
     <div class="footer-content">
       <div class="footer-sources">
         <strong style="color:var(--text-primary)">資料來源：</strong><br>
-        美股行情：Yahoo Finance / TheStreet / Edward Jones（2026-07-02）<br>
-        台股行情：臺灣證券交易所（TWSE）/ Yahoo 股市（2026-07-03）<br>
-        三大法人：Yahoo 股市法人進出 / CMoney（2026-07-01）<br>
-        Fed / 美債：CNBC / TradingEconomics / NBC News（2026-07-01~02）<br>
-        AI 半導體：Yahoo Finance / Zacks / 247WallSt / HeyGoTrade（2026-07）<br>
-        CSP Capex：Tom's Hardware / TrendForce / Yahoo Finance（2026-04-30~05-06）<br>
-        HBM 價格：TrendForce DRAMeXchange（2025-12-18 / 2026-06-01）<br>
-        Foundayo TRx：Fierce Pharma Oral GLP-1 Tracker / IQVIA / Jefferies（W7, 2026-05-15）<br>
+        美股行情：Yahoo Finance / TheStreet / Edward Jones<br>
+        台股行情：臺灣證券交易所（TWSE）/ Yahoo 股市<br>
+        三大法人：TWSE OpenAPI（{{ institutional.as_of_dates[-1] if institutional.as_of_dates else "—" }}）<br>
+        Fed / 美債：CNBC / TradingEconomics / NBC News<br>
+        AI 半導體：Yahoo Finance / Zacks / 247WallSt / HeyGoTrade<br>
+        CSP Capex / AI 伺服器 / HBM 價格：Tom's Hardware / TrendForce / DRAMeXchange<br>
+        Foundayo TRx：Fierce Pharma Oral GLP-1 Tracker / IQVIA / Jefferies<br>
         P/E 資料：預載 JSON（Yahoo Finance API）<br>
         VIX 資料：預載 JSON（CBOE）
       </div>
     </div>
     <div class="footer-disclaimer">
       ⚠️ 本頁面僅供個人投資參考，不構成任何投資建議。投資有風險，請獨立判斷。部分數據為估算值（標注 ⚠）。
-      | 製作時間：2026-07-03 台灣時間 | 美股 07/03 因獨立紀念日休市。
+      | 製作時間：{{ date_label }}（{{ weekday_cn }}）台灣時間
     </div>
   </div>
 </div>
@@ -1597,17 +1258,14 @@ function switchPEPeriod(period, btn) {
 buildPEChart();
 
 // ─── LLY Foundayo Charts ───
-// W1~W12 data based on available data: FDA approved Apr 1, shipping Apr 6
-// Week 1 (Apr 6~12): ~1,390 TRx (IQVIA early partial)
-// Week 3: ~20,000 patients total on Foundayo (Lilly call), IQVIA showing partial
-// Week 4: ~7,335 TRx (IQVIA, from Kontra source)
-// Week 7: ~11,700 TRx (Jefferies, down WoW due to IQVIA best-estimate)
-// Week 6 (May 15 IQVIA): ~17,000 TRx (Citi/Fierce)
-// IQVIA may be undercounting by ~40-45%; true volume likely higher
-const llyWeeks = ['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'];
-const llyTRx   = [1.4, 3.2, 5.8, 7.3, 11.2, 17.0, 11.7, 14.5, 16.8, 18.2, 19.5, 21.0];
-// WoW%
-const llyWoW = [null, +129, +81, +26, +53, +52, -31, +24, +16, +8, +7, +8];
+// weekly_trx / wow_pct 來自 AI 敘述 JSON（lly_foundayo），trx 為實際週處方量（份），
+// 圖表 y 軸沿用既有「千份（K）」刻度顯示習慣，故除以 1000 換算。
+const llyWeeklyTrx = {{ lly_foundayo.weekly_trx | tojson }};
+const llyWowPct = {{ lly_foundayo.wow_pct | tojson }};
+const llyWeeks = llyWeeklyTrx.map(d => d.week);
+const llyTRx   = llyWeeklyTrx.map(d => d.trx / 1000);
+const llyWowWeeks = llyWowPct.map(d => d.week);
+const llyWoW = llyWowPct.map(d => d.pct);
 
 const llyColors = llyWoW.map(v => v === null ? '#c8d0ec' : v >= 0 ? '#00e676' : '#ff3d71');
 
@@ -1655,7 +1313,7 @@ const llyWowCtx = document.getElementById('llyWowChart').getContext('2d');
 new Chart(llyWowCtx, {
   type:'bar',
   data:{
-    labels:llyWeeks,
+    labels:llyWowWeeks,
     datasets:[{
       label:'WoW %',
       data:llyWoW,
