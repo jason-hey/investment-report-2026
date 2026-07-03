@@ -87,3 +87,26 @@ def test_fetch_korea_market_returns_index_and_two_stocks(monkeypatch):
     assert kospi["price"] == 103.0
     assert kospi["change"] == 3.0
     assert round(kospi["change_pct"], 2) == 3.0
+
+
+def test_fetch_us_heatmap_returns_change_pct_for_each_symbol(monkeypatch):
+    import scripts.data_fetchers as df
+    import pandas as pd
+
+    class FakeTicker:
+        def __init__(self, symbol):
+            self.symbol = symbol
+
+        def history(self, period, interval):
+            return pd.DataFrame(
+                {"Close": [100.0, 95.0]},
+                index=pd.to_datetime(["2026-07-01", "2026-07-02"]),
+            )
+
+    monkeypatch.setattr(df.yf, "Ticker", FakeTicker)
+    result = df.fetch_us_heatmap()
+
+    assert len(result) == len(df.US_HEATMAP_TICKERS)
+    first = result[0]
+    assert set(first.keys()) == {"symbol", "change_pct"}
+    assert first["change_pct"] == -5.0

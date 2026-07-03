@@ -475,3 +475,36 @@ def fetch_korea_market():
             print(f"  ⚠️ {name}({symbol}) 報價抓取失敗: {e}")
     print(f"  韓股：成功 {len(result)}/{len(KOREA_TICKERS)} 檔")
     return result
+
+
+# ── 美股熱力圖：固定清單依當日漲跌 % 著色 ──────────────────────────────
+
+US_HEATMAP_TICKERS = [
+    "AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "NFLX", "CRM",
+    "NVDA", "AVGO", "AMD", "TSM", "MU", "QCOM", "INTC", "MRVL", "AMAT", "LRCX",
+    "ORCL", "ADBE", "NOW", "PANW", "SNOW",
+    "JPM", "GS", "MS", "BAC", "V", "MA",
+    "LLY", "UNH", "JNJ", "WMT", "COST", "NKE", "MCD",
+    "XOM", "CVX", "BA", "CAT",
+    "T", "VZ",
+]
+
+
+def fetch_us_heatmap():
+    """抓取固定美股清單的當日漲跌 %，回傳 list[{"symbol","change_pct"}]，供熱力圖著色。
+    單一標的失敗會從結果省略；模板端只需處理「筆數可能少於清單長度」即可，不需要佔位。"""
+    result = []
+    for symbol in US_HEATMAP_TICKERS:
+        try:
+            hist = yf.Ticker(symbol).history(period="5d", interval="1d")
+            if hist.empty or len(hist) < 2:
+                print(f"  ⚠️ {symbol} 熱力圖資料不足，略過")
+                continue
+            prev_close = float(hist["Close"].iloc[-2])
+            last_close = float(hist["Close"].iloc[-1])
+            change_pct = (last_close - prev_close) / prev_close * 100 if prev_close else 0.0
+            result.append({"symbol": symbol, "change_pct": round(change_pct, 2)})
+        except Exception as e:
+            print(f"  ⚠️ {symbol} 熱力圖抓取失敗: {e}")
+    print(f"  美股熱力圖：成功 {len(result)}/{len(US_HEATMAP_TICKERS)} 檔")
+    return result
