@@ -312,7 +312,7 @@ def validate_html(html: str) -> list[str]:
 # 產出完整 HTML後，比照舊版流程呼叫 validate_html()、寫入 index.html、備份到 Backup/{date_str}.html。
 # 這裡先不寫檔，只從已驗證的 narrative_json 取出摘要供通知使用。
 
-summary_text = narrative_json.get("daily_brief", "").strip()
+summary_text = (narrative_json.get("daily_brief") or "").strip()
 if summary_text:
     print(f"  📋 摘要：{summary_text}")
 else:
