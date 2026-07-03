@@ -4,6 +4,7 @@ Daily Investment Report Generator
 使用串流模式（SDK 要求：max_tokens 較大時必須用 streaming，避免長時間請求被中斷）
 """
 import anthropic
+import json
 import os
 import re
 import shutil
@@ -19,6 +20,13 @@ from scripts.data_fetchers import (
     load_market_analysis_prompt,
     fetch_all_fear_index,
 )
+
+# AI 敘述 JSON 的必要欄位（見 JSON_OUTPUT_SPEC）；Task 9 的 render_report() 依賴這些欄位齊全。
+REQUIRED_JSON_FIELDS = [
+    "daily_brief", "hero_events", "warning_indicators", "night_session",
+    "news", "theme_cards", "strategy_cards", "risk_matrix_rows",
+    "market_deep_dive_html", "lly_foundayo",
+]
 
 TZ_TW = timezone(timedelta(hours=8))
 today = datetime.now(TZ_TW)
@@ -61,17 +69,16 @@ earnings_table = format_earnings_for_prompt(earnings_data)
 print(f"  財報日曆：找到 {len(earnings_data)} 筆")
 
 print("  正在用 yfinance 抓取本益比趨勢（1Y / 3Y）...")
-import json as _json
 pe_data = fetch_all_pe_data()
-pe_json = _json.dumps(pe_data, ensure_ascii=False)
+pe_json = json.dumps(pe_data, ensure_ascii=False)
 
 print("  正在用 yfinance 抓取恐懼指數（近 6 個月）...")
 fear_data = fetch_all_fear_index()
-fear_json = _json.dumps(fear_data, ensure_ascii=False)
+fear_json = json.dumps(fear_data, ensure_ascii=False)
 
 print("  正在用 TWSE OpenAPI 抓取法人連三日買賣超排行...")
 institutional_data = fetch_institutional_3day_ranking(today)
-institutional_json = _json.dumps(institutional_data, ensure_ascii=False) if institutional_data else None
+institutional_json = json.dumps(institutional_data, ensure_ascii=False) if institutional_data else None
 
 print("  正在讀取三地市場深度分析 prompt...")
 market_analysis_prompt = load_market_analysis_prompt(date_str, weekday_cn)
@@ -98,6 +105,54 @@ else:
    - 投信連三日買超前 10 名個股（股號、股名、三日買超金額、三日買超張數）
    - 投信連三日賣超前 10 名個股（股號、股名、三日賣超金額、三日賣超張數）
    （資料來源建議：CMoney、goodinfo.tw、twse.com.tw、anue.com、moneyDJ）"""
+
+JSON_OUTPUT_SPEC = """
+## 輸出格式（重要：只輸出 JSON，不要輸出 HTML）
+根據上方已提供的數字資料與你完成的搜尋任務，輸出一份 JSON（用 ```json ... ``` 包裹），結構如下：
+
+{
+  "daily_brief": "3 行、每行純文字不加符號，總長度 150 字以內：第一行大盤漲跌重點；第二行今日最重要新聞或事件；第三行對持倉組合最需要注意的一點。3 行用 \\n 分隔存成同一個字串。",
+  "hero_events": [
+    {"flag": "🇺🇸", "label": "今日重大事件 #1 — <一句話標題>", "theme": "green 或 amber 或 red",
+     "headline": "<完整標題句>", "body": "<完整段落敘述，含資料來源標註>"},
+    {"flag": "🇹🇼", "label": "今日重大事件 #2 — <一句話標題>", "theme": "green 或 amber 或 red",
+     "headline": "<完整標題句>", "body": "<完整段落敘述，含資料來源標註>"}
+  ],
+  "warning_indicators": {
+    "vix": {"status": "green/amber/red", "note": "<一句話判讀，VIX 數值已由系統提供，不需重複列出>"},
+    "hy_spread": {"status": "green/amber/red", "value_text": "<搜尋到的 HY 利差數值文字>", "note": "<一句話判讀>"},
+    "us10y": {"status": "green/amber/red", "note": "<一句話判讀，10Y 殖利率數值已由系統提供>"},
+    "ai_leaders": {"status": "green/amber/red", "note": "<AI 龍頭股線型判讀，如 NVDA/AVGO 近期走勢>"},
+    "tw_leverage": {"status": "green/amber/red", "value_text": "<搜尋到的台股融資餘額數值文字>", "note": "<一句話判讀>"}
+  },
+  "night_session": {"price": "<夜盤最新價>", "change_pts": "<漲跌點數>", "change_pct": "<漲跌%>",
+                     "volume": "<成交量>", "vs_day_close_note": "<與日盤收盤比較的一句話>",
+                     "source_note": "<資料來源與時間>"},
+  "news": {
+    "ai_semi": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
+    "macro": [ /* 同上結構 */ ],
+    "geo": [ /* 同上結構 */ ],
+    "ipo": [ /* 同上結構 */ ]
+  },
+  "theme_cards": [
+    {"icon": "🤖", "title": "<主題名稱>", "body": "<兩三句話說明>", "tickers": ["NVDA", "AVGO"]}
+    /* 共 5 張，涵蓋：AI 算力基礎建設、台灣半導體供應鏈、口服 GLP-1、AI 電力/資料中心、黃金/實物資產 */
+  ],
+  "strategy_cards": [
+    {"name": "🔬 巴菲特框架 — 安全邊際", "quote": "<一句名言>", "points": ["<觀點1>", "<觀點2>", "<觀點3>"]}
+    /* 共 3 張：巴菲特框架、動能策略、防禦配置 */
+  ],
+  "risk_matrix_rows": [
+    {"risk": "<風險名稱>", "likelihood": "高/中/低", "impact": "高/中/低", "mitigation": "<因應方式>"}
+  ],
+  "market_deep_dive_html": "<完整執行下方三地市場深度分析規格後，直接輸出這個區塊的 HTML 片段（不含外層 <html>/<body>，只要這個區塊本身的 div 結構），沿用你過去產出這個區塊時的既有格式規則（信心等級標籤、洗盤vs出貨表格等）>",
+  "lly_foundayo": {"weekly_trx": [{"week": "W1", "trx": 1390}], "wow_pct": [{"week": "W2", "pct": 12.3}],
+                    "commentary": "<敘述>", "stage_note": "<若無 TRx 數據時的商業化階段說明>"}
+}
+
+所有欄位都必須存在，即使某個新聞分類搜尋不到內容也要回傳空陣列 `[]`，不可省略欄位本身。
+不要輸出 JSON 以外的任何文字、不要用 Markdown 標題，直接輸出 ```json 區塊。
+"""
 
 PROMPT = f"""
 今天是 {date_label}（{weekday_cn}），台灣台中。
@@ -146,88 +201,10 @@ PROMPT = f"""
 {market_analysis_prompt if market_analysis_prompt else "（找不到 doc/Prompt/daily_market_analysis_prompt.md，此區塊略過）"}
 ---
 
-## HTML 設計規格
-- 深色主題（背景 #04040d，IBM Plex Mono + Inter 字體）
-- 文字色階規則（嚴格遵守）：
-  - 主要文字、標題、指標名稱、數值：`color: #f0f2fc`（近白）
-  - 次要說明文字、日期、副標題、跑馬燈股票代號、單位、來源：`color: #c8d0ec`（明亮灰白，不可更暗）
-  - 禁止在任何可讀文字上使用 `#8890c0` 或更暗的顏色；低亮度色（如 `#8890c0`）僅可用於純裝飾性佔位元素
-- 頂部跑馬燈（即時數據）
-- 標題區（badges + 日期 + 4 條關鍵 pill）
-- 英雄橫幅（2 欄，最重要的 2 個事件）
-- 每日必看 5 大預警指標模組（VIX/HY利差/10Y殖利率/AI龍頭線型/台股槓桿）
-- 數據驗證區（✓ 已確認 / ⚠ 預估）
-- AI 基礎建設驗證指標區塊（每次必須包含，使用搜尋任務 10 的數據）：
-  - 3 格並排卡片，每格一個指標
-  - 格 1「CSP Capex YoY」：顯示 MSFT/AMZN/GOOGL/META 各自最新季度 capex 金額與 YoY%，用小 bar 或數值對比呈現
-  - 格 2「AI 伺服器出貨量」：顯示最新月份數字與月度趨勢方向（↑↓），標明來源與月份
-  - 格 3「HBM 價差」：顯示合約價、現貨價、利差金額與百分比；利差擴大標綠（供需緊）、收窄標紅
-  - 每格底部標明資料來源與日期
-- KPI 指標看板（4 格）
-- 視覺圖表區（Chart.js 4.4.1 + datalabels 2.2.0）
-- LLY Foundayo 週處方量區塊（使用搜尋任務 9 的數據）：
-  - 上方：Chart.js 折線圖，X 軸為週別（如 W1/W2...），Y 軸為 TRx 數量（千份）
-  - 下方：長條圖或標注，顯示每週 WoW 增長率（%），正增長綠色、負增長紅色
-  - 右上角顯示最新一週 TRx 數值與 WoW%（大字突出）
-  - 【重要】Foundayo = orforglipron（口服小分子 GLP-1），與 Mounjaro/Zepbound（tirzepatide 注射劑）是獨立產品線，圖表內容嚴禁混用
-  - 若 TRx 數據尚不可得（商業化初期），改以文字卡片說明：當前商業化階段、分析師 TRx 放量預估、鋪貨進度
-  - 標明資料來源（IQVIA / Symphony Health / 投行）與資料截止日期
-- 美股 VIX 恐懼指數近 6 個月趨勢圖區塊（使用上方 fear_data JSON）：
-  - Chart.js 折線圖，X 軸：近 6 個月日期；Y 軸：VIX 指數值
-  - 加入水平參考線：VIX 20（警戒）、VIX 30（恐慌），標示顏色
-  - 線條顏色：數值高於 25 時轉紅，低於 15 時轉綠，中間為琥珀色
-- 台指期夜盤動態區塊：
-  - 顯示夜盤最新報價、漲跌點數與百分比、成交量
-  - 與日盤收盤差距（用顏色標示漲跌：漲綠跌紅）
-  - 夜盤交易時段說明（15:00–05:00 台灣時間）
-  - 資料來源標示（搜尋到的資料時間）
-- 本益比趨勢圖區塊（使用上方已提供的 pe_data JSON）：
-  - 兩個 Tab：「台股」和「美股」
-  - 每個 Tab 內有「1Y」和「3Y」切換按鈕
-  - Chart.js 折線圖，深色主題，格線淡化
-  - 台股 Tab：顯示 pe_data.tw 各標的的 Trailing P/E 歷史趨勢（多條實線，每條一個顏色）
-  - 美股 Tab：顯示 pe_data.us 各標的的 Trailing P/E 歷史趨勢（多條實線，每條一個顏色）
-  - Forward P/E 顯示方式（每個標的）：
-    - 若 current_forward_pe 不為 null，在圖表上畫一條對應顏色的**水平虛線**，代表當前 Forward P/E 水準
-    - 水平虛線加上 label「{{name}} Fwd」
-  - 圖表右上角（圖表內浮層）顯示當前數值對比小表格：每個標的一行，顯示「名稱 ｜ Trailing: xx.x ｜ Forward: xx.x」，Forward 若無資料顯示「N/A」
-  - 若某標的 trailing_3y / trailing_1y 為空且 current_forward_pe 也為 null，則不渲染該標的
-  - 圖表標題標明「本益比（P/E）趨勢 — 實線 Trailing TTM / 虛線 Forward」
-- 台股法人連三日買賣超排行區塊（使用搜尋任務 3 的外資/投信連三日前10名數據）：
-  - 標題「法人連三日同向買賣超排行」，副標題顯示資料截止日期
-  - 頂部 2 個 Tab 切換：「外資」「投信」
-  - 每個 Tab 內並排 2 欄（左右各半）：
-    - 左欄：綠色標題列「連三日買超前十」，表格欄位：排名 ｜ 股號 ｜ 股名 ｜ 三日買超(金額) ｜ 三日買超(張)，金額數字綠色
-    - 右欄：紅色標題列「連三日賣超前十」，表格欄位：排名 ｜ 股號 ｜ 股名 ｜ 三日賣超(金額) ｜ 三日賣超(張)，金額數字紅色
-  - 表格背景深色，交替列略微區隔，字體使用 IBM Plex Mono
-  - 若資料不足 10 筆，顯示實際取得的筆數
-  - 若使用上方【已預先抓取】法人資料：金額欄位是用最新收盤價估算（est_amount_ntd 為 null 時該欄顯示「—」），底部標明「資料來源：TWSE OpenAPI（估算金額）」與截止日期（as_of_dates）；若該區塊改為 AI 搜尋取得，底部標明實際搜尋來源（CMoney / Goodinfo / 證交所）與截止日期
-- 未來 2 週財報速覽（Filter 按鈕：全部/美股/台股/★持倉）
-- 財經新聞中心（Tab：4 個主題）
-- 三地市場深度分析區塊（置於財經新聞中心之後、風險矩陣之前；使用上方「額外任務」的完整分析內容）：
-  - 依序完整呈現：核心結論、事件鏈、美股、韓股、台股、洗盤vs出貨七維度快檢表格、行動清單、今日資料缺口
-  - 信心等級（F/G/E/I/W）以小色塊標籤呈現在每個數據點旁：F 綠、G 藍、E 黃、I 紫、W 灰（灰底不可過暗，需符合文字色階規則）
-  - 洗盤vs出貨七維度快檢用表格呈現（維度｜今日觀察｜傾向），並在表格下方明顯標示機率權重（如「洗盤 70% / 出貨 30%」）與升級/降級條件
-  - 行動清單用 checklist 樣式（若 X 發生 → 做 Y），附價位與日期
-  - 比較性數據一律用表格，分析文字用完整散文段落，避免碎片化 bullet
-- 風險矩陣表格
-- 投資主題機會（5 張卡片）
-- 大師策略總結（3 欄）
-- Footer（資料來源）
-
 ## 個人持倉背景
 台積電(2330)、鴻海(2317)、聯發科(2454)、SMH、NVDA、AVGO、ORCL、LLY、0050、IAUM(黃金)
 
-## 輸出格式
-輸出完整的 HTML，用 ```html ... ``` 包裹，包含所有 CSS 和 JavaScript。
-在 `<body>` 開始標籤之後，立刻加入一段 HTML 註解，格式如下（供推播通知使用，不會顯示給讀者）：
-<!--SUMMARY
-第一行：大盤漲跌重點（台股加權指數、那斯達克等關鍵指數當日表現，一行內）
-第二行：今日最重要的一則新聞或事件（一行內）
-第三行：對持倉組合最需要注意的一點（一行內）
-SUMMARY-->
-每行不加任何 Markdown 符號，純文字即可，總長度控制在 150 字以內。
-不要解釋，直接輸出 HTML。
+{JSON_OUTPUT_SPEC}
 """
 
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
@@ -254,8 +231,27 @@ def call_claude(messages):
         return stream.get_final_message()
 
 
+def extract_json_block(text):
+    """從模型輸出的文字中萃取 ```json ... ``` 區塊並解析成 dict；失敗回傳 None。"""
+    m = re.search(r"```json\s*([\s\S]*?)```", text)
+    if not m:
+        return None
+    try:
+        return json.loads(m.group(1))
+    except json.JSONDecodeError as e:
+        print(f"  ⚠️ JSON 解析失敗: {e}")
+        return None
+
+
+def validate_narrative_json(data):
+    """回傳缺少的必要欄位清單；空清單代表通過。"""
+    if data is None:
+        return REQUIRED_JSON_FIELDS  # 全部視為缺失
+    return [field for field in REQUIRED_JSON_FIELDS if field not in data]
+
+
 response = call_claude(messages)
-html_content = None
+narrative_json = None
 
 for iteration in range(5):
     print(f"  迭代 {iteration+1}: stop_reason={response.stop_reason}")
@@ -263,11 +259,9 @@ for iteration in range(5):
     if response.stop_reason == "end_turn":
         for block in response.content:
             if hasattr(block, "text"):
-                m = re.search(r"```html\s*([\s\S]*?)```", block.text)
-                if m:
-                    html_content = m.group(1).strip()
-                elif "<html" in block.text.lower():
-                    html_content = block.text.strip()
+                parsed = extract_json_block(block.text)
+                if parsed:
+                    narrative_json = parsed
         break
 
     elif response.stop_reason == "pause_turn":
@@ -276,19 +270,13 @@ for iteration in range(5):
         continue
 
     elif response.stop_reason == "max_tokens":
-        print(f"  ⚠️ 達到 max_tokens 上限，嘗試從已產生內容中萃取 HTML...")
+        print(f"  ⚠️ 達到 max_tokens 上限，嘗試從已產生內容中萃取 JSON...")
         for block in response.content:
             if hasattr(block, "text"):
                 print(f"  已產生文字長度: {len(block.text)}")
-                m = re.search(r"```html\s*([\s\S]*?)```", block.text)
-                if m:
-                    html_content = m.group(1).strip()
-                elif "<html" in block.text.lower():
-                    # 輸出被截斷，補上缺少的結尾標籤讓瀏覽器能正常渲染
-                    partial = block.text.strip()
-                    if not partial.endswith("</html>"):
-                        partial += "\n</body></html>"
-                    html_content = partial
+                parsed = extract_json_block(block.text)
+                if parsed:
+                    narrative_json = parsed
         break
 
     else:
@@ -298,8 +286,13 @@ for iteration in range(5):
                 print(f"  已產生文字長度: {len(block.text)}")
         break
 
-if not html_content:
-    raise RuntimeError(f"未能從 Claude 取得 HTML 內容（最終 stop_reason={response.stop_reason}）")
+if not narrative_json:
+    raise RuntimeError(f"未能從 Claude 取得 JSON 內容（最終 stop_reason={response.stop_reason}）")
+
+missing_fields = validate_narrative_json(narrative_json)
+if missing_fields:
+    raise RuntimeError(f"AI 回傳 JSON 缺少必要欄位，中止發布：{missing_fields}")
+print("  ✅ AI 敘述 JSON 驗證通過")
 
 
 def validate_html(html: str) -> list[str]:
@@ -315,29 +308,15 @@ def validate_html(html: str) -> list[str]:
     return problems
 
 
-validation_problems = validate_html(html_content)
-if validation_problems:
-    raise RuntimeError(
-        "報告驗證失敗，中止發布以避免半份報告上線：\n  - " + "\n  - ".join(validation_problems)
-    )
-print("  ✅ 報告驗證通過")
+# TODO(Task 9): 呼叫 scripts.report_render.render_report(narrative_json, fetch_quotes(), ...)
+# 產出完整 HTML後，比照舊版流程呼叫 validate_html()、寫入 index.html、備份到 Backup/{date_str}.html。
+# 這裡先不寫檔，只從已驗證的 narrative_json 取出摘要供通知使用。
 
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(html_content)
-
-backup_dir = "Backup"
-os.makedirs(backup_dir, exist_ok=True)
-shutil.copy("index.html", f"{backup_dir}/{date_str}.html")
-
-print(f"  ✅ 報告已寫入 index.html（{len(html_content):,} bytes）")
-print(f"  ✅ 已備份至 Backup/{date_str}.html")
-
-summary_match = re.search(r"<!--SUMMARY\s*([\s\S]*?)SUMMARY-->", html_content)
-summary_text = summary_match.group(1).strip() if summary_match else ""
+summary_text = narrative_json.get("daily_brief", "").strip()
 if summary_text:
     print(f"  📋 摘要：{summary_text}")
 else:
-    print("  ⚠️ 未找到通知摘要（SUMMARY 註解），通知將只包含連結")
+    print("  ⚠️ 未找到通知摘要（daily_brief 欄位為空），通知將只包含連結")
 
 github_output = os.environ.get("GITHUB_OUTPUT")
 if github_output:
