@@ -189,8 +189,15 @@ def _sanitize_hero_events(hero_events):
 
 def build_template_context(*, date_label, weekday_cn, tw_holiday_note,
                             quotes, fear_data, pe_data, institutional_data,
-                            earnings_list, narrative_json):
-    """把所有預抓資料 + AI 敘述 JSON 組成 render_report() 需要的完整 context dict。"""
+                            earnings_list, narrative_json,
+                            korea_data=None, heatmap_data=(), sector_rotation_data=(), oil_data=None):
+    """把所有預抓資料 + AI 敘述 JSON 組成 render_report() 需要的完整 context dict。
+
+    korea_data/heatmap_data/sector_rotation_data/oil_data 4 個新參數給預設值
+    （而非必填），因為 scripts/generate_report.py 尚未在 Task 7 把對應的抓取函式接進
+    呼叫端——維持預設值可讓既有呼叫端（含 tests/conftest.py 匯入 generate_report.py
+    時真的會執行到的那個呼叫）在新增資料源正式接上前，仍照舊正常運作。
+    """
     return {
         "date_label": date_label,
         "weekday_cn": weekday_cn,
@@ -202,6 +209,10 @@ def build_template_context(*, date_label, weekday_cn, tw_holiday_note,
         "pe_data": build_pe_data(pe_data),
         "institutional": build_institutional_context(institutional_data),
         "earnings": build_earnings_context(earnings_list),
+        "korea": build_korea_context(korea_data),
+        "heatmap": build_heatmap_context(heatmap_data),
+        "sector_rotation": build_sector_rotation_context(sector_rotation_data),
+        "oil": build_oil_context(oil_data),
         "header_pills": _sanitize_header_pills(narrative_json["header_pills"]),
         "data_validation": narrative_json["data_validation"],
         "hero_events": _sanitize_hero_events(narrative_json["hero_events"]),

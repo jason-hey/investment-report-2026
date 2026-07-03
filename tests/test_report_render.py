@@ -197,6 +197,11 @@ def test_build_template_context_and_render_produces_valid_html():
         institutional_data=None,
         earnings_list=[{"date": "2026-07-10", "symbol": "NVDA", "name": "NVIDIA", "market": "美股"}],
         narrative_json=narrative,
+        korea_data={"KOSPI": {"symbol": "^KS11", "name": "KOSPI 指數", "price": 3100.0, "change": 25.0, "change_pct": 0.81}},
+        heatmap_data=[{"symbol": "AAPL", "change_pct": 1.5}],
+        sector_rotation_data=[{"symbol": "XLK", "name": "科技", "change_pct_1d": 1.2, "change_pct_1w": 3.0}],
+        oil_data={"wti": {"symbol": "CL=F", "name": "WTI 原油", "history": [{"date": "2026-07-01", "value": 68.5}]},
+                  "brent": {"symbol": "BZ=F", "name": "Brent 原油", "history": [{"date": "2026-07-01", "value": 72.0}]}},
     )
     html = render_report(context)
 
