@@ -440,3 +440,38 @@ def fetch_quotes():
             print(f"  ⚠️ {name}({symbol}) 報價抓取失敗: {e}")
     print(f"  即時報價：成功 {len(result)}/{len(QUOTE_TICKERS)} 檔")
     return result
+
+
+# ── 韓國股市：KOSPI 指數 + 三星電子 + SK 海力士 ────────────────────────────
+
+KOREA_TICKERS = {
+    "KOSPI":    ("^KS11", "KOSPI 指數"),
+    "SAMSUNG":  ("005930.KS", "三星電子"),
+    "SK_HYNIX": ("000660.KS", "SK 海力士"),
+}
+
+
+def fetch_korea_market():
+    """抓取韓國股市指數與兩檔龍頭股的最新收盤價與日漲跌。做法與 fetch_quotes() 相同。"""
+    result = {}
+    for key, (symbol, name) in KOREA_TICKERS.items():
+        try:
+            hist = yf.Ticker(symbol).history(period="5d", interval="1d")
+            if hist.empty or len(hist) < 2:
+                print(f"  ⚠️ {name}({symbol}) 報價資料不足，略過")
+                continue
+            prev_close = float(hist["Close"].iloc[-2])
+            last_close = float(hist["Close"].iloc[-1])
+            change = last_close - prev_close
+            change_pct = (change / prev_close * 100) if prev_close else 0.0
+            result[key] = {
+                "symbol": symbol,
+                "name": name,
+                "price": round(last_close, 2),
+                "change": round(change, 2),
+                "change_pct": round(change_pct, 2),
+            }
+        except Exception as e:
+            print(f"  ⚠️ {name}({symbol}) 報價抓取失敗: {e}")
+    print(f"  韓股：成功 {len(result)}/{len(KOREA_TICKERS)} 檔")
+    return result

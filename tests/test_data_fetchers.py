@@ -61,3 +61,29 @@ def test_fetch_earnings_calendar_includes_tw_holdings(monkeypatch):
     assert {r["symbol"] for r in tw_rows} == {"2330", "2317", "2454"}
     us_rows = [r for r in results if r["market"] == "美股"]
     assert len(us_rows) == len(df.EARNINGS_WATCH)
+
+
+def test_fetch_korea_market_returns_index_and_two_stocks(monkeypatch):
+    import scripts.data_fetchers as df
+    import pandas as pd
+
+    class FakeTicker:
+        def __init__(self, symbol):
+            self.symbol = symbol
+
+        def history(self, period, interval):
+            return pd.DataFrame(
+                {"Close": [100.0, 103.0]},
+                index=pd.to_datetime(["2026-07-01", "2026-07-02"]),
+            )
+
+    monkeypatch.setattr(df.yf, "Ticker", FakeTicker)
+    result = df.fetch_korea_market()
+
+    assert set(result.keys()) == {"KOSPI", "SAMSUNG", "SK_HYNIX"}
+    kospi = result["KOSPI"]
+    assert kospi["symbol"] == "^KS11"
+    assert kospi["name"] == "KOSPI 指數"
+    assert kospi["price"] == 103.0
+    assert kospi["change"] == 3.0
+    assert round(kospi["change_pct"], 2) == 3.0
