@@ -110,3 +110,28 @@ def test_fetch_us_heatmap_returns_change_pct_for_each_symbol(monkeypatch):
     first = result[0]
     assert set(first.keys()) == {"symbol", "change_pct"}
     assert first["change_pct"] == -5.0
+
+
+def test_fetch_sector_rotation_returns_1d_and_1w_change(monkeypatch):
+    import scripts.data_fetchers as df
+    import pandas as pd
+
+    class FakeTicker:
+        def __init__(self, symbol):
+            self.symbol = symbol
+
+        def history(self, period, interval):
+            return pd.DataFrame(
+                {"Close": [100.0, 101.0, 102.0, 103.0, 104.0, 106.0]},
+                index=pd.to_datetime(["2026-06-26", "2026-06-29", "2026-06-30",
+                                       "2026-07-01", "2026-07-02", "2026-07-03"]),
+            )
+
+    monkeypatch.setattr(df.yf, "Ticker", FakeTicker)
+    result = df.fetch_sector_rotation()
+
+    assert len(result) == len(df.SECTOR_ETF_TICKERS)
+    first = result[0]
+    assert set(first.keys()) == {"symbol", "name", "change_pct_1d", "change_pct_1w"}
+    assert round(first["change_pct_1d"], 2) == round((106.0 - 104.0) / 104.0 * 100, 2)
+    assert round(first["change_pct_1w"], 2) == round((106.0 - 100.0) / 100.0 * 100, 2)

@@ -508,3 +508,41 @@ def fetch_us_heatmap():
             print(f"  ⚠️ {symbol} 熱力圖抓取失敗: {e}")
     print(f"  美股熱力圖：成功 {len(result)}/{len(US_HEATMAP_TICKERS)} 檔")
     return result
+
+
+# ── 美股資金板塊輪動：11 檔 SPDR 產業 ETF 當日 + 一週表現 ──────────────────
+
+SECTOR_ETF_TICKERS = [
+    ("XLK", "科技"), ("XLF", "金融"), ("XLE", "能源"), ("XLV", "醫療"),
+    ("XLY", "非必需消費"), ("XLP", "必需消費"), ("XLI", "工業"),
+    ("XLB", "原物料"), ("XLRE", "房地產"), ("XLU", "公用事業"), ("XLC", "通訊服務"),
+]
+
+
+def fetch_sector_rotation():
+    """抓取 11 檔 SPDR 產業 ETF 近 1-2 週日線，算出當日與一週漲跌 %。
+    period="2wk" 抓夠一週交易日（含假日緩衝）；用第一筆與最後一筆算一週漲跌，
+    最後兩筆算當日漲跌。"""
+    result = []
+    for symbol, name in SECTOR_ETF_TICKERS:
+        try:
+            hist = yf.Ticker(symbol).history(period="2wk", interval="1d")
+            if hist.empty or len(hist) < 2:
+                print(f"  ⚠️ {name}({symbol}) 板塊輪動資料不足，略過")
+                continue
+            closes = hist["Close"]
+            last = float(closes.iloc[-1])
+            prev_day = float(closes.iloc[-2])
+            week_ago = float(closes.iloc[0])
+            change_pct_1d = (last - prev_day) / prev_day * 100 if prev_day else 0.0
+            change_pct_1w = (last - week_ago) / week_ago * 100 if week_ago else 0.0
+            result.append({
+                "symbol": symbol,
+                "name": name,
+                "change_pct_1d": round(change_pct_1d, 2),
+                "change_pct_1w": round(change_pct_1w, 2),
+            })
+        except Exception as e:
+            print(f"  ⚠️ {name}({symbol}) 板塊輪動抓取失敗: {e}")
+    print(f"  產業輪動：成功 {len(result)}/{len(SECTOR_ETF_TICKERS)} 檔")
+    return result
