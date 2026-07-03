@@ -64,6 +64,8 @@ def _stub_and_import_generate_report():
     original_api_key = os.environ.get("ANTHROPIC_API_KEY")
     had_date_override = "DATE_OVERRIDE" in os.environ
     original_date_override = os.environ.get("DATE_OVERRIDE")
+    had_github_output = "GITHUB_OUTPUT" in os.environ
+    original_github_output = os.environ.get("GITHUB_OUTPUT")
 
     fake_json_text = "```json\n" + json.dumps(_fake_narrative_json()) + "\n```"
 
@@ -97,6 +99,9 @@ def _stub_and_import_generate_report():
         # 「今日已發布，exit(0)」提早結束（見上方模組 docstring 的實驗結論：
         # exit(0) 會讓整個 import 失敗，不能讓它發生）。
         os.environ["DATE_OVERRIDE"] = "2099-01-01"
+        # 模組尾端若偵測到 GITHUB_OUTPUT 存在會真的寫入該檔案；測試環境若剛好繼承了
+        # 呼叫端（例如 CI runner）留下的 GITHUB_OUTPUT，這裡先移除，避免污染真實檔案。
+        os.environ.pop("GITHUB_OUTPUT", None)
 
         data_fetchers.is_prev_us_day_holiday = lambda *_a, **_k: False
         data_fetchers.is_prev_tw_day_holiday = lambda *_a, **_k: False
@@ -124,6 +129,11 @@ def _stub_and_import_generate_report():
             os.environ["DATE_OVERRIDE"] = original_date_override
         else:
             os.environ.pop("DATE_OVERRIDE", None)
+
+        if had_github_output:
+            os.environ["GITHUB_OUTPUT"] = original_github_output
+        else:
+            os.environ.pop("GITHUB_OUTPUT", None)
 
 
 @pytest.fixture(autouse=True, scope="session")

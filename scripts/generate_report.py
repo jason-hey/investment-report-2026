@@ -130,17 +130,15 @@ JSON_OUTPUT_SPEC = """
                      "source_note": "<資料來源與時間>"},
   "news": {
     "ai_semi": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
-    "macro": [ /* 同上結構 */ ],
-    "geo": [ /* 同上結構 */ ],
-    "ipo": [ /* 同上結構 */ ]
+    "macro": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
+    "geo": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
+    "ipo": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}]
   },
   "theme_cards": [
     {"icon": "🤖", "title": "<主題名稱>", "body": "<兩三句話說明>", "tickers": ["NVDA", "AVGO"]}
-    /* 共 5 張，涵蓋：AI 算力基礎建設、台灣半導體供應鏈、口服 GLP-1、AI 電力/資料中心、黃金/實物資產 */
   ],
   "strategy_cards": [
     {"name": "🔬 巴菲特框架 — 安全邊際", "quote": "<一句名言>", "points": ["<觀點1>", "<觀點2>", "<觀點3>"]}
-    /* 共 3 張：巴菲特框架、動能策略、防禦配置 */
   ],
   "risk_matrix_rows": [
     {"risk": "<風險名稱>", "likelihood": "高/中/低", "impact": "高/中/低", "mitigation": "<因應方式>"}
@@ -150,8 +148,16 @@ JSON_OUTPUT_SPEC = """
                     "commentary": "<敘述>", "stage_note": "<若無 TRx 數據時的商業化階段說明>"}
 }
 
-所有欄位都必須存在，即使某個新聞分類搜尋不到內容也要回傳空陣列 `[]`，不可省略欄位本身。
-不要輸出 JSON 以外的任何文字、不要用 Markdown 標題，直接輸出 ```json 區塊。
+上面是結構範例，不是要照抄的內容；實際筆數規則如下（範例中只示範 1 筆）：
+- news 的 ai_semi/macro/geo/ipo 各自視實際搜尋結果填入多筆，該分類若搜尋不到內容也要回傳空陣列 `[]`，不可省略欄位本身
+- theme_cards 固定輸出 5 張，依序涵蓋：AI 算力基礎建設、台灣半導體供應鏈、口服 GLP-1、AI 電力/資料中心、黃金/實物資產
+- strategy_cards 固定輸出 3 張，依序為：巴菲特框架、動能策略、防禦配置
+
+嚴格遵守以下規則，避免輸出無法解析的 JSON：
+- 只能輸出合法 JSON。不可包含 `/* */` 或 `//` 這類註解、不可有結尾多餘逗號
+- 任何字串值裡如果本來就含有雙引號或換行（例如新聞標題、名言），必須依 JSON 規則轉義（`\\"`、`\\n`），不可直接貼原始文字
+- 所有欄位都必須存在，不可省略欄位本身
+- 不要輸出 JSON 以外的任何文字、不要用 Markdown 標題，直接輸出 ```json 區塊，且區塊結束後不要再輸出任何內容
 """
 
 PROMPT = f"""
@@ -232,8 +238,13 @@ def call_claude(messages):
 
 
 def extract_json_block(text):
-    """從模型輸出的文字中萃取 ```json ... ``` 區塊並解析成 dict；失敗回傳 None。"""
-    m = re.search(r"```json\s*([\s\S]*?)```", text)
+    """
+    從模型輸出的文字中萃取 ```json ... ``` 區塊並解析成 dict；失敗回傳 None。
+    用貪婪匹配（非 *?）抓到文字中「最後一個」收尾 ```，而不是第一個——
+    JSON 字串值內容（例如 market_deep_dive_html 或新聞內文）可能剛好包含
+    ``` 字元，非貪婪匹配會在那裡提早截斷，導致明明是合法 JSON 卻解析失敗。
+    """
+    m = re.search(r"```json\s*([\s\S]*)```", text)
     if not m:
         return None
     try:
@@ -291,7 +302,10 @@ if not narrative_json:
 
 missing_fields = validate_narrative_json(narrative_json)
 if missing_fields:
-    raise RuntimeError(f"AI 回傳 JSON 缺少必要欄位，中止發布：{missing_fields}")
+    raise RuntimeError(
+        f"AI 回傳 JSON 缺少必要欄位，中止發布：缺少 {missing_fields}；"
+        f"實際收到的欄位：{sorted(narrative_json.keys())}"
+    )
 print("  ✅ AI 敘述 JSON 驗證通過")
 
 

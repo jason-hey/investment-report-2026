@@ -20,6 +20,15 @@ def test_extract_json_block_returns_none_on_invalid_json():
     assert extract_json_block("```json\n{not valid json\n```") is None
 
 
+def test_extract_json_block_handles_nested_triple_backticks_in_string_value():
+    from scripts.generate_report import extract_json_block
+
+    # market_deep_dive_html / 新聞內文等自由文字欄位理論上可能剛好包含 ``` 字元；
+    # 非貪婪 regex 會在這裡提早截斷，導致合法 JSON 被誤判為解析失敗。
+    text = '```json\n{"daily_brief": "some ```code``` inside"}\n```'
+    assert extract_json_block(text) == {"daily_brief": "some ```code``` inside"}
+
+
 def test_validate_narrative_json_lists_missing_fields():
     from scripts.generate_report import validate_narrative_json, REQUIRED_JSON_FIELDS
 
