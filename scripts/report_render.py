@@ -2,7 +2,14 @@
 from jinja2 import Environment, FileSystemLoader
 
 
+def _norm_zero(value):
+    """把 -0.0 正規化成 0.0，避免 f'{value:g}' 印出誤導的負號（例如 '+-0'）。"""
+    return 0.0 if value == 0 else value
+
+
 def _fmt_change(change, change_pct):
+    change = _norm_zero(change)
+    change_pct = _norm_zero(change_pct)
     sign = "+" if change >= 0 else ""
     return f"{sign}{change:g} ({sign}{change_pct:.2f}%)"
 
@@ -24,12 +31,14 @@ def build_ticker_data(quotes):
         q = quotes.get(key)
         if not q:
             continue
+        change = _norm_zero(q["change"])
+        change_pct = _norm_zero(q["change_pct"])
         items.append({
             "sym": q["name"],
             "price": f'{q["price"]:,g}',
-            "chg": f'{"+" if q["change"] >= 0 else ""}{q["change"]:g}',
-            "pct": f'{"+" if q["change_pct"] >= 0 else ""}{q["change_pct"]:.2f}%',
-            "up": q["change"] >= 0,
+            "chg": f'{"+" if change >= 0 else ""}{change:g}',
+            "pct": f'{"+" if change_pct >= 0 else ""}{change_pct:.2f}%',
+            "up": change >= 0,
         })
     return items
 
