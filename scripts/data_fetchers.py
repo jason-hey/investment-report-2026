@@ -2,7 +2,6 @@
 每日報告用的所有資料預抓函式：yfinance（財報日曆／P/E／VIX／即時報價）、
 TWSE OpenAPI（法人連三日買賣超）、假日判斷、市場分析 prompt 讀取。
 """
-import requests
 from datetime import datetime, timedelta
 
 # ── 美股假日判斷：前一交易日為假日則跳過報告 ────────────────────────────────
