@@ -29,9 +29,10 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install "anthropic>=0.45.0" requests yfinance exchange-calendars
+        run: pip install -r requirements.txt
 
       - name: Generate report
+        id: generate
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DATE_OVERRIDE: ${{ github.event.inputs.date_override }}
@@ -58,6 +59,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          SUMMARY: ${{ steps.generate.outputs.summary }}
         run: |
           if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
             echo "Telegram not configured, skipping."
@@ -67,7 +69,11 @@ jobs:
           REPO=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
           DATE=$(TZ='Asia/Taipei' date +'%Y/%m/%d')
           URL="https://${OWNER}.github.io/${REPO}/"
-          MSG=$(printf '投資情報已更新 %s\n\n每日 AI 投資情報自動生成完成\n\n點此查看完整報告 %s' "$DATE" "$URL")
+          if [ -n "$SUMMARY" ]; then
+            MSG=$(printf '投資情報已更新 %s\n\n%s\n\n點此查看完整報告 %s' "$DATE" "$SUMMARY" "$URL")
+          else
+            MSG=$(printf '投資情報已更新 %s\n\n每日 AI 投資情報自動生成完成\n\n點此查看完整報告 %s' "$DATE" "$URL")
+          fi
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" -d chat_id="${TELEGRAM_CHAT_ID}" --data-urlencode "text=${MSG}"
 
       - name: Send LINE notification
@@ -77,6 +83,7 @@ jobs:
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
           LINE_GROUP_ID: ${{ secrets.LINE_GROUP_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          SUMMARY: ${{ steps.generate.outputs.summary }}
         run: |
           if [ -z "$LINE_CHANNEL_ACCESS_TOKEN" ]; then
             echo "LINE not configured, skipping."
@@ -84,15 +91,20 @@ jobs:
           fi
           OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
           REPO=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
-          DATE=$(TZ='Asia/Taipei' date +'%Y/%m/%d')
           URL="https://${OWNER}.github.io/${REPO}/"
           TITLE=$(TZ='Asia/Taipei' date +'%Y.%m.%d')
-          MSG="${TITLE} 每日投資情報已更新 📊\n\n🔗 ${URL}"
+          if [ -n "$SUMMARY" ]; then
+            MSG=$(printf '%s 每日投資情報已更新 📊\n\n%s\n\n🔗 %s' "$TITLE" "$SUMMARY" "$URL")
+          else
+            MSG=$(printf '%s 每日投資情報已更新 📊\n\n🔗 %s' "$TITLE" "$URL")
+          fi
           send_line() {
-            curl -s -X POST https://api.line.me/v2/bot/message/push \
-              -H "Content-Type: application/json" \
-              -H "Authorization: Bearer ${LINE_CHANNEL_ACCESS_TOKEN}" \
-              -d "{\"to\":\"$1\",\"messages\":[{\"type\":\"text\",\"text\":\"${MSG}\"}]}"
+            jq -n --arg to "$1" --arg text "$MSG" \
+              '{to: $to, messages: [{type: "text", text: $text}]}' \
+              | curl -s -X POST https://api.line.me/v2/bot/message/push \
+                -H "Content-Type: application/json" \
+                -H "Authorization: Bearer ${LINE_CHANNEL_ACCESS_TOKEN}" \
+                -d @-
           }
           if [ -n "$LINE_USER_ID" ]; then
             send_line "$LINE_USER_ID"
@@ -114,9 +126,51 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          SUMMARY: ${{ steps.generate.outputs.summary }}
         run: |
           if [ -z "$GMAIL_USER" ] || [ -z "$GMAIL_APP_PASSWORD" ]; then
             echo "Email not configured, skipping."
             exit 0
           fi
           python scripts/send_email.py
+
+      - name: Send failure alert
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          LINE_GROUP_ID: ${{ secrets.LINE_GROUP_ID }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          RUN_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          MSG="投資情報 pipeline 執行失敗 ⚠️
+
+請檢查執行紀錄：${RUN_URL}"
+
+          if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" -d chat_id="${TELEGRAM_CHAT_ID}" --data-urlencode "text=${MSG}"
+          fi
+
+          if [ -n "$LINE_CHANNEL_ACCESS_TOKEN" ]; then
+            send_line() {
+              jq -n --arg to "$1" --arg text "$MSG" \
+                '{to: $to, messages: [{type: "text", text: $text}]}' \
+                | curl -s -X POST https://api.line.me/v2/bot/message/push \
+                  -H "Content-Type: application/json" \
+                  -H "Authorization: Bearer ${LINE_CHANNEL_ACCESS_TOKEN}" \
+                  -d @-
+            }
+            if [ -n "$LINE_USER_ID" ]; then
+              send_line "$LINE_USER_ID"
+            fi
+            if [ -n "$LINE_GROUP_ID" ]; then
+              IFS=',' read -ra GROUP_IDS <<< "$LINE_GROUP_ID"
+              for GID in "${GROUP_IDS[@]}"; do
+                GID=$(echo "$GID" | xargs)
+                send_line "$GID"
+              done
+            fi
+          fi

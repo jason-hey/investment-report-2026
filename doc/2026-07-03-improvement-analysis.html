@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>專案改善分析 — Investment Report 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg0: #04040d; --bg1: #08081a; --bg2: #0e0e22; --bg3: #13132c;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.16);
+    --t1: #f0f2fc; --t2: #c8d0ec;
+    --green: #3ecf8e; --green2: rgba(62,207,142,.15);
+    --amber: #f5a623; --amber2: rgba(245,166,35,.14);
+    --blue: #5b9cf6; --blue2: rgba(91,156,246,.15);
+    --teal: #2dd4bf; --teal2: rgba(45,212,191,.15);
+    --red: #f26666; --red2: rgba(242,102,102,.15);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg0); color: var(--t1); font-family: var(--sans); font-size: 15px; line-height: 1.7; }
+
+  header {
+    padding: 40px 48px 28px;
+    border-bottom: 1px solid var(--border2);
+    background: var(--bg1);
+  }
+  .badge {
+    display: inline-block;
+    font-family: var(--mono); font-size: 9px; letter-spacing: .12em;
+    padding: 3px 10px; border-radius: 2px; margin-bottom: 14px;
+    border: 1px solid var(--blue); color: var(--blue); background: var(--blue2);
+  }
+  h1 { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { color: var(--t2); font-size: 14px; }
+
+  main { max-width: 900px; margin: 0 auto; padding: 48px 48px 80px; }
+
+  /* 摘要卡片 */
+  .summary-card {
+    background: var(--blue2); border: 1px solid var(--blue);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .summary-title { font-weight: 600; font-size: 16px; color: var(--blue); margin-bottom: 6px; }
+  .summary-desc { color: var(--t2); font-size: 14px; line-height: 1.7; }
+
+  /* 最優先建議卡片 */
+  .recommend-card {
+    background: var(--green2); border: 1px solid var(--green);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+  .recommend-icon { font-size: 30px; flex-shrink: 0; margin-top: 2px; }
+  .recommend-title { font-weight: 600; font-size: 16px; color: var(--green); margin-bottom: 4px; }
+  .recommend-desc { color: var(--t2); font-size: 14px; line-height: 1.7; }
+
+  /* 區塊標題 */
+  h2 {
+    font-family: var(--mono); font-size: 13px; letter-spacing: .1em;
+    color: var(--amber); text-transform: uppercase;
+    margin-bottom: 16px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border2);
+  }
+  h2.red   { color: var(--red); }
+  h2.blue  { color: var(--blue); }
+  h2.green { color: var(--green); }
+  section { margin-bottom: 48px; }
+
+  /* 問題卡片 */
+  .issues { display: flex; flex-direction: column; gap: 14px; }
+  .issue {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 18px 22px;
+  }
+  .issue-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .issue-num {
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    border-radius: 3px; width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .num-high { background: var(--red2);   color: var(--red);   border: 1px solid var(--red); }
+  .num-mid  { background: var(--amber2); color: var(--amber); border: 1px solid var(--amber); }
+  .num-low  { background: var(--blue2);  color: var(--blue);  border: 1px solid var(--blue); }
+  .issue-title { font-weight: 600; font-size: 15px; color: var(--t1); }
+  .issue-body { color: var(--t2); font-size: 14px; line-height: 1.75; }
+  .issue-body strong { color: var(--t1); font-weight: 600; }
+  .issue-fix {
+    margin-top: 10px; padding: 10px 14px;
+    background: var(--green2); border-left: 3px solid var(--green);
+    border-radius: 0 4px 4px 0;
+    color: var(--t2); font-size: 13.5px; line-height: 1.7;
+  }
+  .issue-fix strong { color: var(--green); font-weight: 600; }
+
+  code {
+    font-family: var(--mono); font-size: 12px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 3px; padding: 1px 6px; color: var(--teal);
+  }
+
+  /* 優先順序表格 */
+  table {
+    width: 100%; border-collapse: collapse; margin-top: 12px;
+    font-size: 14px;
+  }
+  th {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--t2);
+    padding: 10px 14px; border-bottom: 1px solid var(--border2);
+    text-align: left;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--t2); }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: var(--t1); font-weight: 500; white-space: nowrap; }
+  .tag {
+    display: inline-block; font-family: var(--mono); font-size: 10px;
+    padding: 2px 8px; border-radius: 2px; letter-spacing: .06em;
+  }
+  .tag-high { background: var(--red2);   color: var(--red);   border: 1px solid var(--red); }
+  .tag-mid  { background: var(--amber2); color: var(--amber); border: 1px solid var(--amber); }
+  .tag-low  { background: var(--blue2);  color: var(--blue);  border: 1px solid var(--blue); }
+
+  /* 現況優點 */
+  .good-list { display: flex; flex-direction: column; gap: 8px; }
+  .good-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    color: var(--t2); font-size: 14px;
+  }
+  .good-item::before { content: "✓"; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  footer {
+    max-width: 900px; margin: 0 auto; padding: 0 48px 48px;
+    color: var(--t2); font-size: 12px; font-family: var(--mono);
+    border-top: 1px solid var(--border); padding-top: 20px;
+  }
+
+  @media (max-width: 640px) {
+    header, main, footer { padding-left: 20px; padding-right: 20px; }
+    .table-wrap { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">PROJECT REVIEW</div>
+  <h1>專案改善分析</h1>
+  <div class="subtitle">Investment Report 2026 — 每日投資情報自動化 pipeline 的體檢報告（2026-07-03）</div>
+</header>
+
+<main>
+
+  <div class="summary-card">
+    <div class="summary-title">總覽</div>
+    <div class="summary-desc">
+      專案整體設計清楚：GitHub Actions 排程 → Claude API + web_search 生成 HTML → GitHub Pages 部署 → Telegram / LINE / Email 通知。
+      本文件記錄一次完整的程式碼審視結果，共 12 項改善建議，按影響程度分為「高影響（可靠性與正確性）」、「中影響（維護性）」、「低影響（整理）」三級。
+    </div>
+  </div>
+
+  <section>
+    <h2 class="green">現況做得好的地方</h2>
+    <div class="good-list">
+      <div class="good-item">用 yfinance 預先抓取財報日曆、P/E、VIX 等結構化資料注入 prompt，避免 AI 憑空編造數字</div>
+      <div class="good-item">Streaming 模式 + <code>pause_turn</code> 迭代迴圈，正確處理多輪 web_search 的長時間請求</div>
+      <div class="good-item">以 <code>Backup/{日期}.html</code> 是否存在做防重複機制，一天只發布一次</div>
+      <div class="good-item">美股假日判斷（exchange_calendars XNYS），假日自動跳過生成</div>
+      <div class="good-item">通知步驟在 secrets 未設定時自動 no-op，且只在實際有 commit 時才發送</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="red">高影響 — 可靠性與正確性</h2>
+    <div class="issues">
+
+      <div class="issue">
+        <div class="issue-head">
+          <div class="issue-num num-high">1</div>
+          <div class="issue-title">每天讓 AI 從零重新生成整份 HTML（最大的結構性問題）</div>
+        </div>
+        <div class="issue-body">
+          <code>scripts/generate_report.py</code> 每天要求模型輸出 100KB+ 的完整 HTML（含所有 CSS / JS / Chart.js 設定）。代價有三：
+          版面每天都可能長得不一樣、JS 有機會寫壞導致圖表掛掉、每天消耗接近 64K 輸出 token。
+        </div>
+        <div class="issue-fix">
+          <strong>建議：</strong>把 HTML 模板與圖表程式碼固定放在 repo，讓 Claude 只輸出各區塊的<strong style="color:var(--t1)">結構化 JSON</strong>（數據 + 文字），再由 Python 注入模板。
+          版面永遠一致、輸出 token 大幅降低、資料格式也變得可驗證。這一項會同時讓第 2、5 項變得容易實作。
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="issue-head">
+          <div class="issue-num num-high">2</div>
+          <div class="issue-title">截斷的報告會直接發布上線</div>
+        </div>
+        <div class="issue-body">
+          <code>generate_report.py</code> 第 416–430 行：遇到 <code>max_tokens</code> 截斷時，補上 <code>&lt;/body&gt;&lt;/html&gt;</code> 就照樣寫入 <code>index.html</code> 並推上正式網站，使用者會看到半份報告。
+        </div>
+        <div class="issue-fix">
+          <strong>建議：</strong>發布前做基本驗證 — 必要區塊是否存在、長度是否合理、HTML 是否可解析。不合格就讓 workflow 失敗、保留昨天的版本。
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="issue-head">
+          <div class="issue-num num-high">3</div>
+          <div class="issue-title">生成失敗時完全沒有通知</div>
+        </div>
+        <div class="issue-body">
+          通知只在成功 commit 後發送。若生成失敗（API 錯誤、yfinance 掛掉、截斷），只能靠「沒收到訊息」才發現。
+        </div>
+        <div class="issue-fix">
+          <strong>建議：</strong>在 <code>daily-update.yml</code> 加一個 <code>if: failure()</code> 的 Telegram / LINE 失敗告警步驟。成本極低、價值很高。
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="issue-head">
+          <div class="issue-num num-high">4</div>
+          <div class="issue-title">高風險精確數據仍依賴 web_search</div>
+        </div>
+        <div class="issue-body">
+          法人連三日買賣超排行、台指期夜盤這類精確數字，讓 AI 上網搜尋是最容易出錯（甚至幻覺）的部分。
+        </div>
+        <div class="issue-fix">
+          <strong>建議：</strong>證交所（<code>openapi.twse.com.tw</code>）與期交所都有免費 JSON API，比照財報日曆的做法預先抓取後注入 prompt，讓 AI 只負責解讀而不是找數字。
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="issue-head">
+          <div class="issue-num num-high">5</div>
+          <div class="issue-title">P/E 歷史趨勢的算法不是真的歷史 P/E</div>
+        </div>
+        <div class="issue-body">
+          <code>fetch_pe_history()</code> 用「當前 trailing P/E 反推的固定 EPS」除歷史股價，等於假設 3 年來 EPS 不變 —
+          畫出來的只是股價走勢的縮放，不是真實估值變化。對 NVDA 這種 EPS 暴增的股票失真特別大。
+        </div>
+        <div class="issue-fix">
+          <strong>建議：</strong>改用 yfinance 的季度 EPS 資料，計算各期真實 TTM EPS 後再算歷史 P/E。
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>中影響 — 維護性</h2>
+    <div class="issues">
+
+      <div class="issue">
+        <div class="issue-head">
+          <div class="issue-num num-mid">6</div>
+          <div class="issue-title">報告重複存三份，且 archive/ 日期標錯一天</div>
+        </div>
+        <div class="issue-body">
+          每天的報告同時存在 <code>index.html</code>、<code>archive/</code>、<code>Backup/</code>。
+          而且 <code>generate_report.py</code> 是把<strong>昨天的</strong>報告備份成 <code>archive/{今天日期}.html</code>，日期標錯一天；<code>Backup/</code> 才是正確日期。
+          每天 ~100KB 進 git 歷史，一年會膨脹 25MB+。
+        </div>
+        <div class="issue-fix">
+          <strong>建議：</strong>合併為一個歸檔目錄、統一命名規則（修正日期偏移），並考慮舊報告不進 git（或放 orphan branch）。
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="issue-head">
+          <div class="issue-num num-mid">7</div>
+          <div class="issue-title">依賴沒有鎖版本</div>
+        </div>
+        <div class="issue-body">
+          Workflow 每天安裝最新版 <code>yfinance</code>（出了名的常改 API、常壞）、<code>exchange-calendars</code> 等，某天 pipeline 可能無預警掛掉。
+        </div>
+        <div class="issue-fix">
+          <strong>建議：</strong>新增 <code>requirements.txt</code> 鎖定版本，workflow 改用 <code>pip install -r requirements.txt</code>。
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="issue-head">
+          <div class="issue-num num-mid">8</div>
+          <div class="issue-title">只檢查美股假日，沒檢查台股假日</div>
+        </div>
+        <div class="issue-body">
+          <code>is_prev_us_day_holiday()</code> 只用 XNYS（紐約）日曆，但報告一半內容是台股。台股放假（農曆年、颱風假）時報告照跑，會拿到過期或錯誤的台股數據。
+        </div>
+        <div class="issue-fix">
+          <strong>建議：</strong><code>exchange_calendars</code> 也有 <code>XTAI</code>（台灣）日曆，可一併判斷，或在報告中標註「台股休市」。
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2 class="blue">低影響 — 整理</h2>
+    <div class="issues">
+
+      <div class="issue">
+        <div class="issue-head">
+          <div class="issue-num num-low">9</div>
+          <div class="issue-title">AGENTS.md 是壞掉的複製品</div>
+        </div>
+        <div class="issue-body">
+          內容被全域取代成「Codex API (<code>Codex-sonnet-4-6</code>)」這種錯誤描述，會誤導其他 AI 工具。建議修正內容或直接指向 CLAUDE.md。
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="issue-head">
+          <div class="issue-num num-low">10</div>
+          <div class="issue-title">CLAUDE.md 的 Secrets 表格漏了 LINE</div>
+        </div>
+        <div class="issue-body">
+          Workflow 已支援 <code>LINE_CHANNEL_ACCESS_TOKEN</code> / <code>LINE_USER_ID</code> / <code>LINE_GROUP_ID</code>（含多群組逗號分隔），但文件沒跟上。
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="issue-head">
+          <div class="issue-num num-low">11</div>
+          <div class="issue-title">git 工作區不乾淨</div>
+        </div>
+        <div class="issue-body">
+          4 個舊報告被移到 <code>Backup/</code> 但尚未 commit；<code>CLAUDE.md</code>、<code>AGENTS.md</code>、<code>doc/</code> 皆為 untracked。建議整理後提交一次。
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="issue-head">
+          <div class="issue-num num-low">12</div>
+          <div class="issue-title">通知內容可以更有價值</div>
+        </div>
+        <div class="issue-body">
+          目前 Telegram / LINE / Email 只發連結。可讓生成流程順便輸出 2–3 行當日重點（大盤漲跌、最重要事件）直接放進訊息，不點開也能掌握概況。
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2 class="green">優先順序總表</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>項目</th><th>等級</th><th>主要效益</th><th>工作量</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>#1 模板 + JSON 資料分離</td><td><span class="tag tag-high">高</span></td><td>穩定性、成本、可驗證性三者同時改善</td><td>大</td></tr>
+          <tr><td>#2 發布前 HTML 驗證</td><td><span class="tag tag-high">高</span></td><td>避免半份報告上線</td><td>小</td></tr>
+          <tr><td>#3 失敗告警通知</td><td><span class="tag tag-high">高</span></td><td>pipeline 掛掉時第一時間知道</td><td>極小</td></tr>
+          <tr><td>#4 TWSE / 期交所 API 預抓</td><td><span class="tag tag-high">高</span></td><td>消除法人 / 期貨數據幻覺風險</td><td>中</td></tr>
+          <tr><td>#5 真實 TTM EPS 計算 P/E</td><td><span class="tag tag-high">高</span></td><td>估值圖表不再失真</td><td>中</td></tr>
+          <tr><td>#6 歸檔目錄整併 + 日期修正</td><td><span class="tag tag-mid">中</span></td><td>repo 不再膨脹、歸檔日期正確</td><td>小</td></tr>
+          <tr><td>#7 requirements.txt 鎖版本</td><td><span class="tag tag-mid">中</span></td><td>避免依賴更新造成無預警故障</td><td>極小</td></tr>
+          <tr><td>#8 台股假日判斷</td><td><span class="tag tag-mid">中</span></td><td>台股休市日不產生錯誤數據</td><td>小</td></tr>
+          <tr><td>#9–12 文件與整理</td><td><span class="tag tag-low">低</span></td><td>文件正確、工作區乾淨、通知更有用</td><td>小</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="recommend-card">
+    <div class="recommend-icon">🎯</div>
+    <div>
+      <div class="recommend-title">如果只做一件事</div>
+      <div class="recommend-desc">
+        先做 <strong style="color:var(--t1)">#1 模板 + JSON 資料分離</strong>：它同時解決穩定性、成本、可驗證性三個問題，
+        而且做完之後 #2（驗證）和 #5（P/E 修正）都會變得容易許多。
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  投資情報專案改善分析 · 依據 2026-07-03 的程式碼審視 · scripts/generate_report.py · scripts/send_email.py · .github/workflows/daily-update.yml
+</footer>
+
+</body>
+</html>

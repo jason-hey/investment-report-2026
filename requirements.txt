@@ -1,0 +1,4 @@
+anthropic==0.116.0
+requests==2.34.2
+yfinance==1.5.1
+exchange-calendars==4.13.2

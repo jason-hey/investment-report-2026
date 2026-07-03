@@ -16,11 +16,14 @@ url      = f"https://{owner}.github.io/{repo_name}/"
 recipients_raw = os.environ["NOTIFY_EMAIL"]
 recipients = [r.strip() for r in recipients_raw.split(",") if r.strip()]
 
+summary = os.environ.get("SUMMARY", "").strip()
+summary_block = f"{summary}\n\n" if summary else ""
+
 subject = f"📊 {date_str} 投資情報已更新"
 body = f"""
 {date_str} 每日投資情報已自動生成完成！
 
-🔗 查看報告：{url}
+{summary_block}🔗 查看報告：{url}
 
 ⚡ 自動生成 by Claude AI + GitHub Actions
 """

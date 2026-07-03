@@ -11,21 +11,29 @@ from datetime import datetime, timezone, timedelta
 
 # ── 美股假日判斷：前一交易日為假日則跳過報告 ────────────────────────────────
 
-def is_prev_us_day_holiday(base_date):
+def _is_prev_day_holiday(base_date, calendar_code):
     """
-    若前一個美股交易日（跳過週末）是假日，回傳 True。
+    若前一個交易日（跳過週末）在指定市場行事曆上不是開盤日，回傳 True。
     失敗時保守回傳 False（繼續執行）。
     """
     try:
         import exchange_calendars as xcals
-        nyse = xcals.get_calendar("XNYS")
+        cal = xcals.get_calendar(calendar_code)
         prev = base_date - timedelta(days=1)
         while prev.weekday() >= 5:          # 跳過週六(5)、週日(6)
             prev -= timedelta(days=1)
-        return not nyse.is_session(prev.strftime("%Y-%m-%d"))
+        return not cal.is_session(prev.strftime("%Y-%m-%d"))
     except Exception as e:
-        print(f"  ⚠️ 假日判斷失敗（{e}），繼續執行")
+        print(f"  ⚠️ {calendar_code} 假日判斷失敗（{e}），繼續執行")
         return False
+
+
+def is_prev_us_day_holiday(base_date):
+    return _is_prev_day_holiday(base_date, "XNYS")
+
+
+def is_prev_tw_day_holiday(base_date):
+    return _is_prev_day_holiday(base_date, "XTAI")
 
 
 # ── 財報日曆：用 yfinance 抓取結構化資料，避免 AI web_search 誤判 ──────────
@@ -255,6 +263,18 @@ if is_prev_us_day_holiday(today):
     print(f"  前一美股交易日 {prev.strftime('%Y-%m-%d')} 為假日，跳過本次報告生成。")
     exit(0)
 
+print(f"[{date_str}] 檢查台股假日...")
+tw_holiday_note = ""
+if is_prev_tw_day_holiday(today):
+    prev = today - timedelta(days=1)
+    while prev.weekday() >= 5:
+        prev -= timedelta(days=1)
+    print(f"  前一台股交易日 {prev.strftime('%Y-%m-%d')} 為假日（休市/國定假日），台股數據將標註為最近交易日資料。")
+    tw_holiday_note = (
+        "\n【重要】今日台股休市（國定假日或連假）。所有台股相關數字（台積電、鴻海、聯發科、0050、加權指數等）"
+        "請明確標註為「最近一個交易日」資料，勿當作今日即時數字呈現。\n"
+    )
+
 print("  正在用 yfinance 抓取未來 2 週財報日曆...")
 earnings_data = fetch_earnings_calendar(today)
 earnings_table = format_earnings_for_prompt(earnings_data)
@@ -274,7 +294,7 @@ market_analysis_prompt = load_market_analysis_prompt(date_str, weekday_cn)
 
 PROMPT = f"""
 今天是 {date_label}（{weekday_cn}），台灣台中。
-請為我生成一份完整的「每日投資情報 HTML 網頁」。
+{tw_holiday_note}請為我生成一份完整的「每日投資情報 HTML 網頁」。
 
 ## 【已預先抓取】未來 2 週財報日曆（直接使用，勿再搜尋）
 以下資料來自 Yahoo Finance API，請直接用於財報速覽區塊，不需要再搜尋財報日期：
@@ -398,6 +418,13 @@ PROMPT = f"""
 
 ## 輸出格式
 輸出完整的 HTML，用 ```html ... ``` 包裹，包含所有 CSS 和 JavaScript。
+在 `<body>` 開始標籤之後，立刻加入一段 HTML 註解，格式如下（供推播通知使用，不會顯示給讀者）：
+<!--SUMMARY
+第一行：大盤漲跌重點（台股加權指數、那斯達克等關鍵指數當日表現，一行內）
+第二行：今日最重要的一則新聞或事件（一行內）
+第三行：對持倉組合最需要注意的一點（一行內）
+SUMMARY-->
+每行不加任何 Markdown 符號，純文字即可，總長度控制在 150 字以內。
 不要解釋，直接輸出 HTML。
 """
 
@@ -472,11 +499,26 @@ for iteration in range(5):
 if not html_content:
     raise RuntimeError(f"未能從 Claude 取得 HTML 內容（最終 stop_reason={response.stop_reason}）")
 
-archive_dir = "archive"
-os.makedirs(archive_dir, exist_ok=True)
-if os.path.exists("index.html"):
-    shutil.copy("index.html", f"{archive_dir}/{date_str}.html")
-    print(f"  已備份至 archive/{date_str}.html")
+
+def validate_html(html: str) -> list[str]:
+    """回傳驗證失敗的原因清單；空清單代表通過。避免截斷或空洞的報告被發布上線。"""
+    problems = []
+    if len(html) < 20000:
+        problems.append(f"內容過短（{len(html):,} bytes，預期 20,000+）")
+    if "</html>" not in html.lower():
+        problems.append("找不到 </html> 結尾標籤，內容可能被截斷")
+    for required in ("<table", "<canvas", "<script"):
+        if required not in html.lower():
+            problems.append(f"找不到必要標籤 {required}")
+    return problems
+
+
+validation_problems = validate_html(html_content)
+if validation_problems:
+    raise RuntimeError(
+        "報告驗證失敗，中止發布以避免半份報告上線：\n  - " + "\n  - ".join(validation_problems)
+    )
+print("  ✅ 報告驗證通過")
 
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(html_content)
@@ -487,3 +529,17 @@ shutil.copy("index.html", f"{backup_dir}/{date_str}.html")
 
 print(f"  ✅ 報告已寫入 index.html（{len(html_content):,} bytes）")
 print(f"  ✅ 已備份至 Backup/{date_str}.html")
+
+summary_match = re.search(r"<!--SUMMARY\s*([\s\S]*?)SUMMARY-->", html_content)
+summary_text = summary_match.group(1).strip() if summary_match else ""
+if summary_text:
+    print(f"  📋 摘要：{summary_text}")
+else:
+    print("  ⚠️ 未找到通知摘要（SUMMARY 註解），通知將只包含連結")
+
+github_output = os.environ.get("GITHUB_OUTPUT")
+if github_output:
+    with open(github_output, "a", encoding="utf-8") as f:
+        f.write("summary<<REPORT_SUMMARY_EOF\n")
+        f.write(summary_text + "\n")
+        f.write("REPORT_SUMMARY_EOF\n")
