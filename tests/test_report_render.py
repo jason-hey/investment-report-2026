@@ -135,7 +135,7 @@ def _narrative_context_fields():
 
 
 def test_render_report_produces_html_with_ticker_and_kpi_data():
-    from scripts.report_render import render_report
+    from scripts.report_render import render_report, build_korea_context, build_oil_context
 
     quotes = {"TWII": {"symbol": "^TWII", "name": "加權指數", "price": 46744.0, "change": 274.0, "change_pct": 0.59}}
     context = {
@@ -149,6 +149,10 @@ def test_render_report_produces_html_with_ticker_and_kpi_data():
         "institutional": {"as_of_dates": [], "foreign_buy_top10": [], "foreign_sell_top10": [],
                            "trust_buy_top10": [], "trust_sell_top10": []},
         "earnings": [],
+        "korea": build_korea_context(None),
+        "heatmap": [],
+        "sector_rotation": [],
+        "oil": build_oil_context(None),
         **_narrative_context_fields(),
     }
     html = render_report(context)
@@ -157,7 +161,7 @@ def test_render_report_produces_html_with_ticker_and_kpi_data():
 
 
 def test_render_report_renders_institutional_table_rows():
-    from scripts.report_render import render_report, build_institutional_context
+    from scripts.report_render import render_report, build_institutional_context, build_korea_context, build_oil_context
 
     institutional = build_institutional_context({
         "as_of_dates": ["2026-07-01", "2026-07-02", "2026-07-03"],
@@ -172,6 +176,10 @@ def test_render_report_renders_institutional_table_rows():
                           "change_class": "", "change_text": "+0 (+0.00%)", "extra": None}] * 8,
         "vix_history": [], "pe_data": {"tw": [], "us": []},
         "institutional": institutional, "earnings": [],
+        "korea": build_korea_context(None),
+        "heatmap": [],
+        "sector_rotation": [],
+        "oil": build_oil_context(None),
         **_narrative_context_fields(),
     }
     html = render_report(context)
@@ -339,6 +347,15 @@ def test_build_korea_context_passes_through_data():
     assert build_korea_context(data) == data
 
 
+def test_build_korea_context_normalizes_none_to_empty_dict():
+    """generate_report.py 尚未串接 fetch_korea_market() 前，korea_data 預設值是 None；
+    模板端用 korea.get(key) 判斷，None.get(...) 會直接拋 UndefinedError，所以要正規化成 {}。"""
+    from scripts.report_render import build_korea_context
+
+    assert build_korea_context(None) == {}
+    assert build_korea_context({}) == {}
+
+
 def test_build_heatmap_context_adds_color_class():
     from scripts.report_render import build_heatmap_context
 
@@ -375,9 +392,57 @@ def test_build_sector_rotation_context_sorts_by_1d_change_desc():
     assert [item["symbol"] for item in result] == ["XLK", "XLE"]
 
 
-def test_build_oil_context_passes_through_data():
+def test_build_oil_context_passes_through_and_builds_aligned_arrays():
     from scripts.report_render import build_oil_context
 
     data = {"wti": {"symbol": "CL=F", "name": "WTI 原油", "history": [{"date": "2026-07-01", "value": 68.5}]},
             "brent": {"symbol": "BZ=F", "name": "Brent 原油", "history": []}}
-    assert build_oil_context(data) == data
+    result = build_oil_context(data)
+    assert result["wti"] == data["wti"]
+    assert result["brent"] == data["brent"]
+    assert result["dates"] == ["2026-07-01"]
+    assert result["wti_values"] == [68.5]
+    assert result["brent_values"] == [None]
+
+
+def test_build_oil_context_normalizes_none_to_empty_history():
+    """generate_report.py 尚未串接 fetch_oil_prices() 前，oil_data 預設值是 None。"""
+    from scripts.report_render import build_oil_context
+
+    result = build_oil_context(None)
+    assert result["wti"]["history"] == []
+    assert result["brent"]["history"] == []
+    assert result["dates"] == []
+    assert result["wti_values"] == []
+    assert result["brent_values"] == []
+
+
+def test_build_oil_context_aligns_mismatched_wti_brent_dates():
+    """
+    迴歸測試：WTI 與 Brent 是分開抓的，某一天可能只有其中一個標的有資料
+    （不同交易所假日曆不同）。若圖表直接各自把兩條歷史轉成陣列、共用同一組以
+    「陣列位置」為準的 X 軸標籤，中間缺一天資料就會讓其中一條線後面全部對錯位置。
+    這裡驗證：用日期聯集對齊後，各自缺資料的日期要精確地對應到 None，而不是
+    被另一條線的資料填補、造成錯位。
+    """
+    from scripts.report_render import build_oil_context
+
+    data = {
+        "wti": {"symbol": "CL=F", "name": "WTI 原油", "history": [
+            {"date": "2026-07-01", "value": 68.0},
+            {"date": "2026-07-02", "value": 69.0},
+            {"date": "2026-07-03", "value": 70.0},
+        ]},
+        "brent": {"symbol": "BZ=F", "name": "Brent 原油", "history": [
+            {"date": "2026-07-01", "value": 72.0},
+            # 2026-07-02 該標的缺資料（例如假日曆不同）
+            {"date": "2026-07-03", "value": 74.0},
+        ]},
+    }
+    result = build_oil_context(data)
+
+    assert result["dates"] == ["2026-07-01", "2026-07-02", "2026-07-03"]
+    assert result["wti_values"] == [68.0, 69.0, 70.0]
+    # Brent 在 07-02 缺資料，必須是 None（不是 68.0/69.0 這種被 WTI 值污染的結果，
+    # 也不能整條線往前/往後平移）
+    assert result["brent_values"] == [72.0, None, 74.0]

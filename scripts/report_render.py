@@ -143,8 +143,11 @@ def build_earnings_context(earnings_list):
 
 
 def build_korea_context(korea_data):
-    """korea_data 來自 data_fetchers.fetch_korea_market()，原樣傳遞（欄位已符合模板需求）。"""
-    return korea_data
+    """korea_data 來自 data_fetchers.fetch_korea_market()，原樣傳遞；None 或空 dict（尚未串接
+    資料源時的預設值、或全部標的抓取失敗時 fetch_korea_market() 本身回傳的 {}）正規化成空 dict，
+    讓模板端只需要 korea.get(key) 判斷，不需要額外檢查 korea 本身是否為 None
+    （比照 build_institutional_context() 的既有正規化慣例）。"""
+    return korea_data or {}
 
 
 def _heatmap_color_class(change_pct):
@@ -171,8 +174,32 @@ def build_sector_rotation_context(sector_data):
 
 
 def build_oil_context(oil_data):
-    """oil_data 來自 data_fetchers.fetch_oil_prices()，原樣傳遞。"""
-    return oil_data
+    """
+    oil_data 來自 data_fetchers.fetch_oil_prices()。除了原樣保留 wti/brent 兩個子 dict
+    （None 正規化成 wti/brent 皆為空歷史的骨架，比照 build_institutional_context() 慣例），
+    另外算出以「日期聯集」對齊的 dates/wti_values/brent_values 三個陣列，供圖表直接使用。
+
+    WTI 與 Brent 是分開呼叫 yfinance 抓的（兩個獨立網路請求），兩個交易所的休市日曆也不完全
+    相同，兩條歷史資料的長度或日期範圍可能不一致。若圖表直接各自把兩條歷史轉成陣列、共用同一組
+    以「WTI 陣列位置」為準的 X 軸標籤，只要中間有一天只有其中一個標的缺資料，Brent 的資料點就會
+    相對 WTI 系統性地錯位一格，且錯位是視覺上看不出來的（不會出現缺口，只是後面全部對錯位置）。
+    改成先算出兩者日期的聯集、依日期排序、缺資料的日期用 None 補（Chart.js 對 null 值的處理是
+    "這個點不畫、其餘正常"，不會造成錯位），從根本解決對齊問題。
+    """
+    if not oil_data:
+        oil_data = {"wti": {"symbol": None, "name": "WTI 原油", "history": []},
+                    "brent": {"symbol": None, "name": "Brent 原油", "history": []}}
+    wti_history = oil_data.get("wti", {}).get("history") or []
+    brent_history = oil_data.get("brent", {}).get("history") or []
+    wti_by_date = {row["date"]: row["value"] for row in wti_history}
+    brent_by_date = {row["date"]: row["value"] for row in brent_history}
+    dates = sorted(set(wti_by_date) | set(brent_by_date))
+    return {
+        **oil_data,
+        "dates": dates,
+        "wti_values": [wti_by_date.get(d) for d in dates],
+        "brent_values": [brent_by_date.get(d) for d in dates],
+    }
 
 
 def _sanitize_warning_indicators(warning_indicators):
