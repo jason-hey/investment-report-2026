@@ -194,12 +194,16 @@ def test_render_report_renders_institutional_table_rows():
 
 
 def test_build_template_context_and_render_produces_valid_html():
-    from scripts.report_render import build_template_context, render_report
+    from scripts.report_render import build_template_context, render_report, build_signal_scoring_context
 
     quotes = {"TWII": {"symbol": "^TWII", "name": "加權指數", "price": 46744.0, "change": 274.0, "change_pct": 0.59},
               "VIX": {"symbol": "^VIX", "name": "VIX", "price": 16.15, "change": 0.23, "change_pct": 1.45},
               "US10Y": {"symbol": "^TNX", "name": "10Y美債殖利率", "price": 4.48, "change": 0.02, "change_pct": 0.45}}
     narrative = _fake_narrative_json()
+    scored_list = [{"code": "2330", "name": "台積電", "score": 2, "signals_hit": ["adr"], "details": ["原始訊號細節"]}]
+    ai_reasons = [{"code": "2330", "reason": "測試理由"}]
+    win_rate_review = {"checked_date": "2026-07-02", "total_picks": 1, "up_count": 1,
+                        "win_rate_pct": 100.0, "picks_detail": []}
     context = build_template_context(
         date_label="2026.07.03", weekday_cn="週五", tw_holiday_note="",
         quotes=quotes,
@@ -213,12 +217,8 @@ def test_build_template_context_and_render_produces_valid_html():
         sector_rotation_data=[{"symbol": "XLK", "name": "科技", "change_pct_1d": 1.2, "change_pct_1w": 3.0}],
         oil_data={"wti": {"symbol": "CL=F", "name": "WTI 原油", "history": [{"date": "2026-07-01", "value": 68.5}]},
                   "brent": {"symbol": "BZ=F", "name": "Brent 原油", "history": [{"date": "2026-07-01", "value": 72.0}]}},
+        signal_scoring_context=build_signal_scoring_context(scored_list, ai_reasons, win_rate_review),
     )
-    context["signal_scoring"] = {
-        "picks": [{"code": "2330", "name": "台積電", "score": 2, "signals_hit": ["adr"], "reason": "測試理由"}],
-        "win_rate_review": {"checked_date": "2026-07-02", "total_picks": 1, "up_count": 1,
-                             "win_rate_pct": 100.0, "picks_detail": []},
-    }
     html = render_report(context)
 
     from scripts.generate_report import validate_html
@@ -259,12 +259,14 @@ def test_build_template_context_and_render_produces_valid_html():
 
 
 def test_render_report_signal_scoring_no_history_shows_fallback_note():
-    from scripts.report_render import build_template_context, render_report
+    from scripts.report_render import build_template_context, render_report, build_signal_scoring_context
 
     quotes = {"TWII": {"symbol": "^TWII", "name": "加權指數", "price": 46744.0, "change": 274.0, "change_pct": 0.59},
               "VIX": {"symbol": "^VIX", "name": "VIX", "price": 16.15, "change": 0.23, "change_pct": 1.45},
               "US10Y": {"symbol": "^TNX", "name": "10Y美債殖利率", "price": 4.48, "change": 0.02, "change_pct": 0.45}}
     narrative = _fake_narrative_json()
+    win_rate_review = {"checked_date": "", "total_picks": 0, "up_count": 0,
+                        "win_rate_pct": 0.0, "picks_detail": []}
     context = build_template_context(
         date_label="2026.07.03", weekday_cn="週五", tw_holiday_note="",
         quotes=quotes,
@@ -278,12 +280,8 @@ def test_render_report_signal_scoring_no_history_shows_fallback_note():
         sector_rotation_data=[{"symbol": "XLK", "name": "科技", "change_pct_1d": 1.2, "change_pct_1w": 3.0}],
         oil_data={"wti": {"symbol": "CL=F", "name": "WTI 原油", "history": [{"date": "2026-07-01", "value": 68.5}]},
                   "brent": {"symbol": "BZ=F", "name": "Brent 原油", "history": [{"date": "2026-07-01", "value": 72.0}]}},
+        signal_scoring_context=build_signal_scoring_context([], [], win_rate_review),
     )
-    context["signal_scoring"] = {
-        "picks": [],
-        "win_rate_review": {"checked_date": "", "total_picks": 0, "up_count": 0,
-                             "win_rate_pct": 0.0, "picks_detail": []},
-    }
     html = render_report(context)
 
     from scripts.generate_report import validate_html
@@ -291,6 +289,26 @@ def test_render_report_signal_scoring_no_history_shows_fallback_note():
     assert "尚無歷史入選紀錄" in html
     assert "XLK" in html
     assert "68.5" in html
+
+
+def test_build_template_context_signal_scoring_context_defaults_to_empty_shape():
+    """Task 13（把 compute_signal_scores() 接進 generate_report.py 並傳入實際的
+    signal_scoring_context）尚未完成前，generate_report.py 現有那個尚未更新的呼叫
+    不會傳 signal_scoring_context 參數，必須拿到形狀一致的空殼、而不是 None 或
+    TypeError，模板才能安全讀取 signal_scoring.picks / signal_scoring.win_rate_review。"""
+    from scripts.report_render import build_template_context
+
+    narrative = _fake_narrative_json()
+    narrative.pop("daily_brief")
+
+    context = build_template_context(
+        date_label="2026.07.03", weekday_cn="週五", tw_holiday_note="",
+        quotes={}, fear_data={}, pe_data={"tw": [], "us": []}, institutional_data=None,
+        earnings_list=[], narrative_json=narrative,
+    )
+
+    assert context["signal_scoring"]["picks"] == []
+    assert context["signal_scoring"]["win_rate_review"]["total_picks"] == 0
 
 
 def test_build_vix_history_extracts_us_history():

@@ -248,14 +248,35 @@ def _sanitize_hero_events(hero_events):
 def build_template_context(*, date_label, weekday_cn, tw_holiday_note,
                             quotes, fear_data, pe_data, institutional_data,
                             earnings_list, narrative_json,
-                            korea_data=None, heatmap_data=(), sector_rotation_data=(), oil_data=None):
+                            korea_data=None, heatmap_data=(), sector_rotation_data=(), oil_data=None,
+                            signal_scoring_context=None):
     """把所有預抓資料 + AI 敘述 JSON 組成 render_report() 需要的完整 context dict。
 
     korea_data/heatmap_data/sector_rotation_data/oil_data 4 個新參數給預設值
     （而非必填），因為 scripts/generate_report.py 尚未在 Task 8 把對應的抓取函式接進
     呼叫端——維持預設值可讓既有呼叫端（含 tests/conftest.py 匯入 generate_report.py
     時真的會執行到的那個呼叫）在新增資料源正式接上前，仍照舊正常運作。
+
+    signal_scoring_context 同理給預設值 None（而非 Task 12 計畫文件裡寫的必填參數）：
+    Task 13（把 compute_signal_scores() 真正接進 generate_report.py、並傳入實際的
+    signal_scoring_context）還沒做，是下一個獨立任務。若這裡把參數設成必填，
+    generate_report.py 現有那個尚未更新的呼叫（一被 import 就會執行，包括
+    tests/conftest.py 的 autouse fixture）會立刻丟 TypeError，讓整個測試套件全部
+    掛掉。None 會正規化成 build_signal_scoring_context() 在完全沒有資料時會產生的
+    同形狀空殼（picks: [] / win_rate_review 全部欄位歸零），讓模板讀取
+    signal_scoring.picks、signal_scoring.win_rate_review.total_picks 時永遠拿到
+    一致的形狀，而不是 None。
     """
+    signal_scoring = signal_scoring_context if signal_scoring_context is not None else {
+        "picks": [],
+        "win_rate_review": {
+            "checked_date": None,
+            "total_picks": 0,
+            "up_count": 0,
+            "win_rate_pct": None,
+            "picks_detail": [],
+        },
+    }
     return {
         "date_label": date_label,
         "weekday_cn": weekday_cn,
@@ -284,6 +305,7 @@ def build_template_context(*, date_label, weekday_cn, tw_holiday_note,
         "risk_matrix_rows": narrative_json["risk_matrix_rows"],
         "market_deep_dive_html": narrative_json["market_deep_dive_html"],
         "lly_foundayo": narrative_json["lly_foundayo"],
+        "signal_scoring": signal_scoring,
     }
 
 
