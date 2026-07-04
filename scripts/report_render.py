@@ -217,10 +217,16 @@ def build_signal_scoring_context(scored_list, ai_reasons, win_rate_review):
     ——validate_narrative_json() 只檢查頂層欄位是否存在，不檢查陣列內每個項目的
     形狀。比照本檔案既有的 _sanitize_* 系列慣例（處理 AI 幻覺/缺欄位輸出），
     用 .get() 而非直接索引，缺 "code" 的項目直接跳過，ai_reasons 本身是 None
-    時正規化成空清單，避免一筆格式錯誤的 AI 輸出讓整份報告產生失敗。
+    時正規化成空清單，避免一筆格式錯誤的 AI 輸出讓整份報告產生失敗。也額外防
+    AI 把某一筆寫成非 dict（例如直接輸出一個字串而不是 {"code":..., "reason":...}）
+    ——這種項目對 .get() 會拋 AttributeError，同樣直接跳過而不是整批失敗。
     """
     ai_reasons = ai_reasons or []
-    reason_by_code = {item["code"]: item.get("reason") for item in ai_reasons if item.get("code")}
+    reason_by_code = {
+        item["code"]: item.get("reason")
+        for item in ai_reasons
+        if isinstance(item, dict) and item.get("code")
+    }
     picks = []
     for entry in scored_list:
         reason = reason_by_code.get(entry["code"]) or "、".join(entry["details"])

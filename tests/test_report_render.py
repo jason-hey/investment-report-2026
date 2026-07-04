@@ -557,6 +557,24 @@ def test_build_signal_scoring_context_skips_malformed_ai_reason_entry():
     assert context["picks"][0]["reason"] == "ADR 溢價 +1.5%"
 
 
+def test_build_signal_scoring_context_skips_non_dict_ai_reason_entry():
+    """
+    迴歸測試：Task 13 把這個函式接上真實 AI 生成的 JSON 之後，AI 有可能把
+    stock_signal_reasons 裡的某一筆直接輸出成字串（不是 {"code":..., "reason":...}
+    這種 dict），對字串呼叫 .get() 會拋 AttributeError。這裡驗證非 dict 的項目
+    直接被跳過，不會讓整個函式失敗、拖垮整個每日報告產生流程。
+    """
+    from scripts.report_render import build_signal_scoring_context
+
+    scored_list = [{"code": "2330", "name": "台積電", "score": 1,
+                    "signals_hit": ["adr"], "details": ["ADR 溢價 +1.5%"]}]
+    ai_reasons = ["這不是一個 dict，是 AI 幻覺輸出的字串"]
+    context = build_signal_scoring_context(scored_list, ai_reasons, win_rate_review={
+        "checked_date": "2026-07-02", "total_picks": 0, "up_count": 0, "win_rate_pct": None, "picks_detail": []
+    })
+    assert context["picks"][0]["reason"] == "ADR 溢價 +1.5%"
+
+
 def test_build_signal_scoring_context_treats_none_ai_reasons_as_empty():
     """迴歸測試：AI 若把 stock_signal_reasons 輸出成 null 而非 []，不應該讓函式 TypeError。"""
     from scripts.report_render import build_signal_scoring_context
