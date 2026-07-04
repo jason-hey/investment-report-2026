@@ -474,3 +474,41 @@ def test_build_signal_scoring_context_falls_back_to_details_when_no_ai_reason():
     })
     # AI 沒有給這檔股票寫原因時，退回顯示 Python 算好的 details 合併字串，不要顯示空白
     assert context["picks"][0]["reason"] == "ADR 溢價 +1.5%"
+
+
+def test_build_signal_scoring_context_skips_malformed_ai_reason_entry():
+    """
+    迴歸測試：ai_reasons 是 AI 生成的 JSON（不可信來源），若某筆缺 "code"
+    （AI 幻覺/漏欄位），不應該讓整個函式 KeyError，只是那筆被忽略，其餘
+    股票仍正常退回 details 合併字串。
+    """
+    from scripts.report_render import build_signal_scoring_context
+
+    scored_list = [{"code": "2330", "name": "台積電", "score": 1,
+                    "signals_hit": ["adr"], "details": ["ADR 溢價 +1.5%"]}]
+    ai_reasons = [{"reason": "缺 code 的壞資料"}]  # 沒有 "code"
+    context = build_signal_scoring_context(scored_list, ai_reasons, win_rate_review={
+        "checked_date": "2026-07-02", "total_picks": 0, "up_count": 0, "win_rate_pct": None, "picks_detail": []
+    })
+    assert context["picks"][0]["reason"] == "ADR 溢價 +1.5%"
+
+
+def test_build_signal_scoring_context_treats_none_ai_reasons_as_empty():
+    """迴歸測試：AI 若把 stock_signal_reasons 輸出成 null 而非 []，不應該讓函式 TypeError。"""
+    from scripts.report_render import build_signal_scoring_context
+
+    scored_list = [{"code": "2330", "name": "台積電", "score": 1,
+                    "signals_hit": ["adr"], "details": ["ADR 溢價 +1.5%"]}]
+    context = build_signal_scoring_context(scored_list, ai_reasons=None, win_rate_review={
+        "checked_date": "2026-07-02", "total_picks": 0, "up_count": 0, "win_rate_pct": None, "picks_detail": []
+    })
+    assert context["picks"][0]["reason"] == "ADR 溢價 +1.5%"
+
+
+def test_build_signal_scoring_context_handles_empty_scored_list():
+    from scripts.report_render import build_signal_scoring_context
+
+    context = build_signal_scoring_context([], ai_reasons=[], win_rate_review={
+        "checked_date": "2026-07-02", "total_picks": 0, "up_count": 0, "win_rate_pct": None, "picks_detail": []
+    })
+    assert context["picks"] == []

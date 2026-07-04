@@ -211,8 +211,16 @@ def build_signal_scoring_context(scored_list, ai_reasons, win_rate_review):
     Python 在 details 清單中生成的訊號說明，用「、」連接多個訊號
     （避免顯示空白原因，因為 compute_signal_scores() 保證 score >= 1
     意味著至少有一個訊號命中、details 不會是空清單）。
+
+    ai_reasons 來自 AI 生成的 JSON（stock_signal_reasons 欄位），跟本檔案其他
+    context builder 的輸入（Python 算好的 fetcher 資料）不同，屬於不可信來源
+    ——validate_narrative_json() 只檢查頂層欄位是否存在，不檢查陣列內每個項目的
+    形狀。比照本檔案既有的 _sanitize_* 系列慣例（處理 AI 幻覺/缺欄位輸出），
+    用 .get() 而非直接索引，缺 "code" 的項目直接跳過，ai_reasons 本身是 None
+    時正規化成空清單，避免一筆格式錯誤的 AI 輸出讓整份報告產生失敗。
     """
-    reason_by_code = {item["code"]: item["reason"] for item in ai_reasons}
+    ai_reasons = ai_reasons or []
+    reason_by_code = {item["code"]: item.get("reason") for item in ai_reasons if item.get("code")}
     picks = []
     for entry in scored_list:
         reason = reason_by_code.get(entry["code"]) or "、".join(entry["details"])
