@@ -281,3 +281,22 @@ def test_fetch_monthly_revenue_filters_to_watchlist_codes(monkeypatch):
     assert "2330" in result
     assert "9999" not in result
     assert result["2330"]["yoy_change_pct"] == 35.5
+
+
+def test_fetch_monthly_revenue_handles_null_revenue_field(monkeypatch):
+    import scripts.data_fetchers as df
+    import requests
+
+    class FakeResponse:
+        def json(self):
+            return [
+                {"公司代號": "2330", "公司名稱": "台積電", "營業收入-當月營收": None,
+                 "營業收入-去年同月增減(%)": "35.5"},
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda *a, **k: FakeResponse())
+    result = df.fetch_monthly_revenue(["2330"])
+
+    assert "2330" in result
+    assert result["2330"]["revenue"] == ""
+    assert result["2330"]["yoy_change_pct"] == 35.5

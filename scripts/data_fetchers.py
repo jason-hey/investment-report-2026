@@ -702,13 +702,13 @@ def fetch_monthly_revenue(codes):
     不嘗試回推歷史月營收序列去判斷「是否創新高」（免費資料源沒有提供夠長的歷史）。
     """
     result = {}
+    import requests
     try:
-        import requests
         resp = requests.get("https://openapi.twse.com.tw/v1/opendata/t187ap05_L", timeout=15)
         data = resp.json()
         code_set = set(codes)
         for row in data:
-            code = row.get("公司代號", "").strip()
+            code = (row.get("公司代號") or "").strip()
             if code not in code_set:
                 continue
             try:
@@ -716,8 +716,8 @@ def fetch_monthly_revenue(codes):
             except ValueError:
                 yoy = 0.0
             result[code] = {
-                "name": row.get("公司名稱", "").strip(),
-                "revenue": row.get("營業收入-當月營收", "").strip(),
+                "name": (row.get("公司名稱") or "").strip(),
+                "revenue": (row.get("營業收入-當月營收") or "").strip(),
                 "yoy_change_pct": round(yoy, 2),
             }
     except Exception as e:
