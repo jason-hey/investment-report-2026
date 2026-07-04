@@ -327,7 +327,17 @@ def build_template_context(*, date_label, weekday_cn, tw_holiday_note,
 
 
 def render_report(context):
-    """用 templates/report.html.j2 渲染最終 HTML 字串。"""
-    env = Environment(loader=FileSystemLoader("templates"), autoescape=False)
+    """
+    用 templates/report.html.j2 渲染最終 HTML 字串。
+
+    autoescape=True：narrative_json 裡大部分欄位（新聞摘要、主題卡片、風險矩陣等）是
+    AI 從 web_search 結果整理出來的敘述文字，屬於不可信輸入——若网頁本身被搜尋到的內容
+    帶有惡意標籤，AI 逐字引用時可能把它原樣寫進 JSON 欄位。開啟 autoescape 讓所有
+    `{{ }}` 輸出預設做 HTML escape，只有明確標記 `| safe` 的 3 個欄位
+    （ai_infra_html、lly_foundayo.extra_html、market_deep_dive_html——這 3 個是
+    JSON_OUTPUT_SPEC 裡唯一設計成「AI 直接輸出 HTML 片段」的欄位）才繞過escape，
+    符合原本的信任範圍設計，而不是讓全部欄位都不做escape。
+    """
+    env = Environment(loader=FileSystemLoader("templates"), autoescape=True)
     template = env.get_template("report.html.j2")
     return template.render(**context)

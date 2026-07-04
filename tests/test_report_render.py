@@ -259,6 +259,42 @@ def test_build_template_context_and_render_produces_valid_html():
     assert "命中率" in html
 
 
+def test_render_report_escapes_ai_narrative_text_but_not_the_three_trusted_html_fields():
+    """
+    安全性迴歸測試：narrative_json 的敘述性欄位（新聞、主題卡片等）是 AI 從
+    web_search 結果整理出來的文字，屬於不可信輸入——如果 AI 引用到的網頁內容
+    帶有惡意標籤，逐字寫進 JSON 欄位後，若模板沒有 escape 就會原樣輸出到這個
+    會被公開發布（GitHub Pages）的頁面。這裡驗證：
+    1. 敘述性欄位（例如新聞標題）裡的 <script> 標籤會被 escape 成無害文字，不會
+       原樣輸出成可執行的 <script> 標籤；
+    2. 唯三個設計成「AI 直接輸出 HTML 片段」的欄位（ai_infra_html /
+       lly_foundayo.extra_html / market_deep_dive_html，模板用 `| safe` 明確標記）
+       仍然正常輸出成真正的 HTML，不會被 escape 成看得到標籤符號的文字
+       （這三個欄位維持原本的信任範圍，不是這次修正要擋的對象）。
+    """
+    from scripts.report_render import build_template_context, render_report
+
+    narrative = _fake_narrative_json()
+    payload = '<script>alert(1)</script>'
+    narrative["news"]["ai_semi"][0]["title"] = payload
+    narrative["ai_infra_html"] = '<div class="trusted-html-marker">TRUSTED</div>'
+
+    context = build_template_context(
+        date_label="2026.07.03", weekday_cn="週五", tw_holiday_note="",
+        quotes={}, fear_data={}, pe_data={"tw": [], "us": []}, institutional_data=None,
+        earnings_list=[], narrative_json=narrative,
+    )
+    html = render_report(context)
+
+    # 不可信欄位：<script> 標籤本身不應該原樣出現在輸出裡
+    assert "<script>alert(1)</script>" not in html
+    # 但轉義後的文字內容應該還在（只是標籤符號被 escape，不是整段文字被吃掉）
+    assert "alert(1)" in html
+
+    # 可信欄位（| safe 標記）：仍然正常輸出成真正的 HTML，沒有被 escape
+    assert '<div class="trusted-html-marker">TRUSTED</div>' in html
+
+
 def test_render_report_signal_scoring_no_history_shows_fallback_note():
     from scripts.report_render import build_template_context, render_report, build_signal_scoring_context
 
