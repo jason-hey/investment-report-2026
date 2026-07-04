@@ -260,3 +260,24 @@ def test_fetch_margin_trading_computes_short_margin_ratio(monkeypatch):
     assert row["margin_balance"] == 10000
     assert row["short_balance"] == 500
     assert round(row["short_margin_ratio_pct"], 2) == 5.0
+
+
+def test_fetch_monthly_revenue_filters_to_watchlist_codes(monkeypatch):
+    import scripts.data_fetchers as df
+    import requests
+
+    class FakeResponse:
+        def json(self):
+            return [
+                {"公司代號": "2330", "公司名稱": "台積電", "營業收入-當月營收": "12000000",
+                 "營業收入-去年同月增減(%)": "35.5"},
+                {"公司代號": "9999", "公司名稱": "不在清單裡", "營業收入-當月營收": "1",
+                 "營業收入-去年同月增減(%)": "1.0"},
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda *a, **k: FakeResponse())
+    result = df.fetch_monthly_revenue(["2330"])
+
+    assert "2330" in result
+    assert "9999" not in result
+    assert result["2330"]["yoy_change_pct"] == 35.5

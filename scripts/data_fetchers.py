@@ -691,3 +691,36 @@ def fetch_oil_prices():
             "history": fetch_fear_index_history(symbol, name),
         }
     return result
+
+
+# ── 月營收：YoY 大增訊號（v1 只做 YoY，不做「創新高」——見前置事實說明） ──
+
+def fetch_monthly_revenue(codes):
+    """
+    抓取 TWSE OpenAPI 上市公司每月營業收入彙總表（全市場一次回傳，不支援用代號查詢），
+    篩選出 codes 清單內的個股。v1 只用資料源本身已算好的「去年同月增減(%)」，
+    不嘗試回推歷史月營收序列去判斷「是否創新高」（免費資料源沒有提供夠長的歷史）。
+    """
+    result = {}
+    try:
+        import requests
+        resp = requests.get("https://openapi.twse.com.tw/v1/opendata/t187ap05_L", timeout=15)
+        data = resp.json()
+        code_set = set(codes)
+        for row in data:
+            code = row.get("公司代號", "").strip()
+            if code not in code_set:
+                continue
+            try:
+                yoy = float(row.get("營業收入-去年同月增減(%)") or 0)
+            except ValueError:
+                yoy = 0.0
+            result[code] = {
+                "name": row.get("公司名稱", "").strip(),
+                "revenue": row.get("營業收入-當月營收", "").strip(),
+                "yoy_change_pct": round(yoy, 2),
+            }
+    except Exception as e:
+        print(f"  ⚠️ 月營收資料抓取失敗: {e}")
+    print(f"  月營收：清單內找到 {len(result)}/{len(codes)} 檔資料")
+    return result
