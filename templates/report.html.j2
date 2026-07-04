@@ -731,9 +731,13 @@ canvas { max-width:100%; }
       <span class="sec-title-icon">🎯</span> 今日觀察清單
       <span class="sec-subtitle">{{ date_label }} · 8 項訊號綜合評分</span>
     </div>
-    {% set signal_scoring = signal_scoring if signal_scoring is defined else {} %}
-    {% set signal_picks = signal_scoring.get('picks', []) if signal_scoring is mapping else [] %}
-    {% set win_rate_review = signal_scoring.get('win_rate_review', {}) if signal_scoring is mapping else {} %}
+    {# TODO(Task 12): build_template_context() 尚未把 signal_scoring_context 接進來，
+       這裡的 is defined/is mapping 防呆只是過渡期措施，Task 12 讓 signal_scoring 變成必填
+       參數後，這兩個 fallback 分支永遠不會走到，屆時可以把這幾行 set 拿掉、
+       直接用 signal_scoring.picks / signal_scoring.win_rate_review。 #}
+    {% set _signal_scoring = signal_scoring if (signal_scoring is defined and signal_scoring is mapping) else {} %}
+    {% set signal_picks = _signal_scoring.get('picks', []) %}
+    {% set win_rate_review = _signal_scoring.get('win_rate_review', {}) %}
     <div class="chart-card">
       <table class="risk-table">
         <thead><tr><th>股票</th><th>命中數</th><th>理由</th></tr></thead>

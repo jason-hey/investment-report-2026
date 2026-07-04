@@ -158,6 +158,9 @@ def test_render_report_produces_html_with_ticker_and_kpi_data():
     html = render_report(context)
     assert "46,744" in html
     assert "</html>" in html.lower()
+    # context 沒有帶 "signal_scoring" key（Task 12 尚未把它接進 build_template_context()），
+    # 模板應該退回顯示「尚無歷史入選紀錄」而不是丟 UndefinedError
+    assert "尚無歷史入選紀錄" in html
 
 
 def test_render_report_renders_institutional_table_rows():
