@@ -48,6 +48,20 @@ def test_score_us_supply_chain_signal_ignores_below_threshold():
     assert "3231" not in hits
 
 
+def test_score_us_supply_chain_signal_combines_details_when_multiple_drivers_hit_same_code():
+    """
+    迴歸測試：3231（緯創）同時被 NVDA 跟 AMD 映射到。若兩者當日漲幅都超過門檻，
+    detail 應該把兩個觸發來源都列出來，而不是後面處理的 AMD 蓋掉前面的 NVDA。
+    """
+    from scripts.signal_scoring import score_us_supply_chain_signal
+
+    heatmap_data = [{"symbol": "NVDA", "change_pct": 5.0}, {"symbol": "AMD", "change_pct": 3.0}]
+    hits = score_us_supply_chain_signal(heatmap_data)
+    assert hits["3231"]["hit"] is True
+    assert "NVDA" in hits["3231"]["detail"]
+    assert "AMD" in hits["3231"]["detail"]
+
+
 def test_score_dual_buy_signal_hits_when_both_foreign_and_trust_buy():
     from scripts.signal_scoring import score_dual_buy_signal
 
@@ -143,6 +157,22 @@ def test_score_rs_rank_signal_hits_top_relative_strength():
     hits = score_rs_rank_signal(price_history, twii_return_pct=0.0, top_n=1)
     assert hits.get("2330", {}).get("hit") is True
     assert "2317" not in hits
+
+
+def test_score_rs_rank_signal_skips_zero_close_without_crashing():
+    """
+    迴歸測試：closes[-21] 若為 0（例如停牌股或資料異常）會讓報酬率計算除以零。
+    這裡驗證該檔股票被跳過而不是讓整個函式拋出例外（會讓每日報告產生流程中斷）。
+    """
+    from scripts.signal_scoring import score_rs_rank_signal
+
+    price_history = {
+        "BAD": {"closes": [0.0] * 20 + [5.0]},
+        "2330": {"closes": [100.0] * 20 + [130.0]},
+    }
+    hits = score_rs_rank_signal(price_history, twii_return_pct=0.0, top_n=15)
+    assert "BAD" not in hits
+    assert hits.get("2330", {}).get("hit") is True
 
 
 def test_compute_signal_scores_ranks_by_total_hits_desc():

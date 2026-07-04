@@ -71,7 +71,11 @@ def score_adr_signal(adr_data, threshold_pct=0.5):
 
 
 def score_us_supply_chain_signal(heatmap_data, threshold_pct=2.0):
-    """美股族群當日漲幅 > threshold_pct% 時，點亮 US_TO_TW_SUPPLY_CHAIN 映射的台股。"""
+    """
+    美股族群當日漲幅 > threshold_pct% 時，點亮 US_TO_TW_SUPPLY_CHAIN 映射的台股。
+    同一檔台股若被多個美股觸發（例如 NVDA 跟 AMD 都對應到同一檔 AI 伺服器股），
+    detail 會把每個觸發來源都列出來，而不是後蓋前——否則會悄悄丟失前面觸發的理由。
+    """
     hits = {}
     heatmap_by_symbol = {item["symbol"]: item["change_pct"] for item in heatmap_data}
     for us_symbol, tw_codes in US_TO_TW_SUPPLY_CHAIN.items():
@@ -79,7 +83,11 @@ def score_us_supply_chain_signal(heatmap_data, threshold_pct=2.0):
         if change_pct is None or change_pct <= threshold_pct:
             continue
         for code in tw_codes:
-            hits[code] = {"hit": True, "detail": f"{us_symbol} {change_pct:+.2f}% 帶動"}
+            driver = f"{us_symbol} {change_pct:+.2f}% 帶動"
+            if code in hits:
+                hits[code]["detail"] += f"、{driver}"
+            else:
+                hits[code] = {"hit": True, "detail": driver}
     return hits
 
 
@@ -154,7 +162,7 @@ def score_rs_rank_signal(price_history, twii_return_pct, top_n=15):
     rs_scores = []
     for code, row in price_history.items():
         closes = row["closes"]
-        if len(closes) < 21:
+        if len(closes) < 21 or closes[-21] == 0:
             continue
         stock_return_pct = (closes[-1] / closes[-21] - 1) * 100
         rs = stock_return_pct - twii_return_pct
