@@ -238,3 +238,25 @@ def test_fetch_adr_premiums_computes_premium_pct(monkeypatch):
     tsm = result["TSM"]
     assert tsm["tw_code"] == "2330"
     assert round(tsm["premium_pct"], 2) == 28.0
+
+
+def test_fetch_margin_trading_computes_short_margin_ratio(monkeypatch):
+    import scripts.data_fetchers as df
+    import requests
+
+    class FakeResponse:
+        def json(self):
+            return [
+                {"股票代號": "2330", "股票名稱": "台積電", "融資今日餘額": "10000", "融券今日餘額": "500"},
+                {"股票代號": "9999", "股票名稱": "不在清單裡", "融資今日餘額": "1", "融券今日餘額": "1"},
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda *a, **k: FakeResponse())
+    result = df.fetch_margin_trading(["2330"])
+
+    assert "2330" in result
+    assert "9999" not in result  # 只回傳有在傳入清單裡的代號
+    row = result["2330"]
+    assert row["margin_balance"] == 10000
+    assert row["short_balance"] == 500
+    assert round(row["short_margin_ratio_pct"], 2) == 5.0

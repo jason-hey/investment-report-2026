@@ -332,6 +332,44 @@ def fetch_institutional_3day_ranking(base_date):
         return None
 
 
+# ── 融資融券：軋空候選（券資比偏高）訊號 ──────────────────────────────
+
+def fetch_margin_trading(codes):
+    """
+    抓取 TWSE OpenAPI 集中市場融資融券餘額（全市場一次回傳，不支援用代號查詢），
+    篩選出 codes 清單內的個股，計算券資比（融券今日餘額 / 融資今日餘額 * 100）。
+    codes: 要篩選的股票代號 list（不含 .TW 後綴，例如 ["2330", "2317"]）。
+    """
+    import requests
+
+    def to_int(s):
+        s = (s or "").strip()
+        return int(s.replace(",", "")) if s not in ("", "--") else 0
+
+    result = {}
+    try:
+        resp = requests.get("https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN", timeout=15)
+        data = resp.json()
+        code_set = set(codes)
+        for row in data:
+            code = row.get("股票代號", "").strip()
+            if code not in code_set:
+                continue
+            margin_balance = to_int(row.get("融資今日餘額"))
+            short_balance = to_int(row.get("融券今日餘額"))
+            short_margin_ratio_pct = (short_balance / margin_balance * 100) if margin_balance else 0.0
+            result[code] = {
+                "name": row.get("股票名稱", "").strip(),
+                "margin_balance": margin_balance,
+                "short_balance": short_balance,
+                "short_margin_ratio_pct": round(short_margin_ratio_pct, 2),
+            }
+    except Exception as e:
+        print(f"  ⚠️ 融資融券資料抓取失敗: {e}")
+    print(f"  融資融券：清單內找到 {len(result)}/{len(codes)} 檔資料")
+    return result
+
+
 # ── 三地市場分析 Prompt：讀取獨立 prompt 檔並注入主 prompt ──────────────────
 
 def load_market_analysis_prompt(date_str, weekday_cn):
