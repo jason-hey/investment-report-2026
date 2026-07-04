@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作日誌：每日報告架構重寫 + 選股訊號評分系統 — 2026-07-04</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg0: #04040d; --bg1: #08081a; --bg2: #0e0e22; --bg3: #13132c;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.16);
+    --t1: #f0f2fc; --t2: #c8d0ec;
+    --green: #3ecf8e; --green2: rgba(62,207,142,.15);
+    --amber: #f5a623; --amber2: rgba(245,166,35,.14);
+    --blue: #5b9cf6; --blue2: rgba(91,156,246,.15);
+    --teal: #2dd4bf; --teal2: rgba(45,212,191,.15);
+    --red: #f26666; --red2: rgba(242,102,102,.15);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg0); color: var(--t1); font-family: var(--sans); font-size: 15px; line-height: 1.7; }
+
+  header { padding: 40px 48px 28px; border-bottom: 1px solid var(--border2); background: var(--bg1); }
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: 9px; letter-spacing: .12em;
+    padding: 3px 10px; border-radius: 2px; margin-bottom: 14px;
+    border: 1px solid var(--blue); color: var(--blue); background: var(--blue2);
+  }
+  h1 { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { color: var(--t2); font-size: 14px; }
+  .subtitle code { font-family: var(--mono); font-size: 13px; color: var(--teal); }
+
+  main { max-width: 960px; margin: 0 auto; padding: 48px 48px 80px; }
+
+  .summary-card {
+    background: var(--blue2); border: 1px solid var(--blue);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .summary-title { font-weight: 600; font-size: 16px; color: var(--blue); margin-bottom: 6px; }
+  .summary-desc { color: var(--t2); font-size: 14px; line-height: 1.7; }
+
+  .next-card {
+    background: var(--green2); border: 1px solid var(--green);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+  .next-icon { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+  .next-title { font-weight: 600; font-size: 16px; color: var(--green); margin-bottom: 4px; }
+  .next-desc { color: var(--t2); font-size: 14px; line-height: 1.7; }
+
+  .warn-card {
+    background: var(--amber2); border: 1px solid var(--amber);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .warn-title { font-weight: 600; font-size: 16px; color: var(--amber); margin-bottom: 10px; }
+
+  h2 {
+    font-family: var(--mono); font-size: 13px; letter-spacing: .1em;
+    color: var(--amber); text-transform: uppercase;
+    margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border2);
+  }
+  h2.blue  { color: var(--blue); }
+  h2.green { color: var(--green); }
+  h2.red   { color: var(--red); }
+  section { margin-bottom: 48px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  th { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--t2); text-transform: uppercase; }
+  td.status-done { color: var(--green); font-weight: 600; }
+  td.status-progress { color: var(--amber); font-weight: 600; }
+  td.status-pending { color: var(--t2); }
+  tr:last-child td { border-bottom: none; }
+
+  .issues { display: flex; flex-direction: column; gap: 14px; }
+  .issue {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 18px 22px;
+  }
+  .issue-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .issue-num {
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    border-radius: 3px; width: 28px; height: 28px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--red2); color: var(--red); border: 1px solid var(--red);
+  }
+  .issue-title { font-weight: 600; font-size: 14.5px; }
+  .issue-body { color: var(--t2); font-size: 14px; padding-left: 40px; }
+  .issue-body code { font-family: var(--mono); font-size: 12.5px; color: var(--teal); background: var(--bg3); padding: 1px 5px; border-radius: 3px; }
+
+  .file-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .file-list li { font-family: var(--mono); font-size: 13px; padding: 6px 10px; background: var(--bg2); border-radius: 4px; border: 1px solid var(--border); }
+  .file-list li .desc { font-family: var(--sans); color: var(--t2); font-size: 13px; }
+
+  ol.steps { padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
+  ol.steps li { color: var(--t2); font-size: 14px; }
+  ol.steps li strong { color: var(--t1); }
+
+  pre {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 14px 18px; font-family: var(--mono); font-size: 12.5px; color: var(--teal);
+    overflow-x: auto; margin: 10px 0;
+  }
+  code { font-family: var(--mono); }
+  a { color: var(--blue); }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg0: #f5f6fb; --bg1: #ffffff; --bg2: #ffffff; --bg3: #eef0f8;
+      --border: rgba(20,20,40,0.10); --border2: rgba(20,20,40,0.18);
+      --t1: #14142b; --t2: #4a4d6a;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg0: #f5f6fb; --bg1: #ffffff; --bg2: #ffffff; --bg3: #eef0f8;
+    --border: rgba(20,20,40,0.10); --border2: rgba(20,20,40,0.18);
+    --t1: #14142b; --t2: #4a4d6a;
+  }
+  :root[data-theme="dark"] {
+    --bg0: #04040d; --bg1: #08081a; --bg2: #0e0e22; --bg3: #13132c;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.16);
+    --t1: #f0f2fc; --t2: #c8d0ec;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">工作日誌 · 2026-07-04</span>
+  <h1>每日報告架構重寫 + 選股訊號評分系統</h1>
+  <div class="subtitle">
+    分支 <code>worktree-report-architecture-rewrite</code> ·
+    Worktree：<code>.claude/worktrees/report-architecture-rewrite</code> ·
+    main 分支未受影響
+  </div>
+</header>
+
+<main>
+
+  <div class="summary-card">
+    <div class="summary-title">整體目標</div>
+    <div class="summary-desc">
+      把每日報告產生流程從「AI 產生整份 100KB+ HTML」改成「Python 算好所有數字/圖表 → Jinja2 模板渲染 →
+      AI 只負責寫敘述文字（JSON）」。共分三份計畫，用 Subagent-Driven Development（每個 task：implementer
+      subagent → spec-compliance reviewer → code-quality reviewer 兩階段審查）執行。
+    </div>
+  </div>
+
+  <div class="next-card">
+    <div class="next-icon">▶</div>
+    <div>
+      <div class="next-title">下次開新對話後，第一件事</div>
+      <div class="next-desc">
+        進到 worktree，讀 <code>docs/superpowers/plans/2026-07-04-stock-signal-scoring.md</code> 的
+        <strong>Task 9</strong> 段落，dispatch implementer subagent 開始實作
+        <code>stock_signal_reasons</code> JSON 欄位，然後照例跑兩階段審查，繼續 Task 10 ~ 14。
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="blue">三份計畫總覽</h2>
+    <table>
+      <tr><th>Plan</th><th>內容</th><th>狀態</th></tr>
+      <tr><td>Plan 1</td><td>架構重寫（模板 + JSON 資料分離，10 tasks）</td><td class="status-done">✓ 完成並已合併</td></tr>
+      <tr><td>Plan 2</td><td>新市場資料區塊（韓股、美股熱力圖、板塊輪動、油價，9 tasks）</td><td class="status-done">✓ 完成並已合併</td></tr>
+      <tr><td>Plan 3</td><td>台股當日選股訊號評分系統（14 tasks）</td><td class="status-progress">進行中 — 8/14</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Plan 3 任務明細</h2>
+    <table>
+      <tr><th>#</th><th>內容</th><th>狀態</th></tr>
+      <tr><td>1</td><td>TW_STOCK_WATCHLIST（65 檔）+ US_TO_TW_SUPPLY_CHAIN 映射表</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>2</td><td>fetch_adr_premiums()（ADR 溢價：TSM/UMC/ASX）</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>3</td><td>fetch_margin_trading()（融資融券、軋空候選）</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>4</td><td>fetch_monthly_revenue()（月營收 YoY）</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>5</td><td>fetch_watchlist_institutional()（法人買賣超 + 成交值比重）</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>6</td><td>fetch_watchlist_price_history()（量價突破 + RS 用歷史資料）</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>7</td><td>8 項訊號計算函式 + compute_signal_scores() 綜合評分</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>8</td><td>勝率回顧持久化（data/stock_signals_history.json）</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>9</td><td>AI JSON schema 新增 stock_signal_reasons 欄位</td><td class="status-progress">◐ 下次從這裡接續</td></tr>
+      <tr><td>10</td><td>build_signal_scoring_context()（report_render.py）</td><td class="status-pending">未開始</td></tr>
+      <tr><td>11</td><td>模板新增「今日觀察清單」+「昨日選股回顧」區塊</td><td class="status-pending">未開始</td></tr>
+      <tr><td>12</td><td>build_template_context() 串接 signal_scoring key</td><td class="status-pending">未開始</td></tr>
+      <tr><td>13</td><td>generate_report.py 主流程串接 + conftest stub</td><td class="status-pending">未開始（見下方注意事項）</td></tr>
+      <tr><td>14</td><td>端到端人工驗證</td><td class="status-pending">未開始</td></tr>
+      <tr><td>—</td><td>三份 plan 全部完成後：final review + finishing-a-development-branch</td><td class="status-pending">未開始</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2 class="red">今天審查過程中抓到並修正的 9 個真實問題</h2>
+    <div class="issues">
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">1</div><div class="issue-title">Task 1：文件與實際不符 + 簡體字</div></div>
+        <div class="issue-body">清單文件寫「~100 檔」實際只有 65 檔；未使用的 import；「十铨」誤用簡體字（應為「十銓」）。</div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">2</div><div class="issue-title">Task 2：ASX ADR 比例錯誤（1:5 → 1:2）</div></div>
+        <div class="issue-body">
+          經 WebSearch 查證 SEC 20-F 申報文件與 Nasdaq 掛牌頁面，日月光投控 ADR 正確比例是 <code>1:2</code>（1:5 是 2003 年上市舊比例）。
+          不修正的話 ASX 的 ADR 溢價訊號會系統性錯誤約 2.5 倍。TSM、UMC 的 1:5 比例查證後仍正確。
+        </div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">3</div><div class="issue-title">Task 3：重複的 to_int() helper</div></div>
+        <div class="issue-body"><code>fetch_margin_trading()</code> 內重複定義了跟 <code>_fetch_twse_t86()</code> 一樣的 helper，已抽成共用的 <code>_twse_to_int()</code>。</div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">4</div><div class="issue-title">Task 4：null 欄位讓整批資料靜默丟失</div></div>
+        <div class="issue-body">
+          <code>dict.get(key, "")</code> 只在 key 不存在時生效，TWSE 回傳 <code>null</code> 值會讓 <code>.strip()</code> 拋
+          <code>AttributeError</code>，被外層 except 吃掉後整批資料消失。已改用 <code>(row.get(key) or "")</code>。
+        </div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">5</div><div class="issue-title">Task 6：NaN 過濾造成兩個 list 位置錯位</div></div>
+        <div class="issue-body">
+          Close／Volume 各自過濾 NaN，若 NaN 出現在不同列，同一個 index 會對應到不同交易日。
+          已改成逐列一起過濾。這個檔案裡的 <code>_has_nan_close</code> 是真實踩過 yfinance NaN 問題後加的既有防線，佐證此風險並非理論性。
+        </div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">6</div><div class="issue-title">Task 7：除以零讓整個排程崩潰</div></div>
+        <div class="issue-body">
+          <code>score_rs_rank_signal()</code> 對 <code>closes[-21]</code> 沒防零值，遇到停牌股會 <code>ZeroDivisionError</code>，
+          在還沒產出任何報告前就讓每日排程整個崩潰——比現有「HTML 驗證失敗就不發布」更早、更嚴重。已加零值防呆。
+        </div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">7</div><div class="issue-title">Task 7：供應鏈訊號後蓋前，丟失觸發理由</div></div>
+        <div class="issue-body">
+          同一檔台股被兩個美股觸發時（例如 NVDA 跟 AMD 都對應緯創 3231），後蓋前會丟失第一個來源的說明文字，
+          影響 Task 9 AI 寫的「入選理由」正確性。已改成串接所有觸發來源。
+        </div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">8</div><div class="issue-title">Task 8：歷史檔案格式防呆不足</div></div>
+        <div class="issue-body">
+          <code>load_signal_history()</code> 只防 JSON 語法錯誤，沒防「格式對但形狀不對」；
+          <code>compute_win_rate_review()</code> 對手動可編輯檔案裡的 <code>pick["code"]</code> 直接存取，缺欄位會讓函式崩潰。
+          已加 <code>isinstance(dict)</code> 檢查與 <code>.get()</code> 防呆，並補 5 個先前沒覆蓋到的測試。
+        </div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">9</div><div class="issue-title">全部修正後：72 個測試全過</div></div>
+        <div class="issue-body">每個修正都個別 commit，訊息說明問題來源與修法；完整歷史見該分支 <code>git log --oneline</code>。</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="warn-card">
+    <div class="warn-title">⚠ 下次接續時務必記得（尚未修正，只記錄在對話裡）</div>
+    <div style="color:var(--t2); font-size:14px; line-height:1.8;">
+      <strong>1. 重複的 STOCK_DAY_ALL 網路呼叫：</strong>
+      Task 5 新增的 <code>_fetch_twse_close_prices_and_value()</code> 跟既有的 <code>_fetch_twse_close_prices()</code>
+      打同一個 TWSE endpoint。Task 13 把兩者都串進主流程後，同一次執行會打兩次一樣的 API——應該共用同一次抓取結果。
+      <br><br>
+      <strong>2. 勝率回顧的報價來源形狀不對：</strong>
+      <code>compute_win_rate_review()</code> 需要 <code>"change"</code>/<code>"change_pct"</code> 欄位（<code>fetch_quotes()</code> 的格式），
+      但 <code>fetch_quotes()</code> 只涵蓋 4 檔台股（2330/2317/2454/0050），跟 ~65 檔 watchlist 差很多。
+      若 Task 13 直接把 <code>fetch_quotes()</code> 傳給 <code>compute_win_rate_review()</code>，61 檔會被誤判為「沒漲」而非「無法判斷」，
+      勝率會嚴重低估。<strong>Task 13 必須另外準備一份涵蓋整個 watchlist 的當日報價</strong>。
+      <br><br>
+      Dispatch Task 13 implementer 時，務必把這兩點寫進 prompt 的 Context 段落，明確要求一併解決——plan 文件寫作當下還沒有 Task 5/8 的實作細節，沒考慮到這兩個問題。
+    </div>
+  </div>
+
+  <section>
+    <h2 class="green">中斷點：Task 9 目前狀態</h2>
+    <p style="color:var(--t2); margin-bottom:12px;">
+      <strong style="color:var(--t1);">尚未開始實作</strong>，對話中斷前只讀了現有 <code>scripts/generate_report.py</code> 的 JSON schema 結構：
+    </p>
+    <pre>REQUIRED_JSON_FIELDS = [   # scripts/generate_report.py:51-56
+    "daily_brief", "header_pills", "data_validation", "hero_events",
+    "warning_indicators", "night_session", "institutional_summary", "news",
+    "ai_infra_html", "theme_cards", "strategy_cards", "risk_matrix_rows",
+    "market_deep_dive_html", "lly_foundayo",
+]
+# JSON_OUTPUT_SPEC 從第 166 行開始，第 293 行組進 prompt。
+# validate_narrative_json() 在第 337 行。</pre>
+    <p style="color:var(--t2);">Task 9 要做的 4 件事（plan 文件裡有完整程式碼片段）：</p>
+    <ol class="steps">
+      <li>在 <code>REQUIRED_JSON_FIELDS</code> 加入 <code>"stock_signal_reasons"</code></li>
+      <li>在 <code>JSON_OUTPUT_SPEC</code> 加一段欄位說明（放在 <code>institutional_summary</code> 附近）</li>
+      <li>Prompt 新增「已預先抓取」區塊，把 <code>compute_signal_scores()</code> 的 <code>details</code> 傳給 AI，只要求改寫成一句話，不新增額外 API 呼叫</li>
+      <li>更新 <code>tests/test_generate_report.py</code> 既有測試，確認新欄位有被動態抓進去</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>相關檔案路徑</h2>
+    <p style="color:var(--t2); font-size:13px; margin-bottom:10px;">Spec / Plan 文件（都在 worktree 分支，main 分支沒有）：</p>
+    <ul class="file-list">
+      <li>docs/superpowers/specs/2026-07-03-report-architecture-and-features-design.md <span class="desc">— 整體設計 spec</span></li>
+      <li>docs/superpowers/plans/2026-07-04-stock-signal-scoring.md <span class="desc">— Plan 3 完整計畫（下次主要參考文件）</span></li>
+      <li>docs/superpowers/plans/2026-07-03-report-architecture-rewrite.md <span class="desc">— Plan 1（已完成）</span></li>
+      <li>docs/superpowers/plans/2026-07-04-new-market-data-sections.md <span class="desc">— Plan 2（已完成）</span></li>
+    </ul>
+    <p style="color:var(--t2); font-size:13px; margin:16px 0 10px;">本次 session 修改過的程式碼：</p>
+    <ul class="file-list">
+      <li>scripts/signal_scoring.py <span class="desc">— 選股清單、映射表、8 項訊號函式、勝率持久化</span></li>
+      <li>scripts/data_fetchers.py <span class="desc">— 5 個新增資料抓取函式 + 共用 _twse_to_int()</span></li>
+      <li>tests/test_signal_scoring.py <span class="desc">— 對應測試</span></li>
+      <li>tests/test_data_fetchers.py <span class="desc">— 對應測試</span></li>
+    </ul>
+    <p style="color:var(--t2); font-size:13px; margin:16px 0 10px;">下次會動到的檔案（Task 9 起）：</p>
+    <ul class="file-list">
+      <li>scripts/generate_report.py <span class="desc">— Task 9（JSON schema）、Task 13（主流程串接）</span></li>
+      <li>scripts/report_render.py <span class="desc">— Task 10、Task 12</span></li>
+      <li>templates/report.html.j2 <span class="desc">— Task 11</span></li>
+      <li>tests/conftest.py <span class="desc">— Task 13（fetcher stub 更新）</span></li>
+      <li>data/stock_signals_history.json <span class="desc">— Task 13 執行時才產生，目前不存在</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="blue">如何在新對話中接續</h2>
+    <ol class="steps">
+      <li><strong>確認 worktree：</strong> <code>cd "E:\Users\Ken\Desktop\Projects\investment-report-2026\.claude\worktrees\report-architecture-rewrite"</code>，<code>git status</code> 確認分支是 <code>worktree-report-architecture-rewrite</code> 且乾淨</li>
+      <li><strong>讀 Task 9 段落：</strong> <code>docs/superpowers/plans/2026-07-04-stock-signal-scoring.md</code></li>
+      <li><strong>用 subagent-driven-development skill</strong> 的流程（implementer → spec review → code quality review）繼續 Task 9 ~ 14</li>
+      <li><strong>務必記得</strong>上面「下次接續時務必記得」的兩點，在 Task 13 一併處理</li>
+      <li>Task 14 跑完、全部審查通過後，做一次涵蓋三份 plan 的 final review，再用 <code>finishing-a-development-branch</code> 決定合併方式</li>
+    </ol>
+  </section>
+
+</main>
+
+</body>
+</html>
