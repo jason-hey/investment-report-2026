@@ -324,3 +324,27 @@ def test_fetch_watchlist_institutional_combines_t86_and_trade_value(monkeypatch)
     assert row["trust_net"] == 1_000_000
     assert row["dual_buy"] is True  # 外資、投信同步買超
     assert row["buy_value_ratio_pct"] is not None
+
+
+def test_fetch_watchlist_price_history_returns_ohlcv_per_code(monkeypatch):
+    import scripts.data_fetchers as df
+    import pandas as pd
+
+    class FakeTicker:
+        def __init__(self, symbol):
+            self.symbol = symbol
+
+        def history(self, period, interval):
+            n = 30
+            return pd.DataFrame(
+                {"Close": [100.0 + i for i in range(n)], "Volume": [1000] * (n - 1) + [5000]},
+                index=pd.date_range("2026-06-01", periods=n, freq="D"),
+            )
+
+    monkeypatch.setattr(df.yf, "Ticker", FakeTicker)
+    result = df.fetch_watchlist_price_history([("2330.TW", "2330")])
+
+    assert "2330" in result
+    row = result["2330"]
+    assert len(row["closes"]) == 30
+    assert len(row["volumes"]) == 30

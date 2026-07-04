@@ -785,3 +785,29 @@ def fetch_monthly_revenue(codes):
         print(f"  ⚠️ 月營收資料抓取失敗: {e}")
     print(f"  月營收：清單內找到 {len(result)}/{len(codes)} 檔資料")
     return result
+
+
+# ── 觀察清單歷史價量：供量價突破、相對強度 RS 訊號共用 ──────────────────
+
+def fetch_watchlist_price_history(watchlist):
+    """
+    抓取 watchlist（[(yfinance代號, 顯示代號), ...]）每檔近 30 個交易日的收盤價與成交量。
+    30 天足夠算 20 日新高（需要 20 天）與 5 日均量，且不會讓單次執行時間過長。
+    """
+    result = {}
+    for symbol, code in watchlist:
+        try:
+            hist = yf.Ticker(symbol).history(period="2mo", interval="1d")
+            if hist.empty or len(hist) < 21:
+                print(f"  ⚠️ {code}({symbol}) 歷史價量資料不足，略過")
+                continue
+            closes = [float(c) for c in hist["Close"].tolist() if not math.isnan(c)]
+            volumes = [float(v) for v in hist["Volume"].tolist() if not math.isnan(v)]
+            if len(closes) < 21 or len(volumes) < 6:
+                print(f"  ⚠️ {code}({symbol}) 有效資料不足，略過")
+                continue
+            result[code] = {"closes": closes[-30:], "volumes": volumes[-30:]}
+        except Exception as e:
+            print(f"  ⚠️ {code}({symbol}) 歷史價量抓取失敗: {e}")
+    print(f"  觀察清單歷史價量：成功 {len(result)}/{len(watchlist)} 檔")
+    return result
