@@ -14,6 +14,25 @@ def test_us_to_tw_supply_chain_only_references_watchlist_codes():
             assert code in watchlist_codes, f"{us_symbol} 映射到不在清單裡的 {code}"
 
 
+def test_us_to_tw_supply_chain_keys_exist_in_us_heatmap_tickers():
+    """
+    迴歸測試：score_us_supply_chain_signal() 是拿 fetch_us_heatmap() 抓到的美股當日
+    漲跌 % 去對照 US_TO_TW_SUPPLY_CHAIN 的 key。若映射表新增了一個不在
+    data_fetchers.US_HEATMAP_TICKERS 清單裡的美股代號，該訊號永遠不會命中（heatmap
+    資料裡找不到對應 symbol），卻不會有任何錯誤或警告——這裡明確驗證兩份清單維持
+    一致，避免這種靜默失效未來悄悄發生。
+    """
+    from scripts.signal_scoring import US_TO_TW_SUPPLY_CHAIN
+    from scripts.data_fetchers import US_HEATMAP_TICKERS
+
+    heatmap_symbols = set(US_HEATMAP_TICKERS)
+    for us_symbol in US_TO_TW_SUPPLY_CHAIN:
+        assert us_symbol in heatmap_symbols, (
+            f"{us_symbol} 在 US_TO_TW_SUPPLY_CHAIN 裡，但不在 US_HEATMAP_TICKERS，"
+            "這個訊號永遠不會命中"
+        )
+
+
 def test_score_adr_signal_hits_when_premium_above_threshold():
     from scripts.signal_scoring import score_adr_signal
 
