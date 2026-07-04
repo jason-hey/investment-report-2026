@@ -233,3 +233,72 @@ def test_compute_win_rate_review_checks_yesterdays_picks_against_todays_price(mo
     assert review["total_picks"] == 1
     assert review["up_count"] == 1
     assert round(review["win_rate_pct"], 1) == 100.0
+
+
+def test_compute_win_rate_review_returns_zero_picks_when_date_not_in_history():
+    """第一次執行、或前一交易日剛好沒有入選紀錄時，不應該拋例外，應回傳 total_picks=0。"""
+    from scripts.signal_scoring import compute_win_rate_review
+
+    review = compute_win_rate_review({}, "2026-07-02", {})
+    assert review["checked_date"] == "2026-07-02"
+    assert review["total_picks"] == 0
+    assert review["up_count"] == 0
+    assert review["win_rate_pct"] is None
+    assert review["picks_detail"] == []
+
+
+def test_compute_win_rate_review_skips_pick_missing_code():
+    """
+    迴歸測試：歷史檔是手動可編輯的 JSON，若某筆入選紀錄缺少 "code"（格式錯誤／
+    合併衝突留下的壞資料），不應該讓整個回顧函式 KeyError 中斷，只跳過那一筆。
+    """
+    from scripts.signal_scoring import compute_win_rate_review
+
+    history = {"2026-07-02": {"picks": [{"name": "缺代號的股票", "score": 1}]}}
+    review = compute_win_rate_review(history, "2026-07-02", {})
+    assert review["total_picks"] == 1
+    assert review["up_count"] == 0
+    assert review["picks_detail"] == []
+
+
+def test_load_signal_history_treats_non_dict_json_as_empty(tmp_path):
+    """迴歸測試：檔案是合法 JSON 但不是物件（例如 list）時，也應視為空歷史，而不是原樣回傳。"""
+    from scripts.signal_scoring import load_signal_history
+    import json as json_module
+
+    path = str(tmp_path / "bad_shape.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json_module.dump(["not", "a", "dict"], f)
+
+    result = load_signal_history(path)
+    assert result == {}
+
+
+def test_load_signal_history_treats_corrupt_json_as_empty(tmp_path):
+    from scripts.signal_scoring import load_signal_history
+
+    path = str(tmp_path / "corrupt.json")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("{not valid json")
+
+    result = load_signal_history(path)
+    assert result == {}
+
+
+def test_record_todays_picks_prunes_history_beyond_max_days():
+    """
+    迴歸測試：record_todays_picks() 的核心職責是防止 data/stock_signals_history.json
+    無限成長。這裡驗證超過 max_history_days 時，最舊的紀錄會被砍掉，只留最新 N 筆。
+    """
+    from scripts.signal_scoring import record_todays_picks
+
+    history = {f"2026-06-{d:02d}": {"picks": []} for d in range(1, 31)}  # 30 筆舊紀錄
+    assert len(history) == 30
+
+    scored_list = [{"code": "2330", "name": "台積電", "score": 1}]
+    updated = record_todays_picks(history, "2026-07-01", scored_list, max_history_days=30)
+
+    assert len(updated) == 30
+    assert "2026-07-01" in updated  # 今天的紀錄有寫入
+    assert "2026-06-01" not in updated  # 最舊的一筆被砍掉
+    assert "2026-06-02" in updated  # 次舊的仍保留

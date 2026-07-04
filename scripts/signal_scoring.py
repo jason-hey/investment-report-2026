@@ -207,15 +207,24 @@ def compute_signal_scores(signals, watchlist):
 # ── 勝率回顧持久化 ──────────────────────────────────────────────
 
 def load_signal_history(path):
-    """讀取歷史入選清單；檔案不存在時回傳空 dict（第一次執行的正常狀態，不是錯誤）。"""
+    """
+    讀取歷史入選清單；檔案不存在、JSON 語法錯誤、或內容不是 dict（例如被手動改壞、
+    合併衝突留下錯誤格式）時，一律視為空歷史（第一次執行的正常狀態，不是錯誤），
+    而不是讓格式錯誤的檔案原封不動傳下去，導致後續 compute_win_rate_review()／
+    record_todays_picks() 在存取時才炸掉。
+    """
     if not os.path.exists(path):
         return {}
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
     except (json.JSONDecodeError, OSError) as e:
         print(f"  ⚠️ 讀取 {path} 失敗（{e}），視為空歷史")
         return {}
+    if not isinstance(data, dict):
+        print(f"  ⚠️ {path} 內容格式不是物件（{type(data).__name__}），視為空歷史")
+        return {}
+    return data
 
 
 def save_signal_history(path, history):
@@ -239,9 +248,11 @@ def compute_win_rate_review(history, prev_trading_date_str, quotes_by_code):
     picks_detail = []
     up_count = 0
     for pick in day_record["picks"]:
-        code = pick["code"]
+        code = pick.get("code")
+        if code is None:
+            continue  # 格式錯誤的紀錄（缺 code），略過而不是讓整個回顧失敗
         quote = quotes_by_code.get(code)
-        went_up = quote is not None and quote["change"] > 0
+        went_up = quote is not None and quote.get("change", 0) > 0
         if went_up:
             up_count += 1
         picks_detail.append({
