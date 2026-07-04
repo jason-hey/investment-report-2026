@@ -89,6 +89,12 @@ def _stub_and_import_generate_report():
         "fetch_us_heatmap": data_fetchers.fetch_us_heatmap,
         "fetch_sector_rotation": data_fetchers.fetch_sector_rotation,
         "fetch_oil_prices": data_fetchers.fetch_oil_prices,
+        "fetch_adr_premiums": data_fetchers.fetch_adr_premiums,
+        "fetch_margin_trading": data_fetchers.fetch_margin_trading,
+        "fetch_monthly_revenue": data_fetchers.fetch_monthly_revenue,
+        "fetch_watchlist_institutional": data_fetchers.fetch_watchlist_institutional,
+        "fetch_watchlist_price_history": data_fetchers.fetch_watchlist_price_history,
+        "_fetch_twse_close_prices_and_value": data_fetchers._fetch_twse_close_prices_and_value,
     }
     original_anthropic_cls = anthropic.Anthropic
     had_api_key = "ANTHROPIC_API_KEY" in os.environ
@@ -157,6 +163,18 @@ def _stub_and_import_generate_report():
             "wti": {"symbol": "CL=F", "name": "WTI 原油", "history": []},
             "brent": {"symbol": "BZ=F", "name": "Brent 原油", "history": []},
         }
+        # Task 13：台股選股訊號評分所需的 5 個新 fetcher，全部回傳空 dict——
+        # signal_scoring 的 8 個 score_*_signal() 函式對空輸入一律回傳空 hits，
+        # compute_signal_scores() 對空 signals 回傳空清單，不影響模組其餘部分執行。
+        data_fetchers.fetch_adr_premiums = lambda *_a, **_k: {}
+        data_fetchers.fetch_margin_trading = lambda *_a, **_k: {}
+        data_fetchers.fetch_monthly_revenue = lambda *_a, **_k: {}
+        data_fetchers.fetch_watchlist_institutional = lambda *_a, **_k: {}
+        data_fetchers.fetch_watchlist_price_history = lambda *_a, **_k: {}
+        # generate_report.py 現在會在法人排行預抓之前，直接呼叫這個函式一次並重用結果
+        # （Task 13 Fix 2，避免同一次執行打兩次 TWSE STOCK_DAY_ALL），必須一併替換掉，
+        # 否則 stubbed import 會在這裡發出真實的網路請求。
+        data_fetchers._fetch_twse_close_prices_and_value = lambda *_a, **_k: ({}, {})
         anthropic.Anthropic = _FakeAnthropicClient
 
         # render_report() 之後（Task 9）模組尾端會真的寫 index.html / Backup/{date}.html。

@@ -44,8 +44,30 @@ from scripts.data_fetchers import (
     fetch_us_heatmap,
     fetch_sector_rotation,
     fetch_oil_prices,
+    fetch_adr_premiums,
+    fetch_margin_trading,
+    fetch_monthly_revenue,
+    fetch_watchlist_institutional,
+    fetch_watchlist_price_history,
+    _fetch_twse_close_prices_and_value,
 )
-from scripts.report_render import build_template_context, render_report
+from scripts.signal_scoring import (
+    TW_STOCK_WATCHLIST,
+    compute_signal_scores,
+    score_adr_signal,
+    score_us_supply_chain_signal,
+    score_dual_buy_signal,
+    score_buy_value_ratio_signal,
+    score_short_squeeze_signal,
+    score_revenue_yoy_signal,
+    score_breakout_signal,
+    score_rs_rank_signal,
+    load_signal_history,
+    save_signal_history,
+    compute_win_rate_review,
+    record_todays_picks,
+)
+from scripts.report_render import build_template_context, render_report, build_signal_scoring_context
 
 # AI 敘述 JSON 的必要欄位（見 JSON_OUTPUT_SPEC）；Task 9 的 render_report() 依賴這些欄位齊全。
 REQUIRED_JSON_FIELDS = [
@@ -104,8 +126,11 @@ print("  正在用 yfinance 抓取恐懼指數（近 6 個月）...")
 fear_data = fetch_all_fear_index()
 fear_json = json.dumps(fear_data, ensure_ascii=False)
 
+print("  正在用 TWSE OpenAPI 抓取收盤價與成交值（法人排行 + 選股訊號共用，避免同一次執行打兩次 STOCK_DAY_ALL）...")
+twse_close_prices, twse_trade_values = _fetch_twse_close_prices_and_value()
+
 print("  正在用 TWSE OpenAPI 抓取法人連三日買賣超排行...")
-institutional_data = fetch_institutional_3day_ranking(today)
+institutional_data = fetch_institutional_3day_ranking(today, close_prices=twse_close_prices)
 institutional_json = json.dumps(institutional_data, ensure_ascii=False) if institutional_data else None
 
 print("  正在讀取三地市場深度分析 prompt...")
@@ -130,6 +155,63 @@ sector_rotation_data = fetch_sector_rotation()
 
 print("  正在用 yfinance 抓取油價走勢...")
 oil_data = fetch_oil_prices()
+
+print("  正在計算台股選股訊號（8 項訊號 + 綜合評分）...")
+watchlist_codes = [code for _, code, _ in TW_STOCK_WATCHLIST]
+adr_data = fetch_adr_premiums()
+margin_data = fetch_margin_trading(watchlist_codes)
+revenue_data = fetch_monthly_revenue(watchlist_codes)
+watchlist_institutional = fetch_watchlist_institutional(
+    watchlist_codes, today, close_prices_and_value=(twse_close_prices, twse_trade_values)
+)
+watchlist_price_history = fetch_watchlist_price_history(
+    [(symbol, code) for symbol, code, _ in TW_STOCK_WATCHLIST]
+)
+
+twii_history = fetch_watchlist_price_history([("^TWII", "TWII")])
+twii_return_pct = 0.0
+if "TWII" in twii_history and len(twii_history["TWII"]["closes"]) >= 21:
+    twii_closes = twii_history["TWII"]["closes"]
+    twii_return_pct = (twii_closes[-1] / twii_closes[-21] - 1) * 100
+
+signals = {
+    "adr": score_adr_signal(adr_data),
+    "us_supply_chain": score_us_supply_chain_signal(heatmap_data),
+    "dual_buy": score_dual_buy_signal(watchlist_institutional),
+    "buy_value_ratio": score_buy_value_ratio_signal(watchlist_institutional),
+    "short_squeeze": score_short_squeeze_signal(margin_data, watchlist_price_history),
+    "revenue_yoy": score_revenue_yoy_signal(revenue_data),
+    "breakout": score_breakout_signal(watchlist_price_history),
+    "rs_rank": score_rs_rank_signal(watchlist_price_history, twii_return_pct),
+}
+scored_list = compute_signal_scores(signals, TW_STOCK_WATCHLIST)
+
+signal_scores_json = json.dumps(
+    [{"code": s["code"], "score": s["score"], "details": s["details"]} for s in scored_list],
+    ensure_ascii=False,
+)
+
+SIGNAL_HISTORY_PATH = "data/stock_signals_history.json"
+signal_history = load_signal_history(SIGNAL_HISTORY_PATH)
+prev_trading_date = today - timedelta(days=1)
+while prev_trading_date.weekday() >= 5:
+    prev_trading_date -= timedelta(days=1)
+
+# 勝率回顧需要涵蓋整個觀察清單（~65 檔）的漲跌，不能只用 fetch_quotes() 那 4 檔窄清單
+# （否則 61+ 檔會被誤判成「未上漲」而非「無資料」，嚴重低估勝率）。改用剛抓好的
+# watchlist_price_history（每檔最近兩筆收盤價）自行算出全觀察清單的當日漲跌，不需額外網路呼叫。
+watchlist_quotes = {}
+for code, hist in watchlist_price_history.items():
+    closes = hist.get("closes", [])
+    if len(closes) >= 2 and closes[-2]:
+        change = closes[-1] - closes[-2]
+        watchlist_quotes[code] = {
+            "change": change,
+            "change_pct": round(change / closes[-2] * 100, 2),
+        }
+win_rate_review = compute_win_rate_review(
+    signal_history, prev_trading_date.strftime("%Y-%m-%d"), watchlist_quotes
+)
 
 if institutional_json:
     institutional_prefetch_block = f"""
@@ -265,6 +347,13 @@ PROMPT = f"""
 {quotes_json}
 
 欄位說明：每個標的為 {{"symbol", "name", "price", "change", "change_pct"}}；US10Y（10Y 美債殖利率）的 price 已換算成實際百分比。
+
+## 【已預先抓取】今日選股訊號命中清單（只需要把 details 改寫成一句通順的話，不要自己判斷數字）
+{signal_scores_json}
+
+欄位說明：code = 股票代號；score = 命中訊號數；details = 命中的各項訊號原始描述（陣列），
+請針對每一檔股票，把它的 details 陣列改寫成一句通順的中文摘要，輸出到 stock_signal_reasons。
+若這份清單是空陣列，stock_signal_reasons 也回傳空陣列即可。
 {institutional_prefetch_block}
 ## 必須完成的搜尋任務（依序執行，至少 8 次搜尋；指數/個股「數字」已由上方預先抓取，這裡搜尋的是背後原因、新聞與尚未涵蓋的項目）
 1. 今日/昨日美股收盤：S&P 500、Nasdaq、Dow 漲跌背後原因與主要個股表現（漲跌%數字以上方預先抓取的即時報價為準）
@@ -422,6 +511,9 @@ context = build_template_context(
     heatmap_data=heatmap_data,
     sector_rotation_data=sector_rotation_data,
     oil_data=oil_data,
+    signal_scoring_context=build_signal_scoring_context(
+        scored_list, narrative_json.get("stock_signal_reasons") or [], win_rate_review
+    ),
 )
 html_content = render_report(context)
 
@@ -438,6 +530,10 @@ with open("index.html", "w", encoding="utf-8") as f:
 backup_dir = "Backup"
 os.makedirs(backup_dir, exist_ok=True)
 shutil.copy("index.html", f"{backup_dir}/{date_str}.html")
+
+signal_history = record_todays_picks(signal_history, date_str, scored_list)
+save_signal_history(SIGNAL_HISTORY_PATH, signal_history)
+print(f"  ✅ 選股歷史已更新：{SIGNAL_HISTORY_PATH}")
 
 print(f"  ✅ 報告已寫入 index.html（{len(html_content):,} bytes）")
 print(f"  ✅ 已備份至 Backup/{date_str}.html")
