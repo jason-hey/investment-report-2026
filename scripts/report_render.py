@@ -245,6 +245,26 @@ def _sanitize_hero_events(hero_events):
     return [{**hero, "theme": _safe_css_token(hero.get("theme"), STATUS_VALUES, "amber")} for hero in hero_events]
 
 
+def _default_signal_scoring_context():
+    """
+    signal_scoring_context 尚未提供時（Task 13 尚未把 generate_report.py 接上）的預設
+    空殼。直接呼叫 build_signal_scoring_context() 用空輸入產生，而不是在這裡手刻第二份
+    「空 signal scoring 長什麼樣子」的定義——避免兩處日後對 build_signal_scoring_context()
+    的回傳形狀改動時不同步（比照 build_korea_context()/build_oil_context() 用函式產生
+    正規化預設值的慣例，而非直接寫死字典字面值）。
+
+    win_rate_review 的 checked_date 用 None，代表「完全還沒算過任何一天」；這跟
+    compute_win_rate_review()（scripts/signal_scoring.py）在「有算過、但那天入選
+    0 檔」情境下回傳 checked_date=實際日期字串是不同語意，兩者不要混用。
+    """
+    return build_signal_scoring_context(
+        scored_list=[],
+        ai_reasons=[],
+        win_rate_review={"checked_date": None, "total_picks": 0, "up_count": 0,
+                          "win_rate_pct": None, "picks_detail": []},
+    )
+
+
 def build_template_context(*, date_label, weekday_cn, tw_holiday_note,
                             quotes, fear_data, pe_data, institutional_data,
                             earnings_list, narrative_json,
@@ -262,21 +282,12 @@ def build_template_context(*, date_label, weekday_cn, tw_holiday_note,
     signal_scoring_context）還沒做，是下一個獨立任務。若這裡把參數設成必填，
     generate_report.py 現有那個尚未更新的呼叫（一被 import 就會執行，包括
     tests/conftest.py 的 autouse fixture）會立刻丟 TypeError，讓整個測試套件全部
-    掛掉。None 會正規化成 build_signal_scoring_context() 在完全沒有資料時會產生的
-    同形狀空殼（picks: [] / win_rate_review 全部欄位歸零），讓模板讀取
+    掛掉。None 會正規化成 _default_signal_scoring_context() 產生的同形狀空殼
+    （picks: [] / win_rate_review 全部欄位歸零），讓模板讀取
     signal_scoring.picks、signal_scoring.win_rate_review.total_picks 時永遠拿到
     一致的形狀，而不是 None。
     """
-    signal_scoring = signal_scoring_context if signal_scoring_context is not None else {
-        "picks": [],
-        "win_rate_review": {
-            "checked_date": None,
-            "total_picks": 0,
-            "up_count": 0,
-            "win_rate_pct": None,
-            "picks_detail": [],
-        },
-    }
+    signal_scoring = signal_scoring_context if signal_scoring_context is not None else _default_signal_scoring_context()
     return {
         "date_label": date_label,
         "weekday_cn": weekday_cn,

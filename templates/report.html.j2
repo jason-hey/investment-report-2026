@@ -731,10 +731,12 @@ canvas { max-width:100%; }
       <span class="sec-title-icon">🎯</span> 今日觀察清單
       <span class="sec-subtitle">{{ date_label }} · 8 項訊號綜合評分</span>
     </div>
-    {# TODO(Task 12): build_template_context() 尚未把 signal_scoring_context 接進來，
-       這裡的 is defined/is mapping 防呆只是過渡期措施，Task 12 讓 signal_scoring 變成必填
-       參數後，這兩個 fallback 分支永遠不會走到，屆時可以把這幾行 set 拿掉、
-       直接用 signal_scoring.picks / signal_scoring.win_rate_review。 #}
+    {# 過渡期防呆（Task 12 更新）：build_template_context() 已經把 signal_scoring_context
+       接進來，且給了 None → 空殼正規化的預設值，所以透過 build_template_context() 產生
+       的 context 現在一定會有形狀正確的 signal_scoring。這裡的 is defined/is mapping
+       防呆現在只用來保護「完全繞過 build_template_context()、手刻 context dict」的測試
+       案例（例如 test_render_report_produces_html_with_ticker_and_kpi_data），對正式的
+       generate_report.py 呼叫路徑而言已經是不會走到的分支，但測試仍會用到，暫不移除。 #}
     {% set _signal_scoring = signal_scoring if (signal_scoring is defined and signal_scoring is mapping) else {} %}
     {% set signal_picks = _signal_scoring.get('picks', []) %}
     {% set win_rate_review = _signal_scoring.get('win_rate_review', {}) %}
