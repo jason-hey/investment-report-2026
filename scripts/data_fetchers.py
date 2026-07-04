@@ -588,7 +588,9 @@ def fetch_sector_rotation():
 ADR_TICKERS = {
     "TSM": ("2330.TW", "2330", 5),   # (台股 yfinance 代號, 顯示代號, ADR:普通股比例)
     "UMC": ("2303.TW", "2303", 5),
-    "ASX": ("3711.TW", "3711", 5),
+    # ASX 原始 2003 上市比例為 1:5，現行比例已改為 1 ADS = 2 普通股
+    # （見 ASE Technology Holding 20-F 申報文件與 Nasdaq 掛牌資訊）
+    "ASX": ("3711.TW", "3711", 2),
 }
 
 
