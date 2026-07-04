@@ -6,6 +6,9 @@
 （見 docs/superpowers/specs/2026-07-03-report-architecture-and-features-design.md 的 C 節）。
 """
 
+import json
+import os
+
 # 精選 ~65 檔台股，涵蓋：台積電供應鏈、AI 伺服器、蘋果概念、記憶體、金融。
 # (yfinance 代號, 顯示代號, 顯示名稱)
 TW_STOCK_WATCHLIST = [
@@ -199,3 +202,75 @@ def compute_signal_scores(signals, watchlist):
     result = list(scored.values())
     result.sort(key=lambda x: x["score"], reverse=True)
     return result
+
+
+# ── 勝率回顧持久化 ──────────────────────────────────────────────
+
+def load_signal_history(path):
+    """讀取歷史入選清單；檔案不存在時回傳空 dict（第一次執行的正常狀態，不是錯誤）。"""
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"  ⚠️ 讀取 {path} 失敗（{e}），視為空歷史")
+        return {}
+
+
+def save_signal_history(path, history):
+    """寫入歷史入選清單。呼叫端負責控制歷史筆數上限（避免檔案無限成長）。"""
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, indent=2, sort_keys=True)
+
+
+def compute_win_rate_review(history, prev_trading_date_str, quotes_by_code):
+    """
+    比對 prev_trading_date_str 那天入選的股票，在「今天」（quotes_by_code 提供的最新報價）
+    是否上漲，算出命中率。quotes_by_code 的 key 是不含 .TW 後綴的股票代號（例如 "2330"）。
+    找不到 prev_trading_date_str 對應的歷史紀錄時，回傳 total_picks=0（第一次執行的正常狀態）。
+    """
+    day_record = history.get(prev_trading_date_str)
+    if not day_record or not day_record.get("picks"):
+        return {"checked_date": prev_trading_date_str, "total_picks": 0, "up_count": 0,
+                "win_rate_pct": None, "picks_detail": []}
+
+    picks_detail = []
+    up_count = 0
+    for pick in day_record["picks"]:
+        code = pick["code"]
+        quote = quotes_by_code.get(code)
+        went_up = quote is not None and quote["change"] > 0
+        if went_up:
+            up_count += 1
+        picks_detail.append({
+            "code": code, "name": pick.get("name", code), "score": pick.get("score", 0),
+            "went_up": went_up,
+            "change_pct": quote["change_pct"] if quote else None,
+        })
+
+    total = len(day_record["picks"])
+    return {
+        "checked_date": prev_trading_date_str,
+        "total_picks": total,
+        "up_count": up_count,
+        "win_rate_pct": round(up_count / total * 100, 1) if total else None,
+        "picks_detail": picks_detail,
+    }
+
+
+def record_todays_picks(history, date_str, scored_list, top_n=15, max_history_days=30):
+    """
+    把「今天」的入選清單（取 score 最高的 top_n 檔）寫進 history dict 並回傳更新後的 history，
+    同時清掉超過 max_history_days 天的舊紀錄，避免 data/stock_signals_history.json 無限成長。
+    """
+    picks = [{"code": s["code"], "name": s["name"], "score": s["score"]} for s in scored_list[:top_n]]
+    history = dict(history)
+    history[date_str] = {"picks": picks}
+
+    if len(history) > max_history_days:
+        for old_date in sorted(history.keys())[:-max_history_days]:
+            del history[old_date]
+
+    return history

@@ -202,3 +202,34 @@ def test_compute_signal_scores_excludes_zero_hit_stocks():
     }
     scores = compute_signal_scores(fake_signals, TW_STOCK_WATCHLIST)
     assert scores == []
+
+
+def test_load_signal_history_returns_empty_dict_when_file_missing(tmp_path):
+    from scripts.signal_scoring import load_signal_history
+
+    result = load_signal_history(str(tmp_path / "does_not_exist.json"))
+    assert result == {}
+
+
+def test_save_and_load_signal_history_roundtrip(tmp_path):
+    from scripts.signal_scoring import save_signal_history, load_signal_history
+
+    path = str(tmp_path / "history.json")
+    data = {"2026-07-03": {"picks": [{"code": "2330", "score": 3}]}}
+    save_signal_history(path, data)
+
+    loaded = load_signal_history(path)
+    assert loaded == data
+
+
+def test_compute_win_rate_review_checks_yesterdays_picks_against_todays_price(monkeypatch):
+    from scripts.signal_scoring import compute_win_rate_review
+
+    history = {"2026-07-02": {"picks": [{"code": "2330", "name": "台積電", "score": 3}]}}
+    quotes_like = {"2330": {"price": 510.0, "change": 10.0, "change_pct": 2.0}}
+
+    review = compute_win_rate_review(history, "2026-07-02", quotes_like)
+    assert review["checked_date"] == "2026-07-02"
+    assert review["total_picks"] == 1
+    assert review["up_count"] == 1
+    assert round(review["win_rate_pct"], 1) == 100.0
