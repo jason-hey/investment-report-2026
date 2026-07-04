@@ -273,12 +273,17 @@ def _fetch_twse_close_prices():
         return {}
 
 
-def fetch_institutional_3day_ranking(base_date):
+def fetch_institutional_3day_ranking(base_date, close_prices=None):
     """
     用 TWSE OpenAPI 抓取最近 3 個交易日的三大法人（外資／投信）買賣超日報，
     找出「連三日同向買賣超」（3 天方向一致）個股，依 3 日合計張數排名前 10。
     金額用最新收盤價估算（非逐日精確金額，僅供參考）。
     任何一步失敗都回傳 None，由呼叫端退回讓 AI 自行搜尋。
+
+    close_prices：可選，呼叫端若已經呼叫過 _fetch_twse_close_prices()（例如
+    generate_report.py 同一次執行還會呼叫 fetch_watchlist_institutional()，
+    兩者原本都各自打一次 STOCK_DAY_ALL 端點），可以把結果傳進來重用，避免
+    同一個 run 打兩次一模一樣的 TWSE API。預設 None 時維持原本自行抓取的行為。
     """
     try:
         trading_days = []
@@ -299,7 +304,7 @@ def fetch_institutional_3day_ranking(base_date):
         trading_days.sort(key=lambda x: x[0])  # 由舊到新
         dates = [d for d, _ in trading_days]
         common_codes = set(trading_days[0][1]) & set(trading_days[1][1]) & set(trading_days[2][1])
-        close_prices = _fetch_twse_close_prices()
+        close_prices = close_prices if close_prices is not None else _fetch_twse_close_prices()
 
         def rank_for(field):
             results = []
@@ -348,13 +353,17 @@ def _fetch_twse_close_prices_and_value():
         return {}, {}
 
 
-def fetch_watchlist_institutional(codes, base_date):
+def fetch_watchlist_institutional(codes, base_date, close_prices_and_value=None):
     """
     抓取「今天」（實際上是最近一個有資料的交易日，往前找最多 5 天）一天的三大法人
     買賣超（重用既有 _fetch_twse_t86），篩選出 codes 清單內的個股，並算出：
     - dual_buy：外資與投信是否同一天同步買超（皆 > 0）
     - buy_value_ratio_pct：外資+投信合計買超金額（用收盤價估算） / 當日成交值 * 100
       （買超佔成交值比重，取代絕對金額排序——對中小型股更有鑑別度）
+
+    close_prices_and_value：可選的 (close_prices, trade_values) tuple，用途同
+    fetch_institutional_3day_ranking() 的 close_prices 參數——避免同一次執行內
+    重複打一次 STOCK_DAY_ALL。預設 None 時維持原本自行抓取的行為。
     """
     cursor = base_date - timedelta(days=1)
     day_data = None
@@ -370,7 +379,9 @@ def fetch_watchlist_institutional(codes, base_date):
         print("  ⚠️ 找不到最近的法人買賣超資料，觀察清單法人訊號略過")
         return {}
 
-    close_prices, trade_values = _fetch_twse_close_prices_and_value()
+    close_prices, trade_values = (
+        close_prices_and_value if close_prices_and_value is not None else _fetch_twse_close_prices_and_value()
+    )
     code_set = set(codes)
     result = {}
     for code, row in day_data.items():

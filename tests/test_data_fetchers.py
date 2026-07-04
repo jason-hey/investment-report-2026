@@ -326,6 +326,67 @@ def test_fetch_watchlist_institutional_combines_t86_and_trade_value(monkeypatch)
     assert row["buy_value_ratio_pct"] is not None
 
 
+def test_fetch_watchlist_institutional_reuses_supplied_close_prices_and_value(monkeypatch):
+    """
+    迴歸測試（Task 13 Fix 2）：generate_report.py 同一次執行內會呼叫
+    fetch_institutional_3day_ranking() 與 fetch_watchlist_institutional()，兩者
+    原本各自打一次 STOCK_DAY_ALL 端點抓一樣的資料。呼叫端可改傳
+    close_prices_and_value 參數重用已抓好的資料——這裡驗證傳入後完全不會呼叫
+    requests.get（用一個會直接丟例外的假 requests.get 確保沒有走到網路呼叫路徑）。
+    """
+    import scripts.data_fetchers as df
+    import requests
+    from datetime import datetime, timezone, timedelta
+
+    def fake_t86(date_str):
+        return {"2330": {"name": "台積電", "foreign_net": 5_000_000, "trust_net": 1_000_000}}
+
+    def boom(*a, **k):
+        raise AssertionError("不應該呼叫 requests.get：close_prices_and_value 應該被重用")
+
+    monkeypatch.setattr(df, "_fetch_twse_t86", fake_t86)
+    monkeypatch.setattr(requests, "get", boom)
+
+    base_date = datetime(2026, 7, 3, tzinfo=timezone(timedelta(hours=8)))
+    result = df.fetch_watchlist_institutional(
+        ["2330"], base_date,
+        close_prices_and_value=({"2330": 500.0}, {"2330": 2_000_000_000}),
+    )
+
+    assert "2330" in result
+    assert result["2330"]["buy_value_ratio_pct"] is not None
+
+
+def test_fetch_institutional_3day_ranking_reuses_supplied_close_prices(monkeypatch):
+    """
+    迴歸測試（Task 13 Fix 2）：同上一個測試，但驗證 fetch_institutional_3day_ranking()
+    的 close_prices 參數——傳入後不應該呼叫 requests.get（_fetch_twse_close_prices()
+    內部才會打 STOCK_DAY_ALL；_fetch_twse_t86 走的是不同的 T86 端點，這裡改用假的
+    _fetch_twse_t86 讓 3 個交易日資料齊全，才能測到「不再另外抓收盤價」這件事）。
+    """
+    import scripts.data_fetchers as df
+    import requests
+    from datetime import datetime, timezone, timedelta
+
+    # 連 3 天皆為外資買超的假資料，確保 rank_for() 有結果可以組出來
+    def fake_t86(date_str):
+        return {"2330": {"name": "台積電", "foreign_net": 1_000_000, "trust_net": 1_000_000}}
+
+    def boom(*a, **k):
+        raise AssertionError("不應該呼叫 requests.get：close_prices 應該被重用")
+
+    monkeypatch.setattr(df, "_fetch_twse_t86", fake_t86)
+    monkeypatch.setattr(requests, "get", boom)
+
+    base_date = datetime(2026, 7, 6, tzinfo=timezone(timedelta(hours=8)))  # 週一，避開週末
+    result = df.fetch_institutional_3day_ranking(base_date, close_prices={"2330": 500.0})
+
+    assert result is not None
+    assert len(result["as_of_dates"]) == 3
+    buy_codes = [r["code"] for r in result["foreign_buy_top10"]]
+    assert "2330" in buy_codes
+
+
 def test_fetch_watchlist_price_history_returns_ohlcv_per_code(monkeypatch):
     import scripts.data_fetchers as df
     import pandas as pd
