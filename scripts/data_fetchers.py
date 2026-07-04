@@ -230,6 +230,12 @@ def fetch_all_pe_data():
 
 # ── 法人連三日買賣超排行：用 TWSE OpenAPI 預抓，避免 AI 網路搜尋出精確數字時幻覺 ──
 
+def _twse_to_int(s):
+    """把 TWSE OpenAPI 的數字字串（可能含千分位逗號、空字串或 "--"）轉成 int，缺值視為 0。"""
+    s = (s or "").strip()
+    return int(s.replace(",", "")) if s not in ("", "--") else 0
+
+
 def _fetch_twse_t86(date_yyyymmdd):
     """抓取指定日期的台股三大法人買賣超日報（每檔個股，股數）。查無資料（假日）回傳 None。"""
     import requests
@@ -245,17 +251,13 @@ def _fetch_twse_t86(date_yyyymmdd):
     fields = data["fields"]
     idx = {name: i for i, name in enumerate(fields)}
 
-    def to_int(s):
-        s = (s or "").strip()
-        return int(s.replace(",", "")) if s not in ("", "--") else 0
-
     rows = {}
     for row in data["data"]:
         code = row[idx["證券代號"]].strip()
         rows[code] = {
             "name": row[idx["證券名稱"]].strip(),
-            "foreign_net": to_int(row[idx["外陸資買賣超股數(不含外資自營商)"]]) + to_int(row[idx["外資自營商買賣超股數"]]),
-            "trust_net": to_int(row[idx["投信買賣超股數"]]),
+            "foreign_net": _twse_to_int(row[idx["外陸資買賣超股數(不含外資自營商)"]]) + _twse_to_int(row[idx["外資自營商買賣超股數"]]),
+            "trust_net": _twse_to_int(row[idx["投信買賣超股數"]]),
         }
     return rows
 
@@ -342,10 +344,6 @@ def fetch_margin_trading(codes):
     """
     import requests
 
-    def to_int(s):
-        s = (s or "").strip()
-        return int(s.replace(",", "")) if s not in ("", "--") else 0
-
     result = {}
     try:
         resp = requests.get("https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN", timeout=15)
@@ -355,8 +353,8 @@ def fetch_margin_trading(codes):
             code = row.get("股票代號", "").strip()
             if code not in code_set:
                 continue
-            margin_balance = to_int(row.get("融資今日餘額"))
-            short_balance = to_int(row.get("融券今日餘額"))
+            margin_balance = _twse_to_int(row.get("融資今日餘額"))
+            short_balance = _twse_to_int(row.get("融券今日餘額"))
             short_margin_ratio_pct = (short_balance / margin_balance * 100) if margin_balance else 0.0
             result[code] = {
                 "name": row.get("股票名稱", "").strip(),
