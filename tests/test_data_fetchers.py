@@ -210,3 +210,31 @@ def test_fetch_oil_prices_returns_wti_and_brent_history(monkeypatch):
     assert result["wti"]["history"] == [{"date": "2026-07-01", "value": 68.5}, {"date": "2026-07-02", "value": 69.1}]
     assert result["brent"]["symbol"] == "BZ=F"
     assert result["brent"]["name"] == "Brent 原油"
+
+
+def test_fetch_adr_premiums_computes_premium_pct(monkeypatch):
+    import scripts.data_fetchers as df
+    import pandas as pd
+
+    class FakeTicker:
+        def __init__(self, symbol):
+            self.symbol = symbol
+
+        def history(self, period, interval):
+            # ADR 收盤 100 美元，台股收盤 500 台幣，匯率 32：
+            # 換算後 ADR 對應台股價值 = 100/5*32 = 640；溢價 = 640/500 - 1 = 28%
+            if self.symbol == "TSM":
+                return pd.DataFrame({"Close": [99.0, 100.0]}, index=pd.to_datetime(["2026-07-01", "2026-07-02"]))
+            if self.symbol == "TWD=X":
+                return pd.DataFrame({"Close": [31.5, 32.0]}, index=pd.to_datetime(["2026-07-01", "2026-07-02"]))
+            if self.symbol == "2330.TW":
+                return pd.DataFrame({"Close": [495.0, 500.0]}, index=pd.to_datetime(["2026-07-01", "2026-07-02"]))
+            return pd.DataFrame({"Close": [10.0, 10.0]}, index=pd.to_datetime(["2026-07-01", "2026-07-02"]))
+
+    monkeypatch.setattr(df.yf, "Ticker", FakeTicker)
+    result = df.fetch_adr_premiums()
+
+    assert "TSM" in result
+    tsm = result["TSM"]
+    assert tsm["tw_code"] == "2330"
+    assert round(tsm["premium_pct"], 2) == 28.0

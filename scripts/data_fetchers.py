@@ -583,6 +583,57 @@ def fetch_sector_rotation():
     return result
 
 
+# ── ADR 溢價：TSM/UMC/ASX 對應台股的溢價率 ────────────────────────────────
+
+ADR_TICKERS = {
+    "TSM": ("2330.TW", "2330", 5),   # (台股 yfinance 代號, 顯示代號, ADR:普通股比例)
+    "UMC": ("2303.TW", "2303", 5),
+    "ASX": ("3711.TW", "3711", 5),
+}
+
+
+def fetch_adr_premiums():
+    """
+    計算 ADR 對應台股的溢價率：(ADR 收盤價 / 比例 * 美元兌台幣匯率) / 台股收盤價 - 1。
+    正值代表 ADR（美股盤後）相對台股現股溢價，通常視為隔天台股開盤偏多的領先指標。
+    """
+    result = {}
+    try:
+        fx_hist = yf.Ticker("TWD=X").history(period="5d", interval="1d")
+        if fx_hist.empty:
+            print("  ⚠️ TWD=X 匯率資料不足，跳過 ADR 溢價計算")
+            return result
+        twd_rate = float(fx_hist["Close"].iloc[-1])
+    except Exception as e:
+        print(f"  ⚠️ TWD=X 匯率抓取失敗: {e}")
+        return result
+
+    for adr_symbol, (tw_symbol, tw_code, ratio) in ADR_TICKERS.items():
+        try:
+            adr_hist = yf.Ticker(adr_symbol).history(period="5d", interval="1d")
+            tw_hist = yf.Ticker(tw_symbol).history(period="5d", interval="1d")
+            if adr_hist.empty or tw_hist.empty:
+                print(f"  ⚠️ {adr_symbol} ADR 溢價資料不足，略過")
+                continue
+            adr_close = float(adr_hist["Close"].iloc[-1])
+            tw_close = float(tw_hist["Close"].iloc[-1])
+            if _has_nan_close(adr_close, tw_close) or tw_close == 0:
+                print(f"  ⚠️ {adr_symbol} 收盤價為 NaN 或台股收盤為 0，略過")
+                continue
+            implied_tw_price = adr_close / ratio * twd_rate
+            premium_pct = (implied_tw_price / tw_close - 1) * 100
+            result[adr_symbol] = {
+                "tw_code": tw_code,
+                "adr_close": round(adr_close, 2),
+                "tw_close": round(tw_close, 2),
+                "premium_pct": round(premium_pct, 2),
+            }
+        except Exception as e:
+            print(f"  ⚠️ {adr_symbol} ADR 溢價計算失敗: {e}")
+    print(f"  ADR 溢價：成功 {len(result)}/{len(ADR_TICKERS)} 檔")
+    return result
+
+
 # ── 油價走勢：WTI + Brent 近 6 個月日資料，格式比照 fetch_all_fear_index() ──
 
 OIL_TICKERS = {
