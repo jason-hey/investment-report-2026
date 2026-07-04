@@ -211,6 +211,11 @@ def test_build_template_context_and_render_produces_valid_html():
         oil_data={"wti": {"symbol": "CL=F", "name": "WTI 原油", "history": [{"date": "2026-07-01", "value": 68.5}]},
                   "brent": {"symbol": "BZ=F", "name": "Brent 原油", "history": [{"date": "2026-07-01", "value": 72.0}]}},
     )
+    context["signal_scoring"] = {
+        "picks": [{"code": "2330", "name": "台積電", "score": 2, "signals_hit": ["adr"], "reason": "測試理由"}],
+        "win_rate_review": {"checked_date": "2026-07-02", "total_picks": 1, "up_count": 1,
+                             "win_rate_pct": 100.0, "picks_detail": []},
+    }
     html = render_report(context)
 
     from scripts.generate_report import validate_html
@@ -244,6 +249,43 @@ def test_build_template_context_and_render_produces_valid_html():
     # Task 7 新增的 4 個區塊（韓國股市/美股熱力圖/資金板塊輪動/油價走勢）
     assert "KOSPI 指數" in html
     assert "AAPL" in html
+
+    # Task 11 新增的今日觀察清單評分表 + 昨日選股回顧區塊
+    assert "測試理由" in html
+    assert "命中率" in html
+
+
+def test_render_report_signal_scoring_no_history_shows_fallback_note():
+    from scripts.report_render import build_template_context, render_report
+
+    quotes = {"TWII": {"symbol": "^TWII", "name": "加權指數", "price": 46744.0, "change": 274.0, "change_pct": 0.59},
+              "VIX": {"symbol": "^VIX", "name": "VIX", "price": 16.15, "change": 0.23, "change_pct": 1.45},
+              "US10Y": {"symbol": "^TNX", "name": "10Y美債殖利率", "price": 4.48, "change": 0.02, "change_pct": 0.45}}
+    narrative = _fake_narrative_json()
+    context = build_template_context(
+        date_label="2026.07.03", weekday_cn="週五", tw_holiday_note="",
+        quotes=quotes,
+        fear_data={"us": {"symbol": "^VIX", "name": "VIX", "history": [{"date": "2026-07-01", "value": 16.5}]}},
+        pe_data={"tw": [], "us": []},
+        institutional_data=None,
+        earnings_list=[{"date": "2026-07-10", "symbol": "NVDA", "name": "NVIDIA", "market": "美股"}],
+        narrative_json=narrative,
+        korea_data={"KOSPI": {"symbol": "^KS11", "name": "KOSPI 指數", "price": 3100.0, "change": 25.0, "change_pct": 0.81}},
+        heatmap_data=[{"symbol": "AAPL", "change_pct": 1.5}],
+        sector_rotation_data=[{"symbol": "XLK", "name": "科技", "change_pct_1d": 1.2, "change_pct_1w": 3.0}],
+        oil_data={"wti": {"symbol": "CL=F", "name": "WTI 原油", "history": [{"date": "2026-07-01", "value": 68.5}]},
+                  "brent": {"symbol": "BZ=F", "name": "Brent 原油", "history": [{"date": "2026-07-01", "value": 72.0}]}},
+    )
+    context["signal_scoring"] = {
+        "picks": [],
+        "win_rate_review": {"checked_date": "", "total_picks": 0, "up_count": 0,
+                             "win_rate_pct": 0.0, "picks_detail": []},
+    }
+    html = render_report(context)
+
+    from scripts.generate_report import validate_html
+    assert validate_html(html) == []
+    assert "尚無歷史入選紀錄" in html
     assert "XLK" in html
     assert "68.5" in html
 
