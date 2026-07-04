@@ -801,8 +801,16 @@ def fetch_watchlist_price_history(watchlist):
             if hist.empty or len(hist) < 21:
                 print(f"  ⚠️ {code}({symbol}) 歷史價量資料不足，略過")
                 continue
-            closes = [float(c) for c in hist["Close"].tolist() if not math.isnan(c)]
-            volumes = [float(v) for v in hist["Volume"].tolist() if not math.isnan(v)]
+            # 逐列一起過濾（而非分別過濾 Close/Volume 兩個 list）：
+            # 避免某一列只有 Close 或只有 Volume 是 NaN 時，兩個 list 各自砍掉不同列，
+            # 造成位置錯位（closes[i] 跟 volumes[i] 變成不同交易日的資料）。
+            valid_rows = [
+                (float(c), float(v))
+                for c, v in zip(hist["Close"].tolist(), hist["Volume"].tolist())
+                if not math.isnan(c) and not math.isnan(v)
+            ]
+            closes = [c for c, _ in valid_rows]
+            volumes = [v for _, v in valid_rows]
             if len(closes) < 21 or len(volumes) < 6:
                 print(f"  ⚠️ {code}({symbol}) 有效資料不足，略過")
                 continue

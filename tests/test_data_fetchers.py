@@ -348,3 +348,41 @@ def test_fetch_watchlist_price_history_returns_ohlcv_per_code(monkeypatch):
     row = result["2330"]
     assert len(row["closes"]) == 30
     assert len(row["volumes"]) == 30
+
+
+def test_fetch_watchlist_price_history_filters_nan_rows_together(monkeypatch):
+    """
+    迴歸測試：若 Close 在某一列是 NaN、Volume 在「另一列」是 NaN（不是同一列），
+    分別過濾 closes/volumes 兩個 list 會讓兩者砍掉不同列，導致 closes[i] 跟
+    volumes[i] 變成不同交易日的資料（位置錯位）。這裡驗證兩者是「同一列一起丟棄」，
+    過濾後最後一筆仍然正確配對（收盤價 129.0 對應成交量 5000，而非被錯位污染）。
+    """
+    import scripts.data_fetchers as df
+    import math
+    import pandas as pd
+
+    class FakeTicker:
+        def __init__(self, symbol):
+            self.symbol = symbol
+
+        def history(self, period, interval):
+            n = 30
+            closes = [100.0 + i for i in range(n)]
+            volumes = [1000] * (n - 1) + [5000]
+            closes[10] = math.nan     # Close 在第 10 列是 NaN
+            volumes[20] = math.nan    # Volume 在第 20 列是 NaN（不同列）
+            return pd.DataFrame(
+                {"Close": closes, "Volume": volumes},
+                index=pd.date_range("2026-06-01", periods=n, freq="D"),
+            )
+
+    monkeypatch.setattr(df.yf, "Ticker", FakeTicker)
+    result = df.fetch_watchlist_price_history([("2330.TW", "2330")])
+
+    row = result["2330"]
+    # 30 列中有 2 列（index 10、20）任一欄位是 NaN，應整列一起丟棄，剩 28 列
+    assert len(row["closes"]) == 28
+    assert len(row["volumes"]) == 28
+    # 最後一列（原始 index 29）未被丟棄，兩個 list 仍應對齊同一天：收盤價 129.0 配成交量 5000
+    assert row["closes"][-1] == 129.0
+    assert row["volumes"][-1] == 5000
