@@ -57,6 +57,7 @@ def _fake_narrative_json():
         "night_session": {"price": "", "change_pts": "", "change_pct": "",
                            "volume": "", "vs_day_close_note": "", "source_note": ""},
         "institutional_summary": [],
+        "stock_signal_reasons": [],
         "news": {},
         "ai_infra_html": "",
         "theme_cards": [],

@@ -50,7 +50,8 @@ from scripts.report_render import build_template_context, render_report
 # AI 敘述 JSON 的必要欄位（見 JSON_OUTPUT_SPEC）；Task 9 的 render_report() 依賴這些欄位齊全。
 REQUIRED_JSON_FIELDS = [
     "daily_brief", "header_pills", "data_validation", "hero_events",
-    "warning_indicators", "night_session", "institutional_summary", "news",
+    "warning_indicators", "night_session", "institutional_summary",
+    "stock_signal_reasons", "news",
     "ai_infra_html", "theme_cards", "strategy_cards", "risk_matrix_rows",
     "market_deep_dive_html", "lly_foundayo",
 ]
@@ -197,6 +198,9 @@ JSON_OUTPUT_SPEC = """
     {"label": "自營商", "text": "<自營商整體買賣超金額>", "tone": "green 或 red", "emphasize": false},
     {"label": "三大合計", "text": "<三大法人合計買賣超金額>", "tone": "green 或 red", "emphasize": true}
   ],
+  "stock_signal_reasons": [
+    {"code": "<股票代號，例如 2330>", "reason": "<一句話說明為什麼這檔股票入選，依據下方提供的命中訊號清單改寫成通順的一句話，不要自己判斷或編造沒有列出的訊號>"}
+  ],
   "news": {
     "ai_semi": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
     "macro": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
@@ -223,6 +227,7 @@ JSON_OUTPUT_SPEC = """
 - header_pills 固定輸出 4 則，每則一句話重點（今日最值得注意的事實），對應頁首的重點提示列
 - data_validation 列出今天報告中「已確認」與「估計值」的資料項目各幾筆均可，只要涵蓋當天實際用到的關鍵資料來源（台股/美股收盤、法人排行、夜盤等）
 - institutional_summary 固定輸出 4 則，依序為：外資、投信、自營商、三大合計（三大合計那一則 emphasize 設為 true，其餘 false）
+- stock_signal_reasons 筆數依實際入選清單而定，若當天沒有入選股票（清單為空）也要回傳空陣列 `[]`
 - news 的 ai_semi/macro/geo/ipo 各自視實際搜尋結果填入多筆，該分類若搜尋不到內容也要回傳空陣列 `[]`，不可省略欄位本身
 - theme_cards 固定輸出 5 張，依序涵蓋：AI 算力基礎建設、台灣半導體供應鏈、口服 GLP-1、AI 電力/資料中心、黃金/實物資產
 - strategy_cards 固定輸出 3 張，依序為：巴菲特框架、動能策略、防禦配置

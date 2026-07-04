@@ -68,6 +68,7 @@ def test_extract_json_block_handles_nested_triple_backticks_in_string_value():
 def test_validate_narrative_json_lists_missing_fields():
     from scripts.generate_report import validate_narrative_json, REQUIRED_JSON_FIELDS
 
+    assert "stock_signal_reasons" in REQUIRED_JSON_FIELDS
     assert validate_narrative_json(None) == REQUIRED_JSON_FIELDS
     assert validate_narrative_json({f: None for f in REQUIRED_JSON_FIELDS}) == []
     partial = {f: None for f in REQUIRED_JSON_FIELDS if f != "daily_brief"}
