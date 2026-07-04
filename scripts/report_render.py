@@ -202,6 +202,30 @@ def build_oil_context(oil_data):
     }
 
 
+def build_signal_scoring_context(scored_list, ai_reasons, win_rate_review):
+    """
+    把 signal_scoring.compute_signal_scores() 的結果、AI 寫的一句話原因、
+    以及勝率回顧，合併成模板要用的 context。
+
+    AI 敘述優先級最高；若 ai_reasons 中找不到某檔股票的原因，退回到
+    Python 在 details 清單中生成的訊號說明，用「、」連接多個訊號
+    （避免顯示空白原因，因為 compute_signal_scores() 保證 score >= 1
+    意味著至少有一個訊號命中、details 不會是空清單）。
+    """
+    reason_by_code = {item["code"]: item["reason"] for item in ai_reasons}
+    picks = []
+    for entry in scored_list:
+        reason = reason_by_code.get(entry["code"]) or "、".join(entry["details"])
+        picks.append({
+            "code": entry["code"],
+            "name": entry["name"],
+            "score": entry["score"],
+            "signals_hit": entry["signals_hit"],
+            "reason": reason,
+        })
+    return {"picks": picks, "win_rate_review": win_rate_review}
+
+
 def _sanitize_warning_indicators(warning_indicators):
     return {
         key: {**item, "status": _safe_css_token(item.get("status"), STATUS_VALUES, "amber")}

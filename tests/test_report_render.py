@@ -446,3 +446,31 @@ def test_build_oil_context_aligns_mismatched_wti_brent_dates():
     # Brent 在 07-02 缺資料，必須是 None（不是 68.0/69.0 這種被 WTI 值污染的結果，
     # 也不能整條線往前/往後平移）
     assert result["brent_values"] == [72.0, None, 74.0]
+
+
+def test_build_signal_scoring_context_merges_scores_with_ai_reasons():
+    from scripts.report_render import build_signal_scoring_context
+
+    scored_list = [{"code": "2330", "name": "台積電", "score": 2,
+                    "signals_hit": ["adr", "dual_buy"], "details": ["ADR 溢價 +1.5%", "外資投信同步買超"]}]
+    ai_reasons = [{"code": "2330", "reason": "ADR 溢價偏高且外資投信同步買超"}]
+    win_rate_review = {"checked_date": "2026-07-02", "total_picks": 5, "up_count": 3,
+                        "win_rate_pct": 60.0, "picks_detail": []}
+
+    context = build_signal_scoring_context(scored_list, ai_reasons, win_rate_review)
+
+    assert context["picks"][0]["code"] == "2330"
+    assert context["picks"][0]["reason"] == "ADR 溢價偏高且外資投信同步買超"
+    assert context["win_rate_review"]["win_rate_pct"] == 60.0
+
+
+def test_build_signal_scoring_context_falls_back_to_details_when_no_ai_reason():
+    from scripts.report_render import build_signal_scoring_context
+
+    scored_list = [{"code": "2330", "name": "台積電", "score": 1,
+                    "signals_hit": ["adr"], "details": ["ADR 溢價 +1.5%"]}]
+    context = build_signal_scoring_context(scored_list, ai_reasons=[], win_rate_review={
+        "checked_date": "2026-07-02", "total_picks": 0, "up_count": 0, "win_rate_pct": None, "picks_detail": []
+    })
+    # AI 沒有給這檔股票寫原因時，退回顯示 Python 算好的 details 合併字串，不要顯示空白
+    assert context["picks"][0]["reason"] == "ADR 溢價 +1.5%"
