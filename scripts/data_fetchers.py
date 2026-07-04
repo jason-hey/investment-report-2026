@@ -334,6 +334,67 @@ def fetch_institutional_3day_ranking(base_date):
         return None
 
 
+def _fetch_twse_close_prices_and_value():
+    """抓取最新一個交易日全部台股收盤價與成交金額。TradeValue 供買超金額/成交值比重訊號使用。"""
+    import requests
+    try:
+        resp = requests.get("https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL", timeout=15)
+        data = resp.json()
+        prices = {row["Code"]: float(row["ClosingPrice"]) for row in data if row.get("ClosingPrice")}
+        values = {row["Code"]: float(row["TradeValue"]) for row in data if row.get("TradeValue")}
+        return prices, values
+    except Exception as e:
+        print(f"  ⚠️ 收盤價/成交值抓取失敗（{e}）")
+        return {}, {}
+
+
+def fetch_watchlist_institutional(codes, base_date):
+    """
+    抓取「今天」（實際上是最近一個有資料的交易日，往前找最多 5 天）一天的三大法人
+    買賣超（重用既有 _fetch_twse_t86），篩選出 codes 清單內的個股，並算出：
+    - dual_buy：外資與投信是否同一天同步買超（皆 > 0）
+    - buy_value_ratio_pct：外資+投信合計買超金額（用收盤價估算） / 當日成交值 * 100
+      （買超佔成交值比重，取代絕對金額排序——對中小型股更有鑑別度）
+    """
+    cursor = base_date - timedelta(days=1)
+    day_data = None
+    attempts = 0
+    while day_data is None and attempts < 5:
+        attempts += 1
+        if cursor.weekday() < 5:
+            day_data = _fetch_twse_t86(cursor.strftime("%Y%m%d"))
+        if day_data is None:
+            cursor -= timedelta(days=1)
+
+    if day_data is None:
+        print("  ⚠️ 找不到最近的法人買賣超資料，觀察清單法人訊號略過")
+        return {}
+
+    close_prices, trade_values = _fetch_twse_close_prices_and_value()
+    code_set = set(codes)
+    result = {}
+    for code, row in day_data.items():
+        if code not in code_set:
+            continue
+        foreign_net = row["foreign_net"]
+        trust_net = row["trust_net"]
+        price = close_prices.get(code)
+        trade_value = trade_values.get(code)
+        buy_value_ratio_pct = None
+        if price and trade_value:
+            est_buy_amount = (foreign_net + trust_net) * price
+            buy_value_ratio_pct = round(est_buy_amount / trade_value * 100, 2)
+        result[code] = {
+            "name": row["name"],
+            "foreign_net": foreign_net,
+            "trust_net": trust_net,
+            "dual_buy": foreign_net > 0 and trust_net > 0,
+            "buy_value_ratio_pct": buy_value_ratio_pct,
+        }
+    print(f"  法人觀察清單：{cursor.strftime('%Y-%m-%d')} 資料，清單內找到 {len(result)}/{len(codes)} 檔")
+    return result
+
+
 # ── 融資融券：軋空候選（券資比偏高）訊號 ──────────────────────────────
 
 def fetch_margin_trading(codes):

@@ -300,3 +300,27 @@ def test_fetch_monthly_revenue_handles_null_revenue_field(monkeypatch):
     assert "2330" in result
     assert result["2330"]["revenue"] == ""
     assert result["2330"]["yoy_change_pct"] == 35.5
+
+
+def test_fetch_watchlist_institutional_combines_t86_and_trade_value(monkeypatch):
+    import scripts.data_fetchers as df
+    from datetime import datetime, timezone, timedelta
+
+    def fake_t86(date_str):
+        return {"2330": {"name": "台積電", "foreign_net": 5_000_000, "trust_net": 1_000_000}}
+
+    def fake_close_prices():
+        return {"2330": 500.0}
+
+    monkeypatch.setattr(df, "_fetch_twse_t86", fake_t86)
+    monkeypatch.setattr(df, "_fetch_twse_close_prices_and_value", lambda: ({"2330": 500.0}, {"2330": 2_000_000_000}))
+
+    base_date = datetime(2026, 7, 3, tzinfo=timezone(timedelta(hours=8)))
+    result = df.fetch_watchlist_institutional(["2330"], base_date)
+
+    assert "2330" in result
+    row = result["2330"]
+    assert row["foreign_net"] == 5_000_000
+    assert row["trust_net"] == 1_000_000
+    assert row["dual_buy"] is True  # 外資、投信同步買超
+    assert row["buy_value_ratio_pct"] is not None
