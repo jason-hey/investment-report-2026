@@ -25,6 +25,31 @@ def test_build_ticker_data_normalizes_negative_zero():
     assert result["up"] is True
 
 
+def test_build_ticker_data_keeps_two_decimals_for_large_prices():
+    """
+    迴歸測試：舊寫法 f'{price:,g}' 的 g 只有 6 位有效數字，加權指數 23,456.78 會被
+    截成 "23,456.8"（第 7 位有效數字被吃掉）。價格與漲跌都要保留到 2 位小數
+    （尾端多餘的 0 去掉），且千分位分隔不變。
+    """
+    from scripts.report_render import build_ticker_data
+
+    quotes = {"TWII": {"symbol": "^TWII", "name": "加權指數",
+                        "price": 23456.78, "change": 1234.56, "change_pct": 5.56}}
+    item = build_ticker_data(quotes)[0]
+    assert item["price"] == "23,456.78"
+    assert item["chg"] == "+1,234.56"
+
+
+def test_build_kpi_cards_keeps_two_decimals_for_large_prices():
+    from scripts.report_render import build_kpi_cards
+
+    quotes = {"TWII": {"symbol": "^TWII", "name": "加權指數",
+                        "price": 23456.78, "change": -1234.56, "change_pct": -5.0}}
+    card = build_kpi_cards(quotes)[0]
+    assert card["val"] == "23,456.78"
+    assert card["change_text"] == "-1,234.56 (-5.00%)"
+
+
 def test_build_kpi_cards_marks_missing_quote_as_na():
     from scripts.report_render import build_kpi_cards
 
@@ -386,6 +411,77 @@ def test_build_template_context_sanitizes_unrecognized_tone_and_status_values():
     assert context["institutional_summary"][0]["tone"] == ""
     assert context["warning_indicators"]["vix"]["status"] == "amber"
     assert context["hero_events"][0]["theme"] == "amber"
+
+
+def test_build_template_context_sanitizes_lly_foundayo_missing_chart_fields():
+    """
+    迴歸測試：lly_foundayo 是 AI 生成的 JSON（不可信來源），validate_narrative_json()
+    只保證它是 dict，不保證 weekly_trx/wow_pct 存在——模板會對這兩個欄位套用
+    `| tojson`，遇到 Undefined（缺席欄位）會直接拋例外，讓整份報告產生失敗。
+    這裡驗證缺席的圖表欄位被正規化成空清單。
+    """
+    from scripts.report_render import build_template_context
+
+    narrative = _narrative_context_fields()
+    narrative["lly_foundayo"] = {"commentary": "只有敘述、沒有圖表欄位", "stage_note": "", "extra_html": ""}
+
+    context = build_template_context(
+        date_label="2026.07.03", weekday_cn="週五", tw_holiday_note="",
+        quotes={}, fear_data={}, pe_data={"tw": [], "us": []}, institutional_data=None,
+        earnings_list=[], narrative_json=narrative,
+    )
+
+    assert context["lly_foundayo"]["weekly_trx"] == []
+    assert context["lly_foundayo"]["wow_pct"] == []
+    assert context["lly_foundayo"]["commentary"] == "只有敘述、沒有圖表欄位"
+
+
+def test_build_template_context_coerces_lly_foundayo_string_numbers_and_drops_bad_items():
+    """
+    迴歸測試：AI 可能把 trx 輸出成字串 "1,390"（模板的 "{:,}".format() 對字串會
+    ValueError）、或整筆輸出成非 dict。字串數字要轉成真正的數字，無法轉換的項目
+    與非 dict 項目直接丟棄，不能讓整份報告產生失敗。
+    """
+    from scripts.report_render import build_template_context
+
+    narrative = _narrative_context_fields()
+    narrative["lly_foundayo"] = {
+        "weekly_trx": [
+            {"week": "W1", "trx": "1,390"},   # 字串數字 → 轉成 1390
+            "AI 幻覺輸出的字串",                # 非 dict → 丟棄
+            {"week": "W2"},                    # 缺 trx → 丟棄
+            {"week": "W3", "trx": 3200},       # 正常數字 → 原樣保留
+        ],
+        "wow_pct": [{"week": "W2", "pct": "12.3"}],
+        "commentary": "", "stage_note": "", "extra_html": "",
+    }
+
+    context = build_template_context(
+        date_label="2026.07.03", weekday_cn="週五", tw_holiday_note="",
+        quotes={}, fear_data={}, pe_data={"tw": [], "us": []}, institutional_data=None,
+        earnings_list=[], narrative_json=narrative,
+    )
+
+    trx_list = context["lly_foundayo"]["weekly_trx"]
+    assert [item["trx"] for item in trx_list] == [1390, 3200]
+    assert context["lly_foundayo"]["wow_pct"][0]["pct"] == 12.3
+
+
+def test_render_report_survives_lly_foundayo_without_chart_fields():
+    """端到端驗證：lly_foundayo 缺 weekly_trx/wow_pct 時，經過 build_template_context()
+    後 render_report() 不會因為模板的 `| tojson` 拋例外。"""
+    from scripts.report_render import build_template_context, render_report
+
+    narrative = _narrative_context_fields()
+    narrative["lly_foundayo"] = {"commentary": "", "stage_note": "商業化初期", "extra_html": ""}
+
+    context = build_template_context(
+        date_label="2026.07.03", weekday_cn="週五", tw_holiday_note="",
+        quotes={}, fear_data={}, pe_data={"tw": [], "us": []}, institutional_data=None,
+        earnings_list=[], narrative_json=narrative,
+    )
+    html = render_report(context)
+    assert "</html>" in html.lower()
 
 
 def test_build_institutional_context_handles_none():

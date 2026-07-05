@@ -60,6 +60,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           SUMMARY: ${{ steps.generate.outputs.summary }}
+          DATE_OVERRIDE: ${{ github.event.inputs.date_override }}
         run: |
           if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
             echo "Telegram not configured, skipping."
@@ -67,7 +68,12 @@ jobs:
           fi
           OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
           REPO=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
-          DATE=$(TZ='Asia/Taipei' date +'%Y/%m/%d')
+          # 手動補跑歷史日期時，通知顯示的日期要跟報告內容一致（不能永遠用「今天」）
+          if [ -n "$DATE_OVERRIDE" ]; then
+            DATE=$(date -d "$DATE_OVERRIDE" +'%Y/%m/%d')
+          else
+            DATE=$(TZ='Asia/Taipei' date +'%Y/%m/%d')
+          fi
           URL="https://${OWNER}.github.io/${REPO}/"
           if [ -n "$SUMMARY" ]; then
             MSG=$(printf '投資情報已更新 %s\n\n%s\n\n點此查看完整報告 %s' "$DATE" "$SUMMARY" "$URL")
@@ -84,6 +90,7 @@ jobs:
           LINE_GROUP_ID: ${{ secrets.LINE_GROUP_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           SUMMARY: ${{ steps.generate.outputs.summary }}
+          DATE_OVERRIDE: ${{ github.event.inputs.date_override }}
         run: |
           if [ -z "$LINE_CHANNEL_ACCESS_TOKEN" ]; then
             echo "LINE not configured, skipping."
@@ -92,7 +99,12 @@ jobs:
           OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
           REPO=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
           URL="https://${OWNER}.github.io/${REPO}/"
-          TITLE=$(TZ='Asia/Taipei' date +'%Y.%m.%d')
+          # 手動補跑歷史日期時，通知顯示的日期要跟報告內容一致（不能永遠用「今天」）
+          if [ -n "$DATE_OVERRIDE" ]; then
+            TITLE=$(date -d "$DATE_OVERRIDE" +'%Y.%m.%d')
+          else
+            TITLE=$(TZ='Asia/Taipei' date +'%Y.%m.%d')
+          fi
           if [ -n "$SUMMARY" ]; then
             MSG=$(printf '%s 每日投資情報已更新 📊\n\n%s\n\n🔗 %s' "$TITLE" "$SUMMARY" "$URL")
           else
@@ -127,6 +139,7 @@ jobs:
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           SUMMARY: ${{ steps.generate.outputs.summary }}
+          DATE_OVERRIDE: ${{ github.event.inputs.date_override }}
         run: |
           if [ -z "$GMAIL_USER" ] || [ -z "$GMAIL_APP_PASSWORD" ]; then
             echo "Email not configured, skipping."
@@ -146,9 +159,10 @@ jobs:
           GITHUB_RUN_ID: ${{ github.run_id }}
         run: |
           RUN_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          MSG="投資情報 pipeline 執行失敗 ⚠️
-
-請檢查執行紀錄：${RUN_URL}"
+          # 用 printf 組多行訊息（比照 Telegram/LINE 步驟）：不能用直接換行的 MSG="..."
+          # 字串——YAML 的 run: | 區塊裡，縮排不足的續行會終止整個區塊、讓 workflow
+          # 檔案本身變成無法解析（Invalid workflow file）
+          MSG=$(printf '投資情報 pipeline 執行失敗 ⚠️\n\n請檢查執行紀錄：%s' "$RUN_URL")
 
           if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
             curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" -d chat_id="${TELEGRAM_CHAT_ID}" --data-urlencode "text=${MSG}"

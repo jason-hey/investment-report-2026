@@ -90,6 +90,48 @@ def test_fetch_earnings_calendar_includes_tw_holdings(monkeypatch):
     assert len(us_rows) == len(df.EARNINGS_WATCH)
 
 
+def test_fetch_pe_history_applies_ttm_eps_only_after_estimated_publication_date(monkeypatch):
+    """
+    迴歸測試（前視偏差 look-ahead bias）：yfinance 的 quarterly_income_stmt 索引是
+    「財報季度截止日」，不是「實際公布日」（美股 10-Q 期限、台股季報期限都是季度結束
+    後約 45 天）。若直接拿季度截止日當作 TTM EPS 的生效日，P/E 歷史會在財報公布前
+    1~2 個月就套用還沒公開的 EPS——例如 Q1 截止 2026-03-31、實際 5 月中公布，
+    4 月的 P/E 點位卻已經用了 Q1 的新 EPS。這裡驗證：TTM EPS 要等到
+    「季度截止日 + 45 天」（估計公布日）之後的月份才生效。
+    """
+    import scripts.data_fetchers as df
+    import pandas as pd
+
+    class FakeTicker:
+        def __init__(self, symbol):
+            self.symbol = symbol
+            self.info = {"forwardPE": None}
+            # 5 季 Diluted EPS：前 4 季各 1.0（TTM=4.0，截止 2025-12-31），
+            # 最新一季 5.0（TTM=8.0，截止 2026-03-31、估計公布日 2026-05-15）
+            self.quarterly_income_stmt = pd.DataFrame(
+                [[1.0, 1.0, 1.0, 1.0, 5.0]],
+                index=["Diluted EPS"],
+                columns=pd.to_datetime(["2025-03-31", "2025-06-30", "2025-09-30",
+                                         "2025-12-31", "2026-03-31"]),
+            )
+
+        def history(self, period, interval):
+            # 兩個月度點位：2026-04（Q1 截止後、公布前）與 2026-06（公布後），收盤價均 80
+            return pd.DataFrame(
+                {"Close": [80.0, 80.0]},
+                index=pd.to_datetime(["2026-04-01", "2026-06-01"]),
+            )
+
+    monkeypatch.setattr(df.yf, "Ticker", FakeTicker)
+    result = df.fetch_pe_history("NVDA", "NVIDIA")
+
+    by_month = {p["date"]: p["pe"] for p in result["trailing_3y"]}
+    # 2026-04：Q1 財報尚未公布（2026-03-31 + 45 天 = 2026-05-15），應仍用舊 TTM 4.0 → P/E 20.0
+    assert by_month["2026-04"] == 20.0
+    # 2026-06：Q1 已公布，改用新 TTM 8.0 → P/E 10.0
+    assert by_month["2026-06"] == 10.0
+
+
 def test_fetch_korea_market_returns_index_and_two_stocks(monkeypatch):
     import scripts.data_fetchers as df
     import pandas as pd
@@ -385,6 +427,48 @@ def test_fetch_institutional_3day_ranking_reuses_supplied_close_prices(monkeypat
     assert len(result["as_of_dates"]) == 3
     buy_codes = [r["code"] for r in result["foreign_buy_top10"]]
     assert "2330" in buy_codes
+
+
+def test_prev_trading_day_skips_weekend():
+    import scripts.data_fetchers as df
+    from datetime import datetime, timezone, timedelta
+
+    tz = timezone(timedelta(hours=8))
+    # 2026-07-06 是週一，前一交易日應為週五 2026-07-03（台股正常交易日）
+    result = df.prev_trading_day(datetime(2026, 7, 6, tzinfo=tz))
+    assert result.strftime("%Y-%m-%d") == "2026-07-03"
+
+
+def test_prev_trading_day_skips_tw_weekday_holiday():
+    """
+    迴歸測試（勝率回顧量錯天）：原本 prev_trading_date 只跳過週末、不跳過台股國定
+    假日。2026-01-01（元旦，週四）台股休市，2026-01-02（週五）早上跑報告時，
+    「前一交易日」應該是 2025-12-31（週三），不是休市的 2026-01-01——否則勝率回顧
+    會拿不存在交易的日期去查歷史入選清單，或用選股之前的漲跌來評判選股。
+    """
+    import scripts.data_fetchers as df
+    from datetime import datetime, timezone, timedelta
+
+    tz = timezone(timedelta(hours=8))
+    result = df.prev_trading_day(datetime(2026, 1, 2, tzinfo=tz))
+    assert result.strftime("%Y-%m-%d") == "2025-12-31"
+
+
+def test_prev_trading_day_falls_back_to_weekend_skip_when_calendar_unavailable(monkeypatch):
+    """行事曆查詢失敗（版本問題、日期超出行事曆範圍等）時，退回「只跳週末」的保守行為，
+    不能讓整個 pipeline 因此崩潰。"""
+    import exchange_calendars
+    import scripts.data_fetchers as df
+    from datetime import datetime, timezone, timedelta
+
+    def boom(*_a, **_k):
+        raise RuntimeError("calendar unavailable")
+
+    monkeypatch.setattr(exchange_calendars, "get_calendar", boom)
+    tz = timezone(timedelta(hours=8))
+    # 2026-01-02 是週五：行事曆掛掉時退回只跳週末 → 前一「平日」是 2026-01-01
+    result = df.prev_trading_day(datetime(2026, 1, 2, tzinfo=tz))
+    assert result.strftime("%Y-%m-%d") == "2026-01-01"
 
 
 def test_fetch_watchlist_price_history_returns_ohlcv_per_code(monkeypatch):

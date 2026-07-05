@@ -5,15 +5,22 @@ PE_COLORS = {"2330.TW": "#4f8ef7", "SPY": "#00d4ff", "NVDA": "#00e676", "LLY": "
 
 
 def _norm_zero(value):
-    """把 -0.0 正規化成 0.0，避免 f'{value:g}' 印出誤導的負號（例如 '+-0'）。"""
+    """把 -0.0 正規化成 0.0，避免格式化時印出誤導的負號（例如 '+-0'）。"""
     return 0.0 if value == 0 else value
+
+
+def _fmt_price(value):
+    """千分位 + 最多 2 位小數（去掉尾端多餘的 0 與小數點）。不能用 ':,g'——
+    g 只有 6 位有效數字，加權指數 23,456.78 會被截成 '23,456.8'。"""
+    s = f"{value:,.2f}"
+    return s.rstrip("0").rstrip(".")
 
 
 def _fmt_change(change, change_pct):
     change = _norm_zero(change)
     change_pct = _norm_zero(change_pct)
     sign = "+" if change >= 0 else ""
-    return f"{sign}{change:g} ({sign}{change_pct:.2f}%)"
+    return f"{sign}{_fmt_price(change)} ({sign}{change_pct:.2f}%)"
 
 
 def _val_class(change):
@@ -60,8 +67,8 @@ def build_ticker_data(quotes):
         change_pct = _norm_zero(q["change_pct"])
         items.append({
             "sym": q["name"],
-            "price": f'{q["price"]:,g}',
-            "chg": f'{"+" if change >= 0 else ""}{change:g}',
+            "price": _fmt_price(q["price"]),
+            "chg": f'{"+" if change >= 0 else ""}{_fmt_price(change)}',
             "pct": f'{"+" if change_pct >= 0 else ""}{change_pct:.2f}%',
             "up": change >= 0,
         })
@@ -89,7 +96,7 @@ def build_kpi_cards(quotes):
             continue
         cards.append({
             "label": label,
-            "val": f'{q["price"]:,g}',
+            "val": _fmt_price(q["price"]),
             "val_class": _val_class(q["change"]),
             "change_class": _val_class(q["change"]),
             "change_text": _fmt_change(q["change"], q["change_pct"]),
@@ -240,6 +247,47 @@ def build_signal_scoring_context(scored_list, ai_reasons, win_rate_review):
     return {"picks": picks, "win_rate_review": win_rate_review}
 
 
+def _to_chart_number(value):
+    """把 AI 可能輸出的數字型態（int/float/含千分位逗號的字串）收斂成真正的數字；
+    無法轉換（None、非數字字串、bool）回傳 None，由呼叫端決定丟棄。"""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return value
+    try:
+        num = float(str(value).replace(",", "").strip())
+    except (ValueError, TypeError):
+        return None
+    return int(num) if num.is_integer() else num
+
+
+def _sanitize_lly_foundayo(lly):
+    """
+    lly_foundayo 來自 AI 生成的 JSON（不可信來源）；validate_narrative_json() 只保證
+    它是 dict，不保證內部形狀。模板對 weekly_trx/wow_pct 有三種會炸的存取方式：
+    `| tojson`（Undefined 直接 TypeError）、`"{:,}".format(trx)`（字串 ValueError）、
+    `pct >= 0`（字串 TypeError）。比照本檔案既有 _sanitize_* 慣例：缺席的圖表欄位
+    補成空清單、字串數字（如 "1,390"）轉成真正的數字、非 dict 或轉不了數字的項目
+    直接丟棄，不讓一筆格式錯誤的 AI 輸出害整份報告產生失敗。
+    """
+    def clean_series(items, value_key):
+        cleaned = []
+        for item in items if isinstance(items, list) else []:
+            if not isinstance(item, dict):
+                continue
+            num = _to_chart_number(item.get(value_key))
+            if num is None:
+                continue
+            cleaned.append({**item, value_key: num})
+        return cleaned
+
+    return {
+        **lly,
+        "weekly_trx": clean_series(lly.get("weekly_trx"), "trx"),
+        "wow_pct": clean_series(lly.get("wow_pct"), "pct"),
+    }
+
+
 def _sanitize_warning_indicators(warning_indicators):
     return {
         key: {**item, "status": _safe_css_token(item.get("status"), STATUS_VALUES, "amber")}
@@ -321,7 +369,7 @@ def build_template_context(*, date_label, weekday_cn, tw_holiday_note,
         "strategy_cards": narrative_json["strategy_cards"],
         "risk_matrix_rows": narrative_json["risk_matrix_rows"],
         "market_deep_dive_html": narrative_json["market_deep_dive_html"],
-        "lly_foundayo": narrative_json["lly_foundayo"],
+        "lly_foundayo": _sanitize_lly_foundayo(narrative_json["lly_foundayo"]),
         "signal_scoring": signal_scoring,
     }
 

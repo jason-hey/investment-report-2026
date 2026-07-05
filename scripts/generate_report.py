@@ -33,6 +33,7 @@ if _REPO_ROOT not in sys.path:
 from scripts.data_fetchers import (
     is_prev_us_day_holiday,
     is_prev_tw_day_holiday,
+    prev_trading_day,
     fetch_earnings_calendar,
     format_earnings_for_prompt,
     fetch_all_pe_data,
@@ -69,14 +70,27 @@ from scripts.signal_scoring import (
 )
 from scripts.report_render import build_template_context, render_report, build_signal_scoring_context
 
-# AI 敘述 JSON 的必要欄位（見 JSON_OUTPUT_SPEC）；Task 9 的 render_report() 依賴這些欄位齊全。
-REQUIRED_JSON_FIELDS = [
-    "daily_brief", "header_pills", "data_validation", "hero_events",
-    "warning_indicators", "night_session", "institutional_summary",
-    "stock_signal_reasons", "news",
-    "ai_infra_html", "theme_cards", "strategy_cards", "risk_matrix_rows",
-    "market_deep_dive_html", "lly_foundayo",
-]
+# AI 敘述 JSON 的必要欄位與期望型別（見 JSON_OUTPUT_SPEC）；Task 9 的 render_report()
+# 依賴這些欄位齊全。只檢查「欄位存在」不夠——AI 偶爾會輸出 null 或型別錯誤的值
+# （例如 "lly_foundayo": null、"news": []），欄位存在但值不可用，會等到模板渲染到
+# 一半才在深處炸出難懂的 Jinja traceback；這裡在渲染前就把問題揪出來、直接點名欄位。
+REQUIRED_JSON_FIELDS = {
+    "daily_brief": str,
+    "header_pills": list,
+    "data_validation": list,
+    "hero_events": list,
+    "warning_indicators": dict,
+    "night_session": dict,
+    "institutional_summary": list,
+    "stock_signal_reasons": list,
+    "news": dict,
+    "ai_infra_html": str,
+    "theme_cards": list,
+    "strategy_cards": list,
+    "risk_matrix_rows": list,
+    "market_deep_dive_html": str,
+    "lly_foundayo": dict,
+}
 
 TZ_TW = timezone(timedelta(hours=8))
 today = datetime.now(TZ_TW)
@@ -193,9 +207,9 @@ signal_scores_json = json.dumps(
 
 SIGNAL_HISTORY_PATH = "data/stock_signals_history.json"
 signal_history = load_signal_history(SIGNAL_HISTORY_PATH)
-prev_trading_date = today - timedelta(days=1)
-while prev_trading_date.weekday() >= 5:
-    prev_trading_date -= timedelta(days=1)
+# 用台股行事曆找前一個實際交易日（不能只跳週末）：台股假日落在平日時，只跳週末會
+# 拿假日去查歷史入選清單、或用選股之前的漲跌評判選股，勝率統計會量錯天。
+prev_trading_date = prev_trading_day(today)
 
 # 勝率回顧需要涵蓋整個觀察清單（~65 檔）的漲跌，不能只用 fetch_quotes() 那 4 檔窄清單
 # （否則 61+ 檔會被誤判成「未上漲」而非「無資料」，嚴重低估勝率）。改用剛抓好的
@@ -429,10 +443,19 @@ def extract_json_block(text):
 
 
 def validate_narrative_json(data):
-    """回傳缺少的必要欄位清單；空清單代表通過。"""
+    """回傳問題清單（缺欄位／null／型別錯誤，每筆一句話點名欄位）；空清單代表通過。"""
     if data is None:
-        return REQUIRED_JSON_FIELDS  # 全部視為缺失
-    return [field for field in REQUIRED_JSON_FIELDS if field not in data]
+        return [f"缺少欄位 {field}" for field in REQUIRED_JSON_FIELDS]
+    problems = []
+    for field, expected_type in REQUIRED_JSON_FIELDS.items():
+        if field not in data:
+            problems.append(f"缺少欄位 {field}")
+        elif not isinstance(data[field], expected_type):
+            problems.append(
+                f"{field} 型別錯誤（應為 {expected_type.__name__}，"
+                f"實際 {type(data[field]).__name__}）"
+            )
+    return problems
 
 
 response = call_claude(messages)
@@ -474,11 +497,11 @@ for iteration in range(5):
 if not narrative_json:
     raise RuntimeError(f"未能從 Claude 取得 JSON 內容（最終 stop_reason={response.stop_reason}）")
 
-missing_fields = validate_narrative_json(narrative_json)
-if missing_fields:
+validation_problems = validate_narrative_json(narrative_json)
+if validation_problems:
     raise RuntimeError(
-        f"AI 回傳 JSON 缺少必要欄位，中止發布：缺少 {missing_fields}；"
-        f"實際收到的欄位：{sorted(narrative_json.keys())}"
+        "AI 回傳 JSON 驗證失敗，中止發布：\n  - " + "\n  - ".join(validation_problems)
+        + f"\n實際收到的欄位：{sorted(narrative_json.keys())}"
     )
 print("  ✅ AI 敘述 JSON 驗證通過")
 

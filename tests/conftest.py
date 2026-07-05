@@ -79,6 +79,7 @@ def _stub_and_import_generate_report():
     originals = {
         "is_prev_us_day_holiday": data_fetchers.is_prev_us_day_holiday,
         "is_prev_tw_day_holiday": data_fetchers.is_prev_tw_day_holiday,
+        "prev_trading_day": data_fetchers.prev_trading_day,
         "fetch_earnings_calendar": data_fetchers.fetch_earnings_calendar,
         "fetch_all_pe_data": data_fetchers.fetch_all_pe_data,
         "fetch_institutional_3day_ranking": data_fetchers.fetch_institutional_3day_ranking,
@@ -144,6 +145,10 @@ def _stub_and_import_generate_report():
 
         data_fetchers.is_prev_us_day_holiday = lambda *_a, **_k: False
         data_fetchers.is_prev_tw_day_holiday = lambda *_a, **_k: False
+        # DATE_OVERRIDE=2099-01-01 超出 XTAI 行事曆範圍（真實實作會退回只跳週末並印警告），
+        # 這裡直接給假實作，跳過行事曆載入
+        import datetime as _dt
+        data_fetchers.prev_trading_day = lambda base_date, *_a, **_k: base_date - _dt.timedelta(days=1)
         data_fetchers.fetch_earnings_calendar = lambda *_a, **_k: []
         data_fetchers.fetch_all_pe_data = lambda *_a, **_k: {"tw": [], "us": []}
         data_fetchers.fetch_institutional_3day_ranking = lambda *_a, **_k: None

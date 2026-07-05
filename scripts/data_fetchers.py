@@ -33,6 +33,31 @@ def is_prev_tw_day_holiday(base_date):
     return _is_prev_day_holiday(base_date, "XTAI")
 
 
+def prev_trading_day(base_date, calendar_code="XTAI", max_lookback_days=15):
+    """
+    回傳 base_date 的前一個「實際交易日」（依指定市場行事曆，預設台股 XTAI）。
+    只跳週末是不夠的——台股國定假日（元旦、春節等）落在平日時，勝率回顧若拿假日
+    當「前一交易日」，會查不到歷史入選清單、或用選股之前的漲跌評判選股（量錯天）。
+    行事曆查詢失敗（日期超出行事曆範圍等）時，保守退回「只跳週末」的結果。
+    """
+    fallback = base_date - timedelta(days=1)
+    while fallback.weekday() >= 5:
+        fallback -= timedelta(days=1)
+    try:
+        import exchange_calendars as xcals
+        cal = xcals.get_calendar(calendar_code)
+        candidate = base_date - timedelta(days=1)
+        for _ in range(max_lookback_days):
+            if candidate.weekday() < 5 and cal.is_session(candidate.strftime("%Y-%m-%d")):
+                return candidate
+            candidate -= timedelta(days=1)
+        print(f"  ⚠️ {calendar_code} 往回 {max_lookback_days} 天內找不到交易日，退回只跳過週末的結果")
+        return fallback
+    except Exception as e:
+        print(f"  ⚠️ {calendar_code} 前一交易日查詢失敗（{e}），退回只跳過週末的結果")
+        return fallback
+
+
 # ── 財報日曆：用 yfinance 抓取結構化資料，避免 AI web_search 誤判 ──────────
 
 EARNINGS_WATCH = [
@@ -170,12 +195,17 @@ def fetch_pe_history(symbol, display_name):
             print(f"  ⚠️ {display_name} 季度 EPS 資料不足 4 季，無法計算 TTM，跳過歷史趨勢")
             return {"trailing_3y": [], "forward_pe": forward_pe}
 
-        # 每一季的 TTM EPS = 該季 + 前 3 季合計；依公布日期由舊到新排序
+        # 每一季的 TTM EPS = 該季 + 前 3 季合計；依估計公布日由舊到新排序。
+        # quarterly_income_stmt 的索引是「季度截止日」，不是「實際公布日」——美股 10-Q
+        # 期限、台股季報期限都是季度結束後約 45 天。若直接拿截止日當生效日，P/E 歷史
+        # 會在財報公布前 1~2 個月就套用還沒公開的 EPS（前視偏差），因此往後推 45 天
+        # 作為估計公布日，之後的月份才套用這一季的 TTM EPS。
         ttm_points = []
         for i in range(3, len(eps_by_quarter)):
             ttm_eps = float(eps_by_quarter.iloc[i - 3:i + 1].sum())
             if ttm_eps > 0:
-                ttm_points.append((eps_by_quarter.index[i].date(), ttm_eps))
+                est_publication_date = eps_by_quarter.index[i].date() + timedelta(days=45)
+                ttm_points.append((est_publication_date, ttm_eps))
 
         if not ttm_points:
             print(f"  ⚠️ {display_name} TTM EPS 皆為負值，跳過歷史趨勢")

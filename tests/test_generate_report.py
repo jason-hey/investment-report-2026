@@ -65,11 +65,51 @@ def test_extract_json_block_handles_nested_triple_backticks_in_string_value():
     assert extract_json_block(text) == {"daily_brief": "some ```code``` inside"}
 
 
+def _valid_narrative_skeleton():
+    """依 REQUIRED_JSON_FIELDS 的期望型別建出每個欄位都是「正確型別的空值」的資料。"""
+    from scripts.generate_report import REQUIRED_JSON_FIELDS
+
+    return {field: expected_type() for field, expected_type in REQUIRED_JSON_FIELDS.items()}
+
+
 def test_validate_narrative_json_lists_missing_fields():
     from scripts.generate_report import validate_narrative_json, REQUIRED_JSON_FIELDS
 
     assert "stock_signal_reasons" in REQUIRED_JSON_FIELDS
-    assert validate_narrative_json(None) == REQUIRED_JSON_FIELDS
-    assert validate_narrative_json({f: None for f in REQUIRED_JSON_FIELDS}) == []
-    partial = {f: None for f in REQUIRED_JSON_FIELDS if f != "daily_brief"}
-    assert validate_narrative_json(partial) == ["daily_brief"]
+    # None 輸入：全部欄位都缺
+    assert len(validate_narrative_json(None)) == len(REQUIRED_JSON_FIELDS)
+    # 欄位齊全且型別正確 → 通過
+    assert validate_narrative_json(_valid_narrative_skeleton()) == []
+    # 缺一個欄位 → 問題清單恰好一筆、且點名該欄位
+    partial = _valid_narrative_skeleton()
+    partial.pop("daily_brief")
+    problems = validate_narrative_json(partial)
+    assert len(problems) == 1
+    assert "daily_brief" in problems[0]
+
+
+def test_validate_narrative_json_rejects_null_field_value():
+    """
+    迴歸測試：舊版只檢查「欄位存在」，AI 輸出 "lly_foundayo": null 會通過驗證，
+    直到模板深處（lly_foundayo.weekly_trx | tojson）才炸出難懂的 Jinja traceback。
+    驗證階段就要把 null 欄位抓出來，錯誤訊息直接點名欄位。
+    """
+    from scripts.generate_report import validate_narrative_json
+
+    data = _valid_narrative_skeleton()
+    data["lly_foundayo"] = None
+    problems = validate_narrative_json(data)
+    assert len(problems) == 1
+    assert "lly_foundayo" in problems[0]
+
+
+def test_validate_narrative_json_rejects_wrong_type_field_value():
+    from scripts.generate_report import validate_narrative_json
+
+    data = _valid_narrative_skeleton()
+    data["news"] = []          # 應為 dict（依分類的物件），AI 幻覺輸出成陣列
+    data["ai_infra_html"] = 123  # 應為 str
+    problems = validate_narrative_json(data)
+    assert len(problems) == 2
+    assert any("news" in p for p in problems)
+    assert any("ai_infra_html" in p for p in problems)
