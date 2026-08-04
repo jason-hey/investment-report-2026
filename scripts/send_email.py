@@ -1,7 +1,16 @@
 """Email 通知 — 支援多個收件人（NOTIFY_EMAIL 用逗號分隔）"""
-import os, smtplib
+import os, smtplib, sys
 from email.mime.text import MIMEText
 from datetime import datetime, timezone, timedelta
+
+# 跟 scripts/generate_report.py 同樣的原因：本檔案用「python scripts/send_email.py」
+# （repo 根目錄執行）啟動時，sys.path[0] 會是 scripts/ 而非 repo 根目錄，
+# 底下的 `from scripts.failure_alert import ...` 會找不到 scripts 這個套件。
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
+from scripts.failure_alert import build_failure_message
 
 TZ_TW = timezone(timedelta(hours=8))
 
@@ -39,8 +48,28 @@ def build_email():
     return subject, body, recipients
 
 
+def build_failure_email(log_text: str, run_url: str):
+    """組出 pipeline 失敗通知信的 (subject, body, recipients)。內文跟 Telegram/LINE
+    共用同一套錯誤分類邏輯（scripts/failure_alert.py），避免三個通知管道各寫一份、
+    分類結果不一致。"""
+    recipients_raw = os.environ["NOTIFY_EMAIL"]
+    recipients = [r.strip() for r in recipients_raw.split(",") if r.strip()]
+
+    subject = "⚠️ 投資情報 pipeline 執行失敗"
+    body = build_failure_message(log_text, run_url)
+    return subject, body, recipients
+
+
 def main():
-    subject, body, recipients = build_email()
+    if os.environ.get("NOTIFY_MODE") == "failure":
+        log_path = os.environ.get("GENERATE_LOG_PATH", "")
+        log_text = ""
+        if log_path and os.path.exists(log_path):
+            with open(log_path, encoding="utf-8", errors="replace") as f:
+                log_text = f.read()
+        subject, body, recipients = build_failure_email(log_text, os.environ.get("RUN_URL", ""))
+    else:
+        subject, body, recipients = build_email()
 
     msg = MIMEText(body, "plain", "utf-8")
     msg["Subject"] = subject

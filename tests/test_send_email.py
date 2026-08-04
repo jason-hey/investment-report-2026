@@ -37,3 +37,28 @@ def test_build_email_defaults_to_today_without_override(monkeypatch):
     today_str = datetime.now(timezone(timedelta(hours=8))).strftime("%Y/%m/%d")
     assert today_str in subject
     assert recipients == ["a@example.com"]
+
+
+def test_build_failure_email_includes_classified_reason_and_recipients(monkeypatch):
+    """
+    迴歸測試（新功能）：pipeline 失敗時原本 Email 完全不會發送（只有 Telegram/LINE
+    的通用「請檢查執行紀錄」訊息），使用者得自己點進 Actions 網頁翻 log 才知道原因。
+    build_failure_email() 要能組出「原因分類 + 錯誤片段 + 執行紀錄連結」的失敗信件。
+    """
+    monkeypatch.setenv("NOTIFY_EMAIL", "a@example.com, b@example.com")
+
+    from scripts.send_email import build_failure_email
+
+    log_text = (
+        "anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': "
+        "{'type': 'invalid_request_error', 'message': 'Your credit balance is too "
+        "low to access the Anthropic API.'}}"
+    )
+    run_url = "https://github.com/jason-hey/investment-report-2026/actions/runs/999"
+
+    subject, body, recipients = build_failure_email(log_text, run_url)
+
+    assert "失敗" in subject
+    assert "額度不足" in body
+    assert run_url in body
+    assert recipients == ["a@example.com", "b@example.com"]

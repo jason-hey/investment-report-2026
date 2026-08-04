@@ -36,7 +36,13 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DATE_OVERRIDE: ${{ github.event.inputs.date_override }}
-        run: python scripts/generate_report.py
+        run: |
+          # tee 同時輸出到 Actions log（跟以前一樣可以直接在網頁上看）與
+          # generate_report.log 檔案（失敗時給下面的 Send failure alert step 讀取、
+          # 分類錯誤原因）。set -o pipefail 確保 python 失敗時整個 step 也算失敗
+          # ——否則 tee 的結束碼永遠是 0，pipeline 會誤判成功並跳過失敗通知。
+          set -o pipefail
+          python scripts/generate_report.py 2>&1 | tee generate_report.log
 
       - name: Commit and push report
         id: commit
@@ -155,14 +161,22 @@ jobs:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
           LINE_GROUP_ID: ${{ secrets.LINE_GROUP_ID }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
         run: |
           RUN_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          # 用 printf 組多行訊息（比照 Telegram/LINE 步驟）：不能用直接換行的 MSG="..."
-          # 字串——YAML 的 run: | 區塊裡，縮排不足的續行會終止整個區塊、讓 workflow
-          # 檔案本身變成無法解析（Invalid workflow file）
-          MSG=$(printf '投資情報 pipeline 執行失敗 ⚠️\n\n請檢查執行紀錄：%s' "$RUN_URL")
+          # generate_report.log 只有在「Generate report」這個 step 本身失敗時才會存在
+          # （tee 寫出的檔案）；若是後面 commit/notify 等其他 step 失敗，這裡沒有 log
+          # 可分析，就退回原本的通用訊息。分類邏輯（額度不足／速率限制／金鑰失效……）
+          # 統一寫在 scripts/failure_alert.py，Telegram/LINE/Email 三邊共用同一套。
+          if [ -f generate_report.log ]; then
+            MSG=$(python scripts/failure_alert.py generate_report.log "$RUN_URL")
+          else
+            MSG=$(printf '投資情報 pipeline 執行失敗 ⚠️\n\n請檢查執行紀錄：%s' "$RUN_URL")
+          fi
 
           if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
             curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" -d chat_id="${TELEGRAM_CHAT_ID}" --data-urlencode "text=${MSG}"
@@ -187,4 +201,8 @@ jobs:
                 send_line "$GID"
               done
             fi
+          fi
+
+          if [ -n "$GMAIL_USER" ] && [ -n "$GMAIL_APP_PASSWORD" ] && [ -n "$NOTIFY_EMAIL" ]; then
+            NOTIFY_MODE=failure GENERATE_LOG_PATH=generate_report.log RUN_URL="$RUN_URL" python scripts/send_email.py
           fi
