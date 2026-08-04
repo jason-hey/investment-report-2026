@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作日誌：Plan 3 完成、最終審查、合併至 main — 2026-07-05</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg0: #04040d; --bg1: #08081a; --bg2: #0e0e22; --bg3: #13132c;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.16);
+    --t1: #f0f2fc; --t2: #c8d0ec;
+    --green: #3ecf8e; --green2: rgba(62,207,142,.15);
+    --amber: #f5a623; --amber2: rgba(245,166,35,.14);
+    --blue: #5b9cf6; --blue2: rgba(91,156,246,.15);
+    --teal: #2dd4bf; --teal2: rgba(45,212,191,.15);
+    --red: #f26666; --red2: rgba(242,102,102,.15);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg0); color: var(--t1); font-family: var(--sans); font-size: 15px; line-height: 1.7; }
+
+  header { padding: 40px 48px 28px; border-bottom: 1px solid var(--border2); background: var(--bg1); }
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: 9px; letter-spacing: .12em;
+    padding: 3px 10px; border-radius: 2px; margin-bottom: 14px;
+    border: 1px solid var(--green); color: var(--green); background: var(--green2);
+  }
+  h1 { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { color: var(--t2); font-size: 14px; }
+  .subtitle code { font-family: var(--mono); font-size: 13px; color: var(--teal); }
+
+  main { max-width: 960px; margin: 0 auto; padding: 48px 48px 80px; }
+
+  .summary-card {
+    background: var(--green2); border: 1px solid var(--green);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .summary-title { font-weight: 600; font-size: 16px; color: var(--green); margin-bottom: 6px; }
+  .summary-desc { color: var(--t2); font-size: 14px; line-height: 1.7; }
+
+  .warn-card {
+    background: var(--red2); border: 1px solid var(--red);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .warn-title { font-weight: 600; font-size: 16px; color: var(--red); margin-bottom: 10px; }
+
+  .next-card {
+    background: var(--blue2); border: 1px solid var(--blue);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .next-title { font-weight: 600; font-size: 16px; color: var(--blue); margin-bottom: 10px; }
+
+  h2 {
+    font-family: var(--mono); font-size: 13px; letter-spacing: .1em;
+    color: var(--amber); text-transform: uppercase;
+    margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border2);
+  }
+  h2.blue  { color: var(--blue); }
+  h2.green { color: var(--green); }
+  h2.red   { color: var(--red); }
+  section { margin-bottom: 48px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  th { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--t2); text-transform: uppercase; }
+  tr:last-child td { border-bottom: none; }
+  td.status-done { color: var(--green); font-weight: 600; white-space: nowrap; }
+
+  .issues { display: flex; flex-direction: column; gap: 14px; }
+  .issue {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 18px 22px;
+  }
+  .issue-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .issue-num {
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    border-radius: 3px; width: 28px; height: 28px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--red2); color: var(--red); border: 1px solid var(--red);
+  }
+  .issue-title { font-weight: 600; font-size: 14.5px; }
+  .issue-body { color: var(--t2); font-size: 14px; padding-left: 40px; }
+  .issue-body code { font-family: var(--mono); font-size: 12.5px; color: var(--teal); background: var(--bg3); padding: 1px 5px; border-radius: 3px; }
+
+  .file-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .file-list li { font-family: var(--mono); font-size: 13px; padding: 6px 10px; background: var(--bg2); border-radius: 4px; border: 1px solid var(--border); }
+  .file-list li .desc { font-family: var(--sans); color: var(--t2); font-size: 13px; }
+
+  ol.steps { padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
+  ol.steps li { color: var(--t2); font-size: 14px; }
+  ol.steps li strong { color: var(--t1); }
+
+  code { font-family: var(--mono); }
+  a { color: var(--blue); }
+
+  :root[data-theme="light"] {
+    --bg0: #f5f6fb; --bg1: #ffffff; --bg2: #ffffff; --bg3: #eef0f8;
+    --border: rgba(20,20,40,0.10); --border2: rgba(20,20,40,0.18);
+    --t1: #14142b; --t2: #4a4d6a;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg0: #f5f6fb; --bg1: #ffffff; --bg2: #ffffff; --bg3: #eef0f8;
+      --border: rgba(20,20,40,0.10); --border2: rgba(20,20,40,0.18);
+      --t1: #14142b; --t2: #4a4d6a;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">✓ 已完成並合併 · 2026-07-05</span>
+  <h1>Plan 3 完成、最終審查、合併至 main</h1>
+  <div class="subtitle">
+    延續 <a href="2026-07-04-report-architecture-rewrite-worklog.md">2026-07-04 工作日誌</a> 的中斷點 ·
+    最終合併版本 <code>288e785</code>（main，已推上 origin）
+  </div>
+</header>
+
+<main>
+
+  <div class="summary-card">
+    <div class="summary-title">本次對話完成的事</div>
+    <div class="summary-desc">
+      接續上次中斷點（Plan 3 Task 9 尚未開始），完成 Task 9 ~ 14 全部工作、跑了一次涵蓋三份計畫的最終整體審查
+      （額外抓到一個安全性問題），用 <code>finishing-a-development-branch</code> skill 把分支 fast-forward
+      合併進 main、清掉 worktree，最後把 main push 上 GitHub、並把工作日誌一併 commit。
+      <strong style="color:var(--t1)">目前沒有進行中的分支或未完成的 task。</strong>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="green">Plan 3：Task 9 ~ 14 完成明細</h2>
+    <table>
+      <tr><th>#</th><th>內容</th><th>狀態</th></tr>
+      <tr><td>9</td><td>AI JSON schema 新增 stock_signal_reasons 欄位</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>10</td><td>build_signal_scoring_context()（report_render.py）</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>11</td><td>模板新增「今日觀察清單」+「昨日選股回顧」區塊</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>12</td><td>build_template_context() 串接 signal_scoring key</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>13</td><td>generate_report.py 主流程串接（最大整合 task）</td><td class="status-done">✓ 完成</td></tr>
+      <tr><td>14</td><td>端到端人工驗證（真實資料 + 視覺檢查）</td><td class="status-done">✓ 完成</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>每個 task 審查中抓到的關鍵問題</h2>
+    <div class="issues">
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">9</div><div class="issue-title">刻意縮小範圍，避免 NameError</div></div>
+        <div class="issue-body">只加 schema／REQUIRED_JSON_FIELDS／測試，沒有同時接上 prompt 區塊——因為 <code>generate_report.py</code> 沒有 <code>if __name__</code> 保護，太早接上還不存在的變數會讓既有迴歸測試從「預期失敗」變成「NameError 崩潰」。留給 Task 13 一起做。</div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">10</div><div class="issue-title">AI JSON 直接索引會 KeyError</div></div>
+        <div class="issue-body"><code>ai_reasons</code> 是 AI 生成的 JSON，直接用 <code>item["code"]</code> 索引在缺欄位時會拖垮整份報告。改用 <code>.get()</code> 防呆。</div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">11</div><div class="issue-title">模板提前引用未接線的 context key</div></div>
+        <div class="issue-body">插入模板時 <code>build_template_context()</code> 還沒有 <code>signal_scoring_context</code> 參數，直接寫 <code>signal_scoring.picks</code> 會讓 conftest 的 autouse fixture 在 import 階段就 UndefinedError 崩潰。加了過渡期防呆並標記 TODO。</div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">12</div><div class="issue-title">偏離 plan：必填參數改成有預設值</div></div>
+        <div class="issue-body">plan 文件寫「必填」，但比照 Plan 2 慣例改成有預設值——理由同 Task 9，避免現有呼叫端在 Task 13 真正接線前就 TypeError。並把預設值抽成獨立函式，避免跟 <code>build_signal_scoring_context()</code> 的形狀定義不同步。</div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">13</div><div class="issue-title">兩個先前記錄的設計問題一併處理</div></div>
+        <div class="issue-body">
+          （a）法人資料的 <code>STOCK_DAY_ALL</code> API 被兩個函式各打一次，改成共用一次預抓結果；
+          （b）勝率回顧原本只用 4 檔台股的報價當來源，65 檔觀察清單裡 61 檔會被誤判「沒漲」，
+          改成從已抓到的歷史價量自己算出全部 65 檔的漲跌。另外還補了一個 <code>isinstance</code> 防呆，
+          擋掉 AI 把某筆輸出成非 dict 字串的情況。
+        </div>
+      </div>
+      <div class="issue">
+        <div class="issue-head"><div class="issue-num">14</div><div class="issue-title">端到端驗證：無 bug，正常運作</div></div>
+        <div class="issue-body">真實資料跑出 65 檔中 53 檔命中訊號、分數分布合理；勝率回顧 round-trip 正常；<code>pytest tests/ -v</code> 全過、無殘留檔案；真實資料渲染出的 HTML 視覺確認正確。</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="warn-card">
+    <div class="warn-title">⚠ 最終整體審查額外抓到的問題（單一 task 審查看不出來）</div>
+    <div style="color:var(--t2); font-size:14px; line-height:1.8;">
+      <strong style="color:var(--t1)">安全性問題（最嚴重）：</strong>
+      <code>scripts/report_render.py</code> 的 Jinja2 Environment 設定成 <code>autoescape=False</code>。
+      原始架構設計意圖是「只有 3 個欄位信任 AI 直接輸出 HTML，其餘敘述文字都應該安全 escape」，
+      但因為 autoescape 整個關掉，這個信任邊界形同虛設——<strong>所有</strong>敘述欄位都沒有做 HTML escape。
+      這些文字來自 AI 的 web_search 結果整理，若搜尋到的網頁帶有惡意標籤，AI 逐字引用後會原樣發布到
+      公開的 GitHub Pages 網站上。<strong style="color:var(--green)">已修正</strong>為 <code>autoescape=True</code>
+      （確認過模板裡只有 3 處用 <code>| safe</code>，沒有其他地方依賴「不 escape」），並補上迴歸測試。
+      <br><br>
+      另外順手處理兩個較低優先的落差：<code>CLAUDE.md</code> 從 Plan 1 就沒更新過，還在描述舊架構，已重寫；
+      補了一個測試確認 <code>US_TO_TW_SUPPLY_CHAIN</code> 的美股代號都在熱力圖清單裡，避免未來悄悄失效。
+    </div>
+  </div>
+
+  <section>
+    <h2 class="blue">合併與發布</h2>
+    <ol class="steps">
+      <li>用 <code>superpowers:finishing-a-development-branch</code> skill：確認 84/84 測試通過</li>
+      <li>使用者選擇「merge to main locally」→ fast-forward 合併（<code>bba5c9a..9e223e5</code>）</li>
+      <li>合併後的 main 再跑一次測試，確認 84/84 通過</li>
+      <li>清掉 worktree 與 feature branch <code>worktree-report-architecture-rewrite</code></li>
+      <li>使用者確認後，push 上 <code>origin/main</code>（<code>cc7ac7d..9e223e5</code>）</li>
+      <li>把本次工作日誌一併 commit + push（<code>288e785</code>）</li>
+    </ol>
+  </section>
+
+  <div class="next-card">
+    <div class="next-title">下一步（非既定任務，供參考）</div>
+    <div style="color:var(--t2); font-size:14px; line-height:1.8;">
+      目前沒有已知待辦事項。可能的觀察方向：
+      <ol class="steps" style="margin-top:8px">
+        <li><strong>觀察下一次 GitHub Actions 排程執行</strong>（平日台灣時間 08:00）：這是新架構＋選股訊號系統第一次在正式排程環境執行。重點看 <code>data/stock_signals_history.json</code> 是否正確被 commit、65 檔觀察清單裡有 5 檔本機測試時 yfinance 抓不到資料（5347/3529/3324/6274/8299）正式環境是否一樣。</li>
+        <li>若對選股訊號評分系統有回饋（門檻值調整、新增訊號等），可以再開新的 plan。</li>
+        <li><code>data/stock_signals_history.json</code> 會隨每日執行持續累積歷史紀錄（上限 30 天），屬預期行為。</li>
+      </ol>
+    </div>
+  </div>
+
+  <section>
+    <h2>相關檔案路徑</h2>
+    <p style="color:var(--t2); font-size:13px; margin-bottom:10px;">本次修改的程式碼（已在 main、已推上遠端）：</p>
+    <ul class="file-list">
+      <li>scripts/generate_report.py <span class="desc">— Task 9（JSON schema）、Task 13（主流程完整串接）</span></li>
+      <li>scripts/report_render.py <span class="desc">— Task 10、12、autoescape 安全性修正</span></li>
+      <li>scripts/data_fetchers.py <span class="desc">— Task 13 dedupe fix</span></li>
+      <li>templates/report.html.j2 <span class="desc">— Task 11 新增區塊</span></li>
+      <li>tests/conftest.py <span class="desc">— Task 13 新增 fetcher stub</span></li>
+      <li>CLAUDE.md <span class="desc">— 最終審查更新，反映新架構</span></li>
+      <li>data/stock_signals_history.json <span class="desc">— 執行時才會產生，repo 裡尚未出現過</span></li>
+    </ul>
+    <p style="color:var(--t2); font-size:13px; margin:16px 0 10px;">Spec / Plan 文件（現在都在 main）：</p>
+    <ul class="file-list">
+      <li>docs/superpowers/specs/2026-07-03-report-architecture-and-features-design.md</li>
+      <li>docs/superpowers/plans/2026-07-03-report-architecture-rewrite.md <span class="desc">— Plan 1，已完成</span></li>
+      <li>docs/superpowers/plans/2026-07-04-new-market-data-sections.md <span class="desc">— Plan 2，已完成</span></li>
+      <li>docs/superpowers/plans/2026-07-04-stock-signal-scoring.md <span class="desc">— Plan 3，已完成</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="green">如何在新對話中接續</h2>
+    <p style="color:var(--t2)">
+      目前沒有進行中的分支或未完成的 task——如果開新對話，代表是要處理<strong style="color:var(--t1)">新的需求</strong>
+      （調整門檻、新增功能、修 bug），而不是接續本次工作。可以直接告訴新需求，會視情況決定是否需要重新規劃。
+      若只是想確認正式環境跑得如何，可以請求檢查 GitHub Actions 執行紀錄或最新的 <code>index.html</code>。
+    </p>
+  </section>
+
+</main>
+
+</body>
+</html>

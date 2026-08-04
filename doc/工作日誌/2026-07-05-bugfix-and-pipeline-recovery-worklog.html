@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作日誌：全程式碼 bug 審查、6 項修正、pipeline 復活 — 2026-07-05</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg0: #04040d; --bg1: #08081a; --bg2: #0e0e22; --bg3: #13132c;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.16);
+    --t1: #f0f2fc; --t2: #c8d0ec;
+    --green: #3ecf8e; --green2: rgba(62,207,142,.15);
+    --amber: #f5a623; --amber2: rgba(245,166,35,.14);
+    --blue: #5b9cf6; --blue2: rgba(91,156,246,.15);
+    --teal: #2dd4bf; --teal2: rgba(45,212,191,.15);
+    --red: #f26666; --red2: rgba(242,102,102,.15);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg0); color: var(--t1); font-family: var(--sans); font-size: 15px; line-height: 1.7; }
+
+  header { padding: 40px 48px 28px; border-bottom: 1px solid var(--border2); background: var(--bg1); }
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: 9px; letter-spacing: .12em;
+    padding: 3px 10px; border-radius: 2px; margin-bottom: 14px;
+    border: 1px solid var(--green); color: var(--green); background: var(--green2);
+  }
+  h1 { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { color: var(--t2); font-size: 14px; }
+  .subtitle code { font-family: var(--mono); font-size: 13px; color: var(--teal); }
+
+  main { max-width: 960px; margin: 0 auto; padding: 48px 48px 80px; }
+
+  .summary-card {
+    background: var(--green2); border: 1px solid var(--green);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .summary-title { font-weight: 600; font-size: 16px; color: var(--green); margin-bottom: 6px; }
+  .summary-desc { color: var(--t2); font-size: 14px; line-height: 1.7; }
+
+  .warn-card {
+    background: var(--red2); border: 1px solid var(--red);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .warn-title { font-weight: 600; font-size: 16px; color: var(--red); margin-bottom: 10px; }
+  .warn-card p { color: var(--t2); font-size: 14px; }
+
+  .next-card {
+    background: var(--blue2); border: 1px solid var(--blue);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .next-title { font-weight: 600; font-size: 16px; color: var(--blue); margin-bottom: 10px; }
+
+  h2 {
+    font-family: var(--mono); font-size: 13px; letter-spacing: .1em;
+    color: var(--amber); text-transform: uppercase;
+    margin-top: 44px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border2);
+  }
+  h2.blue  { color: var(--blue); }
+  h2.teal  { color: var(--teal); }
+  h2.green { color: var(--green); }
+
+  p { color: var(--t2); margin-bottom: 14px; }
+  strong { color: var(--t1); }
+  code {
+    font-family: var(--mono); font-size: 13px; color: var(--teal);
+    background: var(--bg3); padding: 1px 6px; border-radius: 3px;
+  }
+  ul, ol { margin: 0 0 18px 22px; color: var(--t2); }
+  li { margin-bottom: 8px; }
+
+  .table-wrap { overflow-x: auto; margin-bottom: 28px; border: 1px solid var(--border2); border-radius: 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--amber); text-align: left; padding: 12px 14px;
+    background: var(--bg2); border-bottom: 1px solid var(--border2); white-space: nowrap;
+  }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--t2); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td.sev { font-family: var(--mono); font-weight: 700; white-space: nowrap; }
+  .sev-hi { color: var(--red); }
+  .sev-md { color: var(--amber); }
+  .sev-lo { color: var(--blue); }
+
+  .file-list { list-style: none; margin-left: 0; }
+  .file-list li {
+    font-family: var(--mono); font-size: 13px; padding: 8px 12px; margin-bottom: 6px;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; color: var(--t2);
+  }
+  .file-list li span { color: var(--t2); font-family: var(--sans); font-size: 13px; }
+  .file-list li b { color: var(--teal); font-weight: 400; }
+
+  .step-flow {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    font-family: var(--mono); font-size: 12px; margin-bottom: 28px;
+  }
+  .step-flow .step {
+    padding: 6px 12px; border-radius: 4px; background: var(--bg2);
+    border: 1px solid var(--border2); color: var(--t2); white-space: nowrap;
+  }
+  .step-flow .ok { border-color: var(--green); color: var(--green); background: var(--green2); }
+  .step-flow .arrow { color: var(--t2); opacity: .5; }
+
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  @media (max-width: 720px) {
+    header, main { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">WORKLOG · 2026-07-05 · #2</div>
+  <h1>全程式碼 bug 審查、6 項修正、pipeline 復活</h1>
+  <div class="subtitle">狀態：✅ 全部完成 · 已推上 GitHub（commit <code>38af08c</code>）· workflow 已實測恢復正常 · 測試 <code>97/97</code> 通過</div>
+</header>
+
+<main>
+
+<div class="summary-card">
+  <div class="summary-title">✅ 一句話總結</div>
+  <div class="summary-desc">
+    從「檢查程式有無 bug」開始，找出並修正 6 個問題——包括讓整條每日 pipeline 完全停擺的
+    workflow YAML 語法錯誤（Invalid workflow file）——全程 TDD（84 → 97 個測試），
+    已 commit / push，並在 GitHub 手動觸發實測成功（succeeded in 22s，假日邏輯正確跳過）。
+  </div>
+</div>
+
+<div class="warn-card">
+  <div class="warn-title">🔥 最嚴重的發現：pipeline 當時是死的</div>
+  <p>
+    使用者截圖發現 GitHub 顯示 <strong>Invalid workflow file（line 151 YAML 語法錯誤）</strong>：
+    failure alert 步驟的多行 <code>MSG="..."</code> 字串續行沒有縮排，在 <code>run: |</code>
+    區塊裡縮排不足的行會終止整個區塊，導致整份 workflow 無法解析——<strong>排程完全不會觸發，
+    每日報告已停止更新</strong>。修正：改用 <code>printf</code> 組多行訊息（比照 Telegram/LINE
+    步驟既有寫法）。修正後手動觸發驗證：全綠。
+  </p>
+</div>
+
+<h2>六項修正（依嚴重度排列）</h2>
+<div class="table-wrap">
+<table>
+  <tr><th>#</th><th>問題</th><th>修正</th><th>位置</th></tr>
+  <tr>
+    <td class="sev sev-hi">6 緊急</td>
+    <td>workflow 多行 MSG 字串縮排不足 → YAML 區塊被終止 → Invalid workflow file、pipeline 停擺</td>
+    <td>改用 <code>printf</code> 組訊息；<code>yaml.safe_load</code> 驗證可解析</td>
+    <td><code>.github/workflows/daily-update.yml</code></td>
+  </tr>
+  <tr>
+    <td class="sev sev-md">1</td>
+    <td>P/E 歷史前視偏差：TTM EPS 用「季度截止日」生效，比實際公布日早 1~2 個月</td>
+    <td>生效日改為「截止日 + 45 天」（估計公布日）</td>
+    <td><code>data_fetchers.py fetch_pe_history()</code></td>
+  </tr>
+  <tr>
+    <td class="sev sev-md">2</td>
+    <td>勝率回顧只跳週末不跳台股假日 → 假日前後查錯日期、用選股之前的漲跌評判選股</td>
+    <td>新增 <code>prev_trading_day()</code>：XTAI 行事曆找前一實際交易日，失敗退回只跳週末</td>
+    <td><code>data_fetchers.py</code>、<code>generate_report.py</code></td>
+  </tr>
+  <tr>
+    <td class="sev sev-md">3</td>
+    <td>JSON 驗證只查欄位存在：AI 輸出 <code>null</code>/錯型別/字串數字會到模板深處才炸難懂的 traceback</td>
+    <td><code>REQUIRED_JSON_FIELDS</code> 改型別 dict、驗證點名欄位；新增 <code>_sanitize_lly_foundayo()</code>（缺欄位補 []、"1,390" 轉數字、壞項目丟棄）</td>
+    <td><code>generate_report.py</code>、<code>report_render.py</code></td>
+  </tr>
+  <tr>
+    <td class="sev sev-lo">4</td>
+    <td>手動補跑歷史日期時，Email/Telegram/LINE 通知顯示的日期永遠是「今天」</td>
+    <td><code>send_email.py</code> 重構為 <code>build_email()/main()</code> 並支援 <code>DATE_OVERRIDE</code>；workflow 通知步驟同步</td>
+    <td><code>send_email.py</code>、<code>daily-update.yml</code></td>
+  </tr>
+  <tr>
+    <td class="sev sev-lo">5</td>
+    <td><code>:,g</code> 只有 6 位有效數字：加權指數 23,456.78 被截成 23,456.8</td>
+    <td>新增 <code>_fmt_price()</code>（千分位 + 最多 2 位小數），跑馬燈/KPI/漲跌全面改用</td>
+    <td><code>report_render.py</code></td>
+  </tr>
+</table>
+</div>
+
+<h2 class="teal">TDD 與驗證過程</h2>
+<ul>
+  <li>每項修正先寫失敗的迴歸測試（RED）再實作（GREEN）；測試數 <strong>84 → 97 全數通過</strong>。</li>
+  <li>插曲：Bash 工具短暫不可用，Fix 3 實作先於 RED 觀察——事後用 <code>git stash</code> 退回舊版程式碼確認 3 個新測試如預期失敗，還原後通過，補齊 TDD 觀察步驟。</li>
+  <li>同場排除的疑慮（實測確認<strong>不是</strong> bug）：yfinance 1.5.1 的 <code>period="2wk"/"2mo"</code> 合法；模板空資料防護、<code>| tojson</code> 注入、<code>autoescape</code> 信任邊界皆正確。</li>
+</ul>
+
+<h2 class="green">發布與實測</h2>
+<div class="step-flow">
+  <span class="step ok">97/97 測試通過</span><span class="arrow">→</span>
+  <span class="step ok">本機真跑：假日正確跳過 exit 0</span><span class="arrow">→</span>
+  <span class="step ok">commit 38af08c + push</span><span class="arrow">→</span>
+  <span class="step ok">GitHub API：workflow state=active</span><span class="arrow">→</span>
+  <span class="step ok">手動觸發：succeeded in 22s</span>
+</div>
+<p>
+  手動觸發那次 run 的解讀：Generate report 只花 2 秒＝假日跳過（7/3 美國國慶補假）；
+  無變更不 commit；通知步驟全部正確跳過（設計行為：只有真的發布新報告才通知）。
+</p>
+
+<div class="next-card">
+  <div class="next-title">⏭️ 下一步（具體任務）</div>
+  <ol>
+    <li><strong>等 2026-07-07（週二）08:00 排程</strong>——修復後第一次真正的完整生成。確認：新報告發布到
+        <a href="https://jason-hey.github.io/investment-report-2026/">GitHub Pages</a>、
+        Telegram/LINE/Email 通知送達且含 <code>daily_brief</code> 摘要、
+        <code>data/stock_signals_history.json</code> 第一次被 commit、
+        觀察清單 5 檔（5347/3529/3324/6274/8299）yfinance 缺資料狀況是否與本機相同。</li>
+    <li>若週二有問題：把 Actions log 或網頁現象貼給 Claude 查。</li>
+    <li>（可選）P/E 的「+45 天」是估計公布日，未來可改用 <code>ticker.earnings_dates</code> 取真實公布日。</li>
+  </ol>
+</div>
+
+<h2 class="blue">相關檔案路徑</h2>
+<ul class="file-list">
+  <li><b>.github/workflows/daily-update.yml</b> <span>— YAML 修復（printf）+ 通知步驟支援 DATE_OVERRIDE</span></li>
+  <li><b>scripts/data_fetchers.py</b> <span>— fetch_pe_history() 45 天延遲、新增 prev_trading_day()</span></li>
+  <li><b>scripts/generate_report.py</b> <span>— REQUIRED_JSON_FIELDS 型別 dict、驗證強化、接上 prev_trading_day()</span></li>
+  <li><b>scripts/report_render.py</b> <span>— _fmt_price()、_to_chart_number()、_sanitize_lly_foundayo()</span></li>
+  <li><b>scripts/send_email.py</b> <span>— 重構 build_email()/main()、支援 DATE_OVERRIDE</span></li>
+  <li><b>tests/</b> <span>— conftest stub、13 個新迴歸測試、新檔 test_send_email.py</span></li>
+</ul>
+<p>前一份日誌（同日稍早，Plan 1-3 完成與合併）：<a href="2026-07-05-plan3-completion-and-merge-worklog.html">2026-07-05-plan3-completion-and-merge-worklog</a></p>
+
+<h2>如何在新對話中接續</h2>
+<p>目前<strong>沒有進行中的分支或未完成任務</strong>。開新對話時：</p>
+<ul>
+  <li><strong>週二排程後的檢查</strong>：請 Claude 檢查最新 Actions 執行紀錄、<code>index.html</code> 與 <code>data/stock_signals_history.json</code>，對照上方「下一步」逐項確認。</li>
+  <li><strong>報告失敗或內容異常</strong>：貼上 Actions log 或截圖，本日誌的修正清單可幫助快速判斷是否為回歸。</li>
+  <li><strong>新需求</strong>（調門檻、加功能）：直接描述，視情況重新規劃。</li>
+</ul>
+
+</main>
+</body>
+</html>

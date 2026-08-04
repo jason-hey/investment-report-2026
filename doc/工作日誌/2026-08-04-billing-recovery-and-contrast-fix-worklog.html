@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作日誌：帳單額度中斷復原、失敗通知升級、AI 產生區塊文字對比度修正 — 2026-08-04</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg0: #04040d; --bg1: #08081a; --bg2: #0e0e22; --bg3: #13132c;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.16);
+    --t1: #f0f2fc; --t2: #c8d0ec;
+    --green: #3ecf8e; --green2: rgba(62,207,142,.15);
+    --amber: #f5a623; --amber2: rgba(245,166,35,.14);
+    --blue: #5b9cf6; --blue2: rgba(91,156,246,.15);
+    --teal: #2dd4bf; --teal2: rgba(45,212,191,.15);
+    --red: #f26666; --red2: rgba(242,102,102,.15);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg0); color: var(--t1); font-family: var(--sans); font-size: 15px; line-height: 1.7; }
+
+  header { padding: 40px 48px 28px; border-bottom: 1px solid var(--border2); background: var(--bg1); }
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: 9px; letter-spacing: .12em;
+    padding: 3px 10px; border-radius: 2px; margin-bottom: 14px;
+    border: 1px solid var(--green); color: var(--green); background: var(--green2);
+  }
+  h1 { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { color: var(--t2); font-size: 14px; }
+  .subtitle code { font-family: var(--mono); font-size: 13px; color: var(--teal); }
+
+  main { max-width: 960px; margin: 0 auto; padding: 48px 48px 80px; }
+
+  .summary-card {
+    background: var(--green2); border: 1px solid var(--green);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .summary-title { font-weight: 600; font-size: 16px; color: var(--green); margin-bottom: 6px; }
+  .summary-desc { color: var(--t2); font-size: 14px; line-height: 1.7; }
+
+  .warn-card {
+    background: var(--red2); border: 1px solid var(--red);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .warn-title { font-weight: 600; font-size: 16px; color: var(--red); margin-bottom: 10px; }
+  .warn-card p { color: var(--t2); font-size: 14px; }
+
+  .todo-card {
+    background: var(--amber2); border: 1px solid var(--amber);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .todo-title { font-weight: 600; font-size: 16px; color: var(--amber); margin-bottom: 10px; }
+  .todo-card p { color: var(--t2); font-size: 14px; }
+
+  .next-card {
+    background: var(--blue2); border: 1px solid var(--blue);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .next-title { font-weight: 600; font-size: 16px; color: var(--blue); margin-bottom: 10px; }
+
+  h2 {
+    font-family: var(--mono); font-size: 13px; letter-spacing: .1em;
+    color: var(--amber); text-transform: uppercase;
+    margin-top: 44px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border2);
+  }
+  h2.blue  { color: var(--blue); }
+  h2.teal  { color: var(--teal); }
+  h2.green { color: var(--green); }
+  h2.red   { color: var(--red); }
+
+  h3 { font-size: 15px; font-weight: 600; color: var(--t1); margin: 22px 0 10px; }
+
+  p { color: var(--t2); margin-bottom: 14px; }
+  strong { color: var(--t1); }
+  code {
+    font-family: var(--mono); font-size: 13px; color: var(--teal);
+    background: var(--bg3); padding: 1px 6px; border-radius: 3px;
+  }
+  pre {
+    font-family: var(--mono); font-size: 12.5px; color: var(--t2);
+    background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin-bottom: 18px; line-height: 1.6;
+  }
+  ul, ol { margin: 0 0 18px 22px; color: var(--t2); }
+  li { margin-bottom: 8px; }
+
+  .table-wrap { overflow-x: auto; margin-bottom: 28px; border: 1px solid var(--border2); border-radius: 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--amber); text-align: left; padding: 12px 14px;
+    background: var(--bg2); border-bottom: 1px solid var(--border2); white-space: nowrap;
+  }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--t2); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td.sev { font-family: var(--mono); font-weight: 700; white-space: nowrap; }
+  .sev-hi { color: var(--red); }
+  .sev-md { color: var(--amber); }
+  .sev-lo { color: var(--blue); }
+
+  .file-list { list-style: none; margin-left: 0; }
+  .file-list li {
+    font-family: var(--mono); font-size: 13px; padding: 8px 12px; margin-bottom: 6px;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; color: var(--t2);
+  }
+  .file-list li span { color: var(--t2); font-family: var(--sans); font-size: 13px; }
+  .file-list li b { color: var(--teal); font-weight: 400; }
+
+  .step-flow {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    font-family: var(--mono); font-size: 12px; margin-bottom: 28px;
+  }
+  .step-flow .step {
+    padding: 6px 12px; border-radius: 4px; background: var(--bg2);
+    border: 1px solid var(--border2); color: var(--t2); white-space: nowrap;
+  }
+  .step-flow .ok { border-color: var(--green); color: var(--green); background: var(--green2); }
+  .step-flow .bad { border-color: var(--red); color: var(--red); background: var(--red2); }
+  .step-flow .arrow { color: var(--t2); opacity: .5; }
+
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  @media (max-width: 720px) {
+    header, main { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">WORKLOG · 2026-08-04</div>
+  <h1>帳單額度中斷復原、失敗通知升級、AI 產生區塊文字對比度修正</h1>
+  <div class="subtitle">狀態：✅ 主要問題已修復並推上 GitHub（commit <code>cf8971d</code> → <code>b7d0d7e</code> → <code>2e5aea2</code>）· ⚠️ Email 通知待使用者手動清除 secret · ⚠️ prompt 修正尚未經真實排程驗證</div>
+</header>
+
+<main>
+
+<div class="summary-card">
+  <div class="summary-title">✅ 一句話總結</div>
+  <div class="summary-desc">
+    接續上次對話發現 pipeline 已因 Anthropic API 額度用完停擺 12 天（不是程式碼問題）；
+    趁機把失敗通知升級成會分類錯誤原因（額度不足／速率限制／金鑰失效等）並新增失敗 Email；
+    使用者儲值後報告恢復生成，但發現「三地市場深度分析」等 AI 直接產生 HTML 的區塊有文字
+    對比度失敗（淺色字疊淺色底、深色字疊深色底），已修補已發布頁面並加強 prompt 規則；
+    過程中又發現 Gmail App Password 已失效，導致 Email 通知（含新加的失敗通知信）本身也失敗，
+    已修正成不會連坐整個 step；最後應要求暫停 Email 通知（待使用者手動刪除 GitHub secret）。
+  </div>
+</div>
+
+<div class="warn-card">
+  <div class="warn-title">🔥 起因：pipeline 已停擺 12 天</div>
+  <p>
+    上次日誌（2026-07-05）結尾是「等 2026-07-07 排程驗證」，但這次對話發現本機分支落後
+    origin 11 個 commit，且 GitHub Actions 顯示<strong>從 2026-07-22 起，每一次執行（排程與手動）全部失敗</strong>。
+    用使用者貼出的 Actions log 找到真正原因：
+  </p>
+  <pre>anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error':
+{'type': 'invalid_request_error', 'message': 'Your credit balance is too
+low to access the Anthropic API. Please go to Plans &amp; Billing to upgrade
+or purchase credits.'}}</pre>
+  <p>
+    <strong>Anthropic API 帳戶額度用完</strong>——所有 Python 資料抓取都成功，只有呼叫 Claude API
+    寫敘述文字那一步失敗。曾懷疑是 <code>claude-sonnet-4-6</code> 模型已棄用，用 claude-api skill
+    查證後排除（該模型目前仍是 active 的 legacy 模型）。使用者儲值後，排程恢復正常，成功產出
+    2026-08-04 報告（commit <code>d3ca7ea</code>）。
+  </p>
+</div>
+
+<h2>失敗通知升級：加上錯誤分類（commit <code>cf8971d</code>）</h2>
+<p>在等待使用者處理帳單期間，先把「失敗時怎麼知道原因」這件事修好，不用再翻 Actions log：</p>
+<ul>
+  <li>新增 <code>scripts/failure_alert.py</code>：從 log 文字比對已知錯誤類型（額度不足／速率限制／金鑰失效／服務過載／權限不足），組出「分類標籤 + 錯誤片段 + 執行紀錄連結」，Telegram/LINE/Email 三邊共用同一套邏輯。</li>
+  <li><code>scripts/send_email.py</code> 新增 <code>build_failure_email()</code>，<code>main()</code> 依 <code>NOTIFY_MODE=failure</code> 切換——原本失敗時完全不會發 Email，現在會了。</li>
+  <li><code>.github/workflows/daily-update.yml</code>：「Generate report」step 改用 <code>tee</code> 同時把輸出寫進 <code>generate_report.log</code>，「Send failure alert」讀這份 log 分類。</li>
+  <li>新增 <code>tests/test_failure_alert.py</code>、擴充 <code>tests/test_send_email.py</code>。</li>
+</ul>
+<div class="todo-card">
+  <div class="todo-title">⚠️ 這批測試還沒有實際執行過</div>
+  <p>本機這台機器的 <code>python</code>/<code>python3</code> 只是 Windows Store 空殼，不是真正的直譯器，沒辦法跑 <code>pytest</code>。今天新增的測試只靠手動邏輯推演驗證過。建議找機會在有 Python 環境的地方跑一次 <code>pytest tests/test_failure_alert.py tests/test_send_email.py -v</code> 確認全過。</p>
+</div>
+
+<h2 class="teal">AI 產生區塊文字對比度失敗（commit <code>b7d0d7e</code>）</h2>
+<p>
+  使用者貼出截圖：「三地市場深度分析」區塊裡美股分析、韓股分析表格的數值文字幾乎看不見。
+  根因：<code>market_deep_dive_html</code> / <code>ai_infra_html</code> / <code>lly_foundayo.extra_html</code>
+  這三個欄位是 AI 直接產生原始 HTML（模板標記 <code>| safe</code> 直接嵌入頁面），prompt 對格式的要求只有
+  一句模糊的「沿用你過去產出這個區塊時的既有格式規則」——但 AI 每次都是空白 context，並沒有真正的
+  「過去」可循，於是輸出白底卡片卻沒設文字色，文字繼承了頁面深色主題的淺色預設值，疊在自己設的
+  白色背景上完全看不見。
+</p>
+<p>
+  除了截圖裡的兩個表格，<strong>主動排查了另外兩個 <code>| safe</code> 注入點</strong>，抓到同一類問題的
+  另一種形式：
+</p>
+<div class="table-wrap">
+<table>
+  <tr><th>區塊</th><th>失敗形式</th><th>是否為使用者截圖回報</th></tr>
+  <tr>
+    <td>三地市場深度分析（美股/韓股表格）</td>
+    <td>白底卡片沒設文字色，繼承頁面淺色文字 → 淺字疊白底</td>
+    <td class="sev sev-lo">是</td>
+  </tr>
+  <tr>
+    <td>AI 基礎建設驗證指標（標題）</td>
+    <td>標題自己設深色文字，但外層沒設背景（露出頁面深色底）→ 深字疊深底</td>
+    <td class="sev sev-md">否，主動排查發現</td>
+  </tr>
+  <tr>
+    <td>Foundayo 商業化深度分析（標題）</td>
+    <td>同上：深色標題文字疊在未設背景的深色頁面底上</td>
+    <td class="sev sev-md">否，主動排查發現</td>
+  </tr>
+</table>
+</div>
+<h3>修正</h3>
+<ul>
+  <li><strong>已發布頁面</strong>（<code>index.html</code> + <code>Backup/2026-08-04.html</code>）：三地市場深度分析區塊的外層容器補上 <code>color:#1e293b</code>；兩個標題的文字色從深色改成淺色。</li>
+  <li><strong>未來報告的 prompt</strong>（<code>generate_report.py</code> 的 <code>JSON_OUTPUT_SPEC</code>）：把模糊的「沿用既有格式規則」換成明確的「HTML 格式規則」區塊，給死深色主題色碼表，並明訂「最外層容器必須同時設定 background 與 color」「絕對不可用白色/淺色卡片背景」。</li>
+  <li>存了一筆 feedback 記憶：以後遇到這類問題要主動檢查全部 3 個 <code>| safe</code> 注入點，不只修使用者回報的那一處。</li>
+</ul>
+<div class="todo-card">
+  <div class="todo-title">⚠️ 尚未經真實排程驗證</div>
+  <p>這個 prompt 修正還沒被 AI 真的執行過一次——上次成功生成（<code>d3ca7ea</code>）是修正 prompt「之前」的產物，index.html 裡的正確效果是<strong>手動修補</strong>的，不是 AI 照新規則生成的。第一次真正驗證要等下一次排程重新呼叫 Claude API。</p>
+</div>
+
+<h2 class="red">Email 失敗通知本身也失敗：Gmail 憑證過期（commit <code>2e5aea2</code>）</h2>
+<p>
+  使用者貼出 run #75（產生 2026-08-04 報告那次手動觸發）的 log：Email 登入被拒
+  <code>535 Username and Password not accepted</code>。查證後：
+</p>
+<div class="step-flow">
+  <span class="step ok">Generate report 成功</span><span class="arrow">→</span>
+  <span class="step ok">Telegram 成功</span><span class="arrow">→</span>
+  <span class="step ok">LINE 成功</span><span class="arrow">→</span>
+  <span class="step bad">Send Email notification 失敗（Gmail 憑證過期）</span><span class="arrow">→</span>
+  <span class="step bad">Send failure alert 也失敗（新加的失敗 Email 用同一組壞憑證再送一次）</span>
+</div>
+<p>
+  「Send failure alert」step 本身也被標記失敗，蓋掉了「Telegram/LINE 其實都成功送達」這個事實。
+  修正：把失敗通知裡的 Email 呼叫改用 <code>|| echo "::warning::..."</code> 包起來，寄信失敗只印警告，
+  不讓整個 step 的結束碼被「寄信本身失敗」重新定義。
+</p>
+
+<h2>使用者要求暫停 Email 通知</h2>
+<p>
+  沒有改程式碼——現有 workflow 本來就會在 <code>GMAIL_USER</code>/<code>GMAIL_APP_PASSWORD</code> 這兩個
+  secret 不存在時自動跳過所有 Email 步驟（成功信與失敗信都是）。請使用者自己到 repo →
+  Settings → Secrets and variables → Actions 刪除 <code>GMAIL_APP_PASSWORD</code>（或 <code>GMAIL_USER</code>）。
+</p>
+<div class="todo-card">
+  <div class="todo-title">⚠️ 使用者當下還沒實際去刪除</div>
+  <p>只是說要自己去做，這次對話結束時還沒確認完成。</p>
+</div>
+
+<div class="next-card">
+  <div class="next-title">⏭️ 下一步（具體任務）</div>
+  <ol>
+    <li><strong>（使用者待辦）到 GitHub 刪除 <code>GMAIL_APP_PASSWORD</code></strong>（或 <code>GMAIL_USER</code>）secret，真正暫停 Email 通知。日後想恢復：去
+        <a href="https://myaccount.google.com/apppasswords">myaccount.google.com/apppasswords</a>
+        重新產生一組 App Password，更新回這個 secret 即可，不需要再改程式碼。</li>
+    <li><strong>觀察下一次排程執行</strong>（下一個平日台灣時間 08:00）：確認報告正常生成發布、
+        三個 AI 產生區塊（三地市場深度分析／AI 基礎建設驗證指標／Foundayo 商業化深度分析）文字對比度是否正常
+        （新 prompt 規則第一次實戰驗證）、Email 是否確實沒有發送、Telegram/LINE 是否正常送達。</li>
+    <li>若 AI 沒有照新規則生成正確的深色主題 HTML：考慮 template CSS 防禦性 fallback，或把這三個欄位改成結構化欄位而不是讓 AI 直接寫 HTML（<code>generate_report.py</code> 裡有相關取捨的既有註解）。</li>
+    <li>找機會在有真正 Python 環境的地方跑一次 <code>pytest tests/ -v</code>，確認今天新增的測試全過。</li>
+  </ol>
+</div>
+
+<h2 class="blue">相關檔案路徑</h2>
+<ul class="file-list">
+  <li><b>scripts/failure_alert.py</b> <span>— 新檔：失敗原因分類 + 通知訊息組裝</span></li>
+  <li><b>scripts/send_email.py</b> <span>— 新增 build_failure_email()、NOTIFY_MODE=failure 切換</span></li>
+  <li><b>.github/workflows/daily-update.yml</b> <span>— tee 留 log、失敗通知讀 log 分類、失敗 Email 不再連坐整個 step</span></li>
+  <li><b>scripts/generate_report.py</b> <span>— JSON_OUTPUT_SPEC 新增「HTML 格式規則」深色主題色碼表</span></li>
+  <li><b>index.html、Backup/2026-08-04.html</b> <span>— 手動修補三處對比度失敗</span></li>
+  <li><b>tests/test_failure_alert.py</b> <span>— 新檔（尚未實際執行過，只有手動推演）</span></li>
+  <li><b>tests/test_send_email.py</b> <span>— 新增失敗信測試案例（同上，尚未實際執行）</span></li>
+</ul>
+<p>記憶（本次新增）：<code>~/.claude/projects/.../memory/feedback_ai_html_contrast.md</code> —— 提醒以後要主動檢查全部 3 個 <code>| safe</code> 注入點。</p>
+<p>待使用者操作（不是程式碼變更）：GitHub repo Settings → Secrets and variables → Actions → 刪除 <code>GMAIL_APP_PASSWORD</code>。</p>
+
+<h2>如何在新對話中接續</h2>
+<ul>
+  <li><strong>下次排程後的檢查</strong>：請 Claude 檢查最新 Actions 執行紀錄、<code>index.html</code>，重點確認三個 AI 產生區塊的文字對比度是否正常（新 prompt 規則第一次實戰驗證），以及 Email 通知是否確實沒有發送。</li>
+  <li><strong>對比度問題又出現</strong>：代表 prompt 層級的規則不夠強，需要考慮 template CSS 防禦性 fallback 或把這三個欄位改成結構化欄位。</li>
+  <li><strong>使用者已重新申請 App Password 想恢復 Email</strong>：確認新密碼已更新到 <code>GMAIL_APP_PASSWORD</code> secret 即可，不需要改程式碼。</li>
+  <li><strong>新需求</strong>：直接描述，視情況重新規劃。</li>
+</ul>
+
+</main>
+</body>
+</html>
