@@ -204,5 +204,9 @@ jobs:
           fi
 
           if [ -n "$GMAIL_USER" ] && [ -n "$GMAIL_APP_PASSWORD" ] && [ -n "$NOTIFY_EMAIL" ]; then
-            NOTIFY_MODE=failure GENERATE_LOG_PATH=generate_report.log RUN_URL="$RUN_URL" python scripts/send_email.py
+            # 不能讓「失敗信寄不出去」蓋掉「原本那個失敗」——Telegram/LINE 通常已經
+            # 送出去了，這裡只是錦上添花的第三個管道。用 || 讓寄信失敗只印出訊息，
+            # 不要讓這個 step（乃至整個 job）的結束碼被「寄信本身失敗」重新定義。
+            NOTIFY_MODE=failure GENERATE_LOG_PATH=generate_report.log RUN_URL="$RUN_URL" python scripts/send_email.py \
+              || echo "::warning::失敗通知 Email 寄送失敗（可能是 GMAIL_APP_PASSWORD 已失效），但 Telegram/LINE 應該已經送達"
           fi
