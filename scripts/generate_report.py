@@ -303,7 +303,7 @@ JSON_OUTPUT_SPEC = """
     "geo": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
     "ipo": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}]
   },
-  "ai_infra_html": "<使用搜尋任務 10 的三項數據（CSP capex YoY、AI 伺服器出貨量、HBM 合約價與現貨價利差），直接輸出「AI 基礎建設驗證指標」這個區塊的 HTML 片段（3 格並排卡片，不含外層 <html>/<body>），沿用你過去產出這個區塊時的既有格式規則>",
+  "ai_infra_html": "<使用搜尋任務 10 的三項數據（CSP capex YoY、AI 伺服器出貨量、HBM 合約價與現貨價利差），直接輸出「AI 基礎建設驗證指標」這個區塊的 HTML 片段（3 格並排卡片，不含外層 <html>/<body>），必須遵守下方「HTML 格式規則」>",
   "theme_cards": [
     {"icon": "🤖", "title": "<主題名稱>", "body": "<兩三句話說明>", "tickers": ["NVDA", "AVGO"]}
   ],
@@ -313,10 +313,10 @@ JSON_OUTPUT_SPEC = """
   "risk_matrix_rows": [
     {"risk": "<風險名稱>", "likelihood": "高/中/低", "impact": "高/中/低", "mitigation": "<因應方式>"}
   ],
-  "market_deep_dive_html": "<完整執行下方三地市場深度分析規格後，直接輸出這個區塊的 HTML 片段（不含外層 <html>/<body>，只要這個區塊本身的 div 結構），沿用你過去產出這個區塊時的既有格式規則（信心等級標籤、洗盤vs出貨表格等）>",
+  "market_deep_dive_html": "<完整執行下方三地市場深度分析規格後，直接輸出這個區塊的 HTML 片段（不含外層 <html>/<body>，只要這個區塊本身的 div 結構），必須遵守下方「HTML 格式規則」（信心等級標籤、洗盤vs出貨表格等內容結構仍照三地市場深度分析規格執行）>",
   "lly_foundayo": {"weekly_trx": [{"week": "W1", "trx": 1390}], "wow_pct": [{"week": "W2", "pct": 12.3}],
                     "commentary": "<敘述>", "stage_note": "<若無 TRx 數據時的商業化階段說明>",
-                    "extra_html": "<商業化階段 / 分析師全年預估 / 與 NVO 競品對比 3 格卡片 + Medicare 覆蓋里程碑說明的 HTML 片段，沿用你過去產出這個區塊時的既有格式規則>"}
+                    "extra_html": "<商業化階段 / 分析師全年預估 / 與 NVO 競品對比 3 格卡片 + Medicare 覆蓋里程碑說明的 HTML 片段，必須遵守下方「HTML 格式規則」>"}
 }
 
 上面是結構範例，不是要照抄的內容；實際筆數規則如下（範例中只示範 1 筆）：
@@ -327,6 +327,25 @@ JSON_OUTPUT_SPEC = """
 - news 的 ai_semi/macro/geo/ipo 各自視實際搜尋結果填入多筆，該分類若搜尋不到內容也要回傳空陣列 `[]`，不可省略欄位本身
 - theme_cards 固定輸出 5 張，依序涵蓋：AI 算力基礎建設、台灣半導體供應鏈、口服 GLP-1、AI 電力/資料中心、黃金/實物資產
 - strategy_cards 固定輸出 3 張，依序為：巴菲特框架、動能策略、防禦配置
+
+## HTML 格式規則（ai_infra_html / market_deep_dive_html / lly_foundayo.extra_html 都要遵守，這三個欄位內容要照抄下面的色碼，不是隨意示範）
+這三個欄位輸出的原始 HTML 會用 `| safe` 直接嵌入頁面，不會被跳脫或套用頁面樣式。頁面本身是深色主題
+（背景接近全黑、預設文字是淺色）。如果你輸出的區塊只設定了淺色卡片背景卻沒有自己設定文字顏色，
+文字會繼承頁面預設的淺色文字，疊在你自己設的淺色卡片背景上，使用者會完全看不到內容——這是實際
+發生過的 bug，務必避免重蹈覆轍。規則：
+1. 絕對不要使用白色或淺色卡片背景（例如 background:#fff、background:#f8fafc、background:#fafafa
+   這類淺色 hex）。每個區塊最外層的容器（第一層 <div> 或 <section>）務必同時明確設定 background
+   與 color 兩個屬性，統一沿用以下深色主題配色，不要自己另外發明新的配色：
+   - 卡片背景 background:#0f172a；卡片內文字預設 color:#e2e8f0
+   - 主標題 color:#f8fafc；子標題 color:#60a5fa；內文段落 color:#cbd5e1
+   - 上漲/正面數字 color:#4ade80；下跌/負面數字 color:#f87171；警示/待確認 color:#fbbf24
+   - 信心等級徽章：已驗證(F)/官方指引(G) 用 background:#166534，個人推論(I)/資料不足(W) 用
+     background:#78350f，徽章文字務必另外設定 color（不要靠繼承），例如 color:#dcfce7
+   - 表格 thead 用 background:#1e3a5f 搭配 color:#fff；tbody 列可用透明或 background:#0f1e30
+     交錯，但每個 <td>/<th> 都要自己設定 color——不只是漲跌欄位要設，股名/指數名稱/日期等一般
+     欄位也一樣要設，不能只靠父層繼承
+2. 巢狀元素（<td>、<span>、<li> 等）若沒有特殊配色需求可以省略 color（會自然繼承第一層容器設定的
+   color），但第一層容器本身的 color 屬性是硬性必填，不可省略、不可只設 background 不設 color
 
 嚴格遵守以下規則，避免輸出無法解析的 JSON：
 - 只能輸出合法 JSON。不可包含 `/* */` 或 `//` 這類註解、不可有結尾多餘逗號
