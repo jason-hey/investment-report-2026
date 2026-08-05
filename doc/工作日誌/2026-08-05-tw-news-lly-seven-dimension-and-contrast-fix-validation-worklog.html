@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作日誌：新增台灣財經新聞分類、LLY 洗盤 vs 出貨七維度快檢、驗證對比度修正生效 — 2026-08-05</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg0: #04040d; --bg1: #08081a; --bg2: #0e0e22; --bg3: #13132c;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.16);
+    --t1: #f0f2fc; --t2: #c8d0ec;
+    --green: #3ecf8e; --green2: rgba(62,207,142,.15);
+    --amber: #f5a623; --amber2: rgba(245,166,35,.14);
+    --blue: #5b9cf6; --blue2: rgba(91,156,246,.15);
+    --teal: #2dd4bf; --teal2: rgba(45,212,191,.15);
+    --red: #f26666; --red2: rgba(242,102,102,.15);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg0); color: var(--t1); font-family: var(--sans); font-size: 15px; line-height: 1.7; }
+
+  header { padding: 40px 48px 28px; border-bottom: 1px solid var(--border2); background: var(--bg1); }
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: 9px; letter-spacing: .12em;
+    padding: 3px 10px; border-radius: 2px; margin-bottom: 14px;
+    border: 1px solid var(--green); color: var(--green); background: var(--green2);
+  }
+  h1 { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { color: var(--t2); font-size: 14px; }
+  .subtitle code { font-family: var(--mono); font-size: 13px; color: var(--teal); }
+
+  main { max-width: 960px; margin: 0 auto; padding: 48px 48px 80px; }
+
+  .summary-card {
+    background: var(--green2); border: 1px solid var(--green);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .summary-title { font-weight: 600; font-size: 16px; color: var(--green); margin-bottom: 6px; }
+  .summary-desc { color: var(--t2); font-size: 14px; line-height: 1.7; }
+
+  .key-card {
+    background: var(--teal2); border: 1px solid var(--teal);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 28px;
+  }
+  .key-title { font-weight: 600; font-size: 16px; color: var(--teal); margin-bottom: 10px; }
+  .key-card p { color: var(--t2); font-size: 14px; }
+
+  .next-card {
+    background: var(--blue2); border: 1px solid var(--blue);
+    border-radius: 6px; padding: 20px 24px; margin-bottom: 40px;
+  }
+  .next-title { font-weight: 600; font-size: 16px; color: var(--blue); margin-bottom: 10px; }
+
+  h2 {
+    font-family: var(--mono); font-size: 13px; letter-spacing: .1em;
+    color: var(--amber); text-transform: uppercase;
+    margin-top: 44px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border2);
+  }
+  h2.blue  { color: var(--blue); }
+  h2.teal  { color: var(--teal); }
+  h2.green { color: var(--green); }
+
+  p { color: var(--t2); margin-bottom: 14px; }
+  strong { color: var(--t1); }
+  code {
+    font-family: var(--mono); font-size: 13px; color: var(--teal);
+    background: var(--bg3); padding: 1px 6px; border-radius: 3px;
+  }
+  ul, ol { margin: 0 0 18px 22px; color: var(--t2); }
+  li { margin-bottom: 8px; }
+
+  .table-wrap { overflow-x: auto; margin-bottom: 28px; border: 1px solid var(--border2); border-radius: 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--amber); text-align: left; padding: 12px 14px;
+    background: var(--bg2); border-bottom: 1px solid var(--border2); white-space: nowrap;
+  }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--t2); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .ok-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; font-family:var(--mono); background: var(--green2); color: var(--green); border: 1px solid var(--green); }
+
+  .file-list { list-style: none; margin-left: 0; }
+  .file-list li {
+    font-family: var(--mono); font-size: 13px; padding: 8px 12px; margin-bottom: 6px;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; color: var(--t2);
+  }
+  .file-list li span { color: var(--t2); font-family: var(--sans); font-size: 13px; }
+  .file-list li b { color: var(--teal); font-weight: 400; }
+
+  .step-flow {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    font-family: var(--mono); font-size: 12px; margin-bottom: 28px;
+  }
+  .step-flow .step {
+    padding: 6px 12px; border-radius: 4px; background: var(--bg2);
+    border: 1px solid var(--border2); color: var(--t2); white-space: nowrap;
+  }
+  .step-flow .ok { border-color: var(--green); color: var(--green); background: var(--green2); }
+  .step-flow .arrow { color: var(--t2); opacity: .5; }
+
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  @media (max-width: 720px) {
+    header, main { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">WORKLOG · 2026-08-05</div>
+  <h1>新增台灣財經新聞分類、LLY 洗盤 vs 出貨七維度快檢、驗證對比度修正生效</h1>
+  <div class="subtitle">狀態：✅ 全部完成並推上 GitHub（commit <code>a1aa3c9</code> → 合併 <code>8d63fb8</code> → <code>eb0478e</code>）· ✅ 前一天待驗證的對比度修正已用真實排程結果確認生效</div>
+</header>
+
+<main>
+
+<div class="summary-card">
+  <div class="summary-title">✅ 一句話總結</div>
+  <div class="summary-desc">
+    接續 2026-08-04 的對話：新增「台灣財經」新聞分頁，並幫 LLY 補上跟台股大盤同一套的
+    洗盤 vs 出貨七維度快檢——這次刻意做成結構化 JSON 欄位而非 AI 直接寫 HTML，從架構上
+    避開前一天才修過的對比度 bug；推送時撞上排程自動 commit，合併後成功推送；並用
+    2026-08-05 這份真實排程產出的報告，確認前一天 prompt 修正的深色主題規則確實生效。
+  </div>
+</div>
+
+<h2 class="teal">財經新聞中心新增「台灣財經」分類</h2>
+<p>
+  原本只有 AI 半導體、總體經濟、地緣政治、IPO/重大四個分頁，沒有台灣本土財經新聞的獨立分類。
+</p>
+<ul>
+  <li><code>scripts/generate_report.py</code>：<code>news</code> JSON 加上 <code>tw</code> 分類；新增搜尋任務 11（央行動態、政府產業政策、重大公司新聞、新台幣匯率），明確提醒 AI 不要跟任務 2（大盤/個股漲跌背後原因）重複貼內容湊數。</li>
+  <li><code>templates/report.html.j2</code>：新增「🇹🇼 台灣財經」分頁按鈕與面板，沿用既有 <code>switchNews()</code> 機制，不需改 JS。</li>
+  <li><code>tests/test_report_render.py</code>：補上對應測試，沿用既有「AI 半導體」分類的驗證模式。</li>
+</ul>
+
+<h2 class="teal">LLY 新增「洗盤 vs 出貨七維度快檢」</h2>
+<p>
+  比照台股大盤在「三地市場深度分析」裡已有的框架，套用到 LLY（Eli Lilly）個股：量能行為、
+  反彈強度、均線結構、基本面同步性、機構/分析師動向、籌碼結構、低點結構，結論給機率權重
+  （例：洗盤 65% / 出貨 35%）並寫明升級/降級條件。
+</p>
+
+<div class="key-card">
+  <div class="key-title">🔑 關鍵設計決策：結構化 JSON 欄位，不是 AI 寫 HTML</div>
+  <p>
+    前一天（2026-08-04）才修過 AI 直接產生 HTML 的三個 <code>| safe</code> 欄位文字對比度失敗的
+    bug，這次新功能若再用同一種「AI 自己寫 HTML + 自己選色」的做法，等於明知風險還往同一個坑跳。
+    改用結構化欄位後，<code>templates/report.html.j2</code> 直接沿用風險矩陣既有的
+    <code>risk-table</code>/<code>risk-level</code> CSS class 渲染，文字顏色完全交給頁面既有的
+    深色主題 CSS 繼承機制，AI 完全不接觸顏色決定權——從架構上排除整類 bug，而不是靠更明確的
+    prompt 指示去「盼望」AI 不再犯錯。
+  </p>
+</div>
+<ul>
+  <li><code>lly_foundayo.wash_vs_distribution</code>：<code>{rows: [{dimension, observation, tendency}], conclusion, upgrade_condition, downgrade_condition}</code>，<code>tendency</code> 只能是 <code>wash</code>/<code>distribution</code>/<code>neutral</code>/<code>unconfirmed</code> 四選一的英文字串。</li>
+  <li><code>scripts/report_render.py</code> 新增 <code>_sanitize_wash_vs_distribution()</code>：<code>tendency</code> 打錯字/幻覺值收斂成 <code>unconfirmed</code>、非 dict 的列直接丟棄、欄位缺席也不影響渲染（比照 <code>_safe_css_token</code>/<code>_sanitize_lly_foundayo</code> 既有慣例）。</li>
+  <li><code>tests/test_report_render.py</code> 新增 3 個測試：正常渲染、欄位缺席、<code>tendency</code> 幻覺值與非 dict 列的防呆。</li>
+</ul>
+
+<h2>Commit / push（含合併衝突）</h2>
+<div class="step-flow">
+  <span class="step ok">git commit</span><span class="arrow">→</span>
+  <span class="step ok">git push（被拒絕，non-fast-forward）</span><span class="arrow">→</span>
+  <span class="step ok">確認排程 commit 無檔案重疊</span><span class="arrow">→</span>
+  <span class="step ok">git pull --no-edit 乾淨合併</span><span class="arrow">→</span>
+  <span class="step ok">push 成功</span>
+</div>
+<p>
+  排程在同一時間自動跑完並推了一個新的「Daily report update」commit（<code>8d63fb8</code>，
+  產出 2026-08-05 報告）。確認該 commit 只動了 <code>index.html</code>/<code>Backup/2026-08-05.html</code>/
+  <code>data/stock_signals_history.json</code>，跟這次改的程式碼檔案沒有重疊，合併（<code>eb0478e</code>）後成功推送。
+</p>
+
+<h2 class="green">驗證前一天的對比度修正是否真的生效</h2>
+<p>
+  2026-08-04 那份日誌的「下一步」寫著：prompt 修正過的深色主題規則還沒被 AI 真的執行過一次，
+  當天看到的正確效果是手動修補的。這次排程產出的 2026-08-05 報告是<strong>第一次真實驗證</strong>：
+</p>
+<div class="table-wrap">
+<table>
+  <tr><th>區塊</th><th>這次 AI 輸出</th><th>結果</th></tr>
+  <tr>
+    <td>三地市場深度分析</td>
+    <td>外層容器 <code>background:#0f172a;color:#e2e8f0</code> 同時設定</td>
+    <td><span class="ok-badge">✅ 正確</span></td>
+  </tr>
+  <tr>
+    <td>AI 基礎建設驗證指標</td>
+    <td>標題 <code>color:#f8fafc</code>（淺色，正確對比深色頁面底）</td>
+    <td><span class="ok-badge">✅ 正確</span></td>
+  </tr>
+  <tr>
+    <td>Foundayo 商業化深度分析</td>
+    <td>標題 <code>color:#f8fafc</code></td>
+    <td><span class="ok-badge">✅ 正確</span></td>
+  </tr>
+</table>
+</div>
+<p>
+  <code>grep</code> 搜尋整份 <code>index.html</code> 找不到任何 <code>background:#fff</code>/
+  <code>#f8fafc</code>/<code>#fafafa</code> 或 <code>color:#1e293b</code>/<code>#0f172a</code>
+  這類前一天造成 bug 的淺色卡片/深色文字組合——確認 prompt 裡新增的「HTML 格式規則」
+  （深色主題色碼表 + 禁止淺色卡片背景 + 最外層容器必須同時設定 background 與 color）真的
+  讓 AI 穩定照做了。這份日誌算是把前一天標記「⚠️ 尚未驗證」的項目正式關閉。
+</p>
+
+<div class="next-card">
+  <div class="next-title">⏭️ 下一步（具體任務）</div>
+  <ol>
+    <li><strong>觀察明天（下一個排程日）的報告</strong>：確認「台灣財經」分頁與「LLY 洗盤 vs 出貨七維度快檢」表格都正常出現且有內容——今天 2026-08-05 這份報告是在功能上線「前」生成的，還沒有這兩個新區塊。</li>
+    <li>找機會在有真正 Python 環境的地方跑一次 <code>pytest tests/ -v</code>——本機這台機器沒有真正的 Python 直譯器，這次新增的測試（含 2026-08-04 那批失敗通知測試）都只靠手動邏輯推演驗證過。</li>
+    <li>若 <code>news.tw</code> 連續幾天都是空陣列：確認是「當天真的沒有獨立台灣財經新聞事件」（prompt 允許回傳空陣列），還是 AI 沒有確實執行搜尋任務 11。</li>
+    <li>若 LLY 七維度快檢的 <code>tendency</code> 判斷跟 <code>conclusion</code> 機率權重長期兜不起來：需要再加強「禁止只憑單一維度就下總結論」這條規則的措辭，或考慮交叉驗證。</li>
+    <li>（待使用者操作，非本次工作項目）Email 通知暫停一事：2026-08-04 日誌記錄使用者要去 GitHub 刪除 <code>GMAIL_APP_PASSWORD</code>，這次對話沒有再提起，狀態未知。</li>
+  </ol>
+</div>
+
+<h2 class="blue">相關檔案路徑</h2>
+<ul class="file-list">
+  <li><b>scripts/generate_report.py</b> <span>— news.tw 分類 + 搜尋任務 11；lly_foundayo.wash_vs_distribution + 搜尋任務 12</span></li>
+  <li><b>scripts/report_render.py</b> <span>— 新增 _sanitize_wash_vs_distribution()</span></li>
+  <li><b>templates/report.html.j2</b> <span>— 台灣財經新聞分頁；LLY 洗盤 vs 出貨七維度快檢表格（沿用 risk-table/risk-level）</span></li>
+  <li><b>tests/test_report_render.py</b> <span>— 對應測試（新聞分類 1 筆 + wash_vs_distribution 3 筆）</span></li>
+</ul>
+<p>驗證用（未修改，只是拿來確認結果）：<code>index.html</code>、<code>Backup/2026-08-05.html</code></p>
+<p>前一份日誌：<a href="2026-08-04-billing-recovery-and-contrast-fix-worklog.html">2026-08-04-billing-recovery-and-contrast-fix-worklog</a></p>
+
+<h2>如何在新對話中接續</h2>
+<ul>
+  <li><strong>下次排程後的檢查</strong>：請 Claude 檢查最新 <code>index.html</code>，確認「台灣財經」新聞分頁與 LLY 洗盤 vs 出貨七維度快檢表格是否正常出現、內容是否合理（<code>tendency</code> 判斷跟結論機率權重是否兜得起來）。</li>
+  <li><strong>對比度問題又出現</strong>（不太應該，但保險起見）：代表 prompt 層級的規則又失效了，需要重新檢視 <code>generate_report.py</code> 的「HTML 格式規則」段落，或考慮把剩下的 <code>market_deep_dive_html</code>/<code>ai_infra_html</code> 也比照這次 LLY 七維度快檢的做法，改成結構化欄位。</li>
+  <li><strong>使用者已處理完 Gmail App Password</strong>：跟這次功能開發無關，可以直接確認狀態後繼續。</li>
+  <li><strong>新需求</strong>：直接描述，視情況重新規劃。</li>
+</ul>
+
+</main>
+</body>
+</html>
