@@ -261,6 +261,35 @@ def _to_chart_number(value):
     return int(num) if num.is_integer() else num
 
 
+TENDENCY_VALUES = {"wash", "distribution", "neutral", "unconfirmed"}
+
+
+def _sanitize_wash_vs_distribution(wvd):
+    """
+    lly_foundayo.wash_vs_distribution 一樣是 AI 生成的 JSON，形狀不保證正確——
+    rows 可能不是 list、row 可能不是 dict、tendency 可能是 AI 打錯字或幻覺出的值
+    （會直接當 CSS class 插進模板）。比照 _safe_css_token 既有慣例收斂成安全預設值，
+    缺席或格式錯誤的項目一律丟棄或補空字串，不讓一筆壞資料害整份報告渲染失敗。
+    """
+    if not isinstance(wvd, dict):
+        wvd = {}
+    rows = []
+    for row in wvd.get("rows") if isinstance(wvd.get("rows"), list) else []:
+        if not isinstance(row, dict):
+            continue
+        rows.append({
+            "dimension": row.get("dimension") or "",
+            "observation": row.get("observation") or "",
+            "tendency": _safe_css_token(row.get("tendency"), TENDENCY_VALUES, "unconfirmed"),
+        })
+    return {
+        "rows": rows,
+        "conclusion": wvd.get("conclusion") or "",
+        "upgrade_condition": wvd.get("upgrade_condition") or "",
+        "downgrade_condition": wvd.get("downgrade_condition") or "",
+    }
+
+
 def _sanitize_lly_foundayo(lly):
     """
     lly_foundayo 來自 AI 生成的 JSON（不可信來源）；validate_narrative_json() 只保證
@@ -285,6 +314,7 @@ def _sanitize_lly_foundayo(lly):
         **lly,
         "weekly_trx": clean_series(lly.get("weekly_trx"), "trx"),
         "wow_pct": clean_series(lly.get("wow_pct"), "pct"),
+        "wash_vs_distribution": _sanitize_wash_vs_distribution(lly.get("wash_vs_distribution")),
     }
 
 

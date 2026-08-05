@@ -301,7 +301,8 @@ JSON_OUTPUT_SPEC = """
     "ai_semi": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
     "macro": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
     "geo": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
-    "ipo": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}]
+    "ipo": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}],
+    "tw": [{"title": "...", "summary": "...", "source": "...", "date": "YYYY-MM-DD"}]
   },
   "ai_infra_html": "<使用搜尋任務 10 的三項數據（CSP capex YoY、AI 伺服器出貨量、HBM 合約價與現貨價利差），直接輸出「AI 基礎建設驗證指標」這個區塊的 HTML 片段（3 格並排卡片，不含外層 <html>/<body>），必須遵守下方「HTML 格式規則」>",
   "theme_cards": [
@@ -316,7 +317,15 @@ JSON_OUTPUT_SPEC = """
   "market_deep_dive_html": "<完整執行下方三地市場深度分析規格後，直接輸出這個區塊的 HTML 片段（不含外層 <html>/<body>，只要這個區塊本身的 div 結構），必須遵守下方「HTML 格式規則」（信心等級標籤、洗盤vs出貨表格等內容結構仍照三地市場深度分析規格執行）>",
   "lly_foundayo": {"weekly_trx": [{"week": "W1", "trx": 1390}], "wow_pct": [{"week": "W2", "pct": 12.3}],
                     "commentary": "<敘述>", "stage_note": "<若無 TRx 數據時的商業化階段說明>",
-                    "extra_html": "<商業化階段 / 分析師全年預估 / 與 NVO 競品對比 3 格卡片 + Medicare 覆蓋里程碑說明的 HTML 片段，必須遵守下方「HTML 格式規則」>"}
+                    "extra_html": "<商業化階段 / 分析師全年預估 / 與 NVO 競品對比 3 格卡片 + Medicare 覆蓋里程碑說明的 HTML 片段，必須遵守下方「HTML 格式規則」>",
+                    "wash_vs_distribution": {
+                      "rows": [
+                        {"dimension": "<維度名稱，固定 7 項，順序與定義見下方搜尋任務 12>", "observation": "<一句話說明今日觀察>", "tendency": "wash 或 distribution 或 neutral 或 unconfirmed（四選一，英文字串）"}
+                      ],
+                      "conclusion": "<機率權重，例如「洗盤 65% / 出貨 35%」>",
+                      "upgrade_condition": "<什麼事件發生會升級為洗盤（機率 >85%）>",
+                      "downgrade_condition": "<什麼事件發生會降級為出貨（機率 >50%）>"
+                    }}
 }
 
 上面是結構範例，不是要照抄的內容；實際筆數規則如下（範例中只示範 1 筆）：
@@ -324,9 +333,10 @@ JSON_OUTPUT_SPEC = """
 - data_validation 列出今天報告中「已確認」與「估計值」的資料項目各幾筆均可，只要涵蓋當天實際用到的關鍵資料來源（台股/美股收盤、法人排行、夜盤等）
 - institutional_summary 固定輸出 4 則，依序為：外資、投信、自營商、三大合計（三大合計那一則 emphasize 設為 true，其餘 false）
 - stock_signal_reasons 筆數依實際入選清單而定，若當天沒有入選股票（清單為空）也要回傳空陣列 `[]`
-- news 的 ai_semi/macro/geo/ipo 各自視實際搜尋結果填入多筆，該分類若搜尋不到內容也要回傳空陣列 `[]`，不可省略欄位本身
+- news 的 ai_semi/macro/geo/ipo/tw 各自視實際搜尋結果填入多筆，該分類若搜尋不到內容也要回傳空陣列 `[]`，不可省略欄位本身
 - theme_cards 固定輸出 5 張，依序涵蓋：AI 算力基礎建設、台灣半導體供應鏈、口服 GLP-1、AI 電力/資料中心、黃金/實物資產
 - strategy_cards 固定輸出 3 張，依序為：巴菲特框架、動能策略、防禦配置
+- lly_foundayo.wash_vs_distribution.rows 固定輸出 7 筆（依序：量能行為、反彈強度、均線結構、基本面同步性、機構/分析師動向、籌碼結構、低點結構，定義見下方搜尋任務 12），tendency 只能是 wash/distribution/neutral/unconfirmed 四選一的英文字串，不要輸出中文或其他值；結論禁止只憑單一維度就下總結論
 
 ## HTML 格式規則（ai_infra_html / market_deep_dive_html / lly_foundayo.extra_html 都要遵守，這三個欄位內容要照抄下面的色碼，不是隨意示範）
 這三個欄位輸出的原始 HTML 會用 `| safe` 直接嵌入頁面，不會被跳脫或套用頁面樣式。頁面本身是深色主題
@@ -388,7 +398,7 @@ PROMPT = f"""
 請針對每一檔股票，把它的 details 陣列改寫成一句通順的中文摘要，輸出到 stock_signal_reasons。
 若這份清單是空陣列，stock_signal_reasons 也回傳空陣列即可。
 {institutional_prefetch_block}
-## 必須完成的搜尋任務（依序執行，至少 8 次搜尋；指數/個股「數字」已由上方預先抓取，這裡搜尋的是背後原因、新聞與尚未涵蓋的項目）
+## 必須完成的搜尋任務（依序執行，至少 10 次搜尋；指數/個股「數字」已由上方預先抓取，這裡搜尋的是背後原因、新聞與尚未涵蓋的項目）
 1. 今日/昨日美股收盤：S&P 500、Nasdaq、Dow 漲跌背後原因與主要個股表現（漲跌%數字以上方預先抓取的即時報價為準）
 2. 台股今日行情：加權指數、台積電（2330）、鴻海（2317）、聯發科（2454）漲跌背後原因（數字以上方預先抓取的即時報價為準）
 {institutional_task_line}
@@ -406,6 +416,21 @@ PROMPT = f"""
    - CSP capex 同比變化：Microsoft/Amazon/Google/Meta 最新季度雲端資本支出金額與 YoY 成長率
    - AI 伺服器出貨量月度趨勢：最新月份全球 AI 伺服器出貨量或出貨量預估（來源：TrendForce / IDC）
    - HBM 合約價與現貨價利差：最新 HBM3e 或 HBM3 合約價、現貨價，及兩者利差（來源：DRAMeXchange / TrendForce）
+11. 台灣重要財經新聞（不是任務 2 那種大盤/個股漲跌背後原因，是獨立的新聞事件，供財經新聞中心「台灣財經」分類使用）：
+   - 央行（央行理監事會議、利率決策、外匯市場動態）
+   - 政府產業政策（半導體/AI 相關補助或法規、租稅優惠、國際供應鏈政策）
+   - 重大公司新聞（併購、資本支出/擴廠計畫、財報以外的重大公告，不限於已在持倉背景裡的公司）
+   - 新台幣匯率動態
+   - 若當天沒有以上類型的獨立新聞事件，寧可讓 news.tw 回傳空陣列，不要把任務 2 的大盤漲跌原因重複貼過來湊數
+12. LLY（Eli Lilly）洗盤 vs 出貨七維度快檢所需資料（供 lly_foundayo.wash_vs_distribution 使用，七個維度依序如下）：
+   - 量能行為：LLY 近期成交量是否放大/縮小、是否與股價同向
+   - 反彈強度：近期股價從低點反彈的力道是否強勁
+   - 均線結構：股價與 20/50/200 日均線的關係——絕對禁止捏造均線數值，搜尋不到就在 observation 寫「W：需用戶自 TradingView 提供」並將 tendency 設為 unconfirmed
+   - 基本面同步性：對照 Foundayo TRx／FDA 進度／GLP-1 競爭動態（NVO 口服 Wegovy 等），股價走勢是否與基本面一致
+   - 機構/分析師動向：近期分析師評等調整、目標價變化、機構持股增減（13F 或新聞）
+   - 籌碼結構：選擇權 put/call ratio 或放空比例／未平倉變化，搜尋不到就標 unconfirmed
+   - 低點結構：股價是否守穩日線 Supertrend（約 1,102.95）與近期低點
+   結論給出機率權重（例：洗盤 65% / 出貨 35%），並寫明升級與降級條件；禁止只憑單一維度就下總結論（比照三地市場深度分析規格同一套原則）
 
 ## 額外任務：三地市場深度分析（獨立完整執行，結果嵌入 HTML 新區塊）
 除了上方任務外，請完整執行以下這份獨立的「每日三地市場分析」規格（含台股/美股/韓股搜尋、資料規則、信心等級標註 F/G/E/I/W、洗盤 vs 出貨七維度快檢），並將完整分析結果整理成 HTML 報告中的一個新區塊（區塊標題：「三地市場深度分析」）。此區塊需完整保留下方七大結構（核心結論、事件鏈、美股、韓股、台股、洗盤vs出貨七維度快檢表格、行動清單），並在區塊末尾附上「今日資料缺口」清單。以下為完整規格：

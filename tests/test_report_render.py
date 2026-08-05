@@ -124,6 +124,8 @@ def _fake_narrative_json():
                      "source": "TestSource", "date": "2026-07-03"}],
             "ipo": [{"title": "IPO測試新聞標題", "summary": "測試摘要內容",
                      "source": "TestSource", "date": "2026-07-03"}],
+            "tw": [{"title": "台灣財經測試新聞標題", "summary": "測試摘要內容",
+                    "source": "TestSource", "date": "2026-07-03"}],
         },
         "theme_cards": [
             {"icon": "🤖", "title": "測試主題一", "body": "測試說明一", "tickers": ["NVDA"]},
@@ -148,6 +150,14 @@ def _fake_narrative_json():
             "commentary": "LLY Foundayo 測試敘述內容",
             "stage_note": "",
             "extra_html": '<div class="lly-extra-test">LLY 額外資訊測試內容片段</div>',
+            "wash_vs_distribution": {
+                "rows": [
+                    {"dimension": "量能行為測試維度", "observation": "測試觀察內容", "tendency": "wash"},
+                ],
+                "conclusion": "測試結論：洗盤 65% / 出貨 35%",
+                "upgrade_condition": "測試升級條件",
+                "downgrade_condition": "測試降級條件",
+            },
         },
     }
 
@@ -259,12 +269,21 @@ def test_build_template_context_and_render_produces_valid_html():
     assert "VIX 判讀說明" in html
     assert "夜盤升水測試備註" in html
     assert "AI半導體測試新聞標題" in html
+    assert "台灣財經測試新聞標題" in html
     assert "測試主題一" in html
     assert "巴菲特框架 — 測試" in html
     assert "測試風險項目" in html
     assert "三地市場深度分析測試內容片段" in html
     assert "LLY Foundayo 測試敘述內容" in html
     assert "NVIDIA" in html  # earnings_list 透過 build_earnings_context 傳入
+
+    # LLY 洗盤 vs 出貨七維度快檢
+    assert "量能行為測試維度" in html
+    assert "測試觀察內容" in html
+    assert "洗盤" in html
+    assert "測試結論：洗盤 65% / 出貨 35%" in html
+    assert "測試升級條件" in html
+    assert "測試降級條件" in html
 
     # Task 8 事後補齊的 5 個欄位（header_pills/data_validation/ai_infra_html/
     # lly_foundayo.extra_html/institutional_summary）也要確認實際出現在輸出中，
@@ -465,6 +484,60 @@ def test_build_template_context_coerces_lly_foundayo_string_numbers_and_drops_ba
     trx_list = context["lly_foundayo"]["weekly_trx"]
     assert [item["trx"] for item in trx_list] == [1390, 3200]
     assert context["lly_foundayo"]["wow_pct"][0]["pct"] == 12.3
+
+
+def test_build_template_context_sanitizes_lly_wash_vs_distribution_missing_field():
+    """
+    迴歸測試：wash_vs_distribution 是本次新增欄位，舊資料或 AI 漏掉整個欄位時
+    （lly_foundayo 沒有這個 key）不能讓 build_template_context() 拋例外——模板用
+    `{% if lly_foundayo.wash_vs_distribution.rows %}` 判斷是否顯示這個區塊。
+    """
+    from scripts.report_render import build_template_context
+
+    narrative = _narrative_context_fields()
+    narrative["lly_foundayo"] = {"commentary": "", "stage_note": "", "extra_html": ""}
+
+    context = build_template_context(
+        date_label="2026.07.03", weekday_cn="週五", tw_holiday_note="",
+        quotes={}, fear_data={}, pe_data={"tw": [], "us": []}, institutional_data=None,
+        earnings_list=[], narrative_json=narrative,
+    )
+
+    assert context["lly_foundayo"]["wash_vs_distribution"]["rows"] == []
+    assert context["lly_foundayo"]["wash_vs_distribution"]["conclusion"] == ""
+
+
+def test_build_template_context_sanitizes_lly_wash_vs_distribution_bad_rows():
+    """
+    迴歸測試：tendency 是 AI 生成的字串，會直接當 CSS class 插進模板——AI 打錯字
+    或幻覺輸出不在允許清單內的值時要收斂成 "unconfirmed"，非 dict 的 row 直接丟棄，
+    rows 本身不是 list（例如 AI 輸出成字串）時要正規化成空清單，都不能讓報告產生失敗。
+    """
+    from scripts.report_render import build_template_context
+
+    narrative = _narrative_context_fields()
+    narrative["lly_foundayo"] = {
+        "commentary": "", "stage_note": "", "extra_html": "",
+        "wash_vs_distribution": {
+            "rows": [
+                {"dimension": "量能行為", "observation": "正常", "tendency": "wash"},
+                {"dimension": "反彈強度", "observation": "AI 幻覺出不存在的值", "tendency": "超級洗盤"},
+                "AI 幻覺輸出的字串",  # 非 dict → 丟棄
+            ],
+            "conclusion": "洗盤 70% / 出貨 30%",
+        },
+    }
+
+    context = build_template_context(
+        date_label="2026.07.03", weekday_cn="週五", tw_holiday_note="",
+        quotes={}, fear_data={}, pe_data={"tw": [], "us": []}, institutional_data=None,
+        earnings_list=[], narrative_json=narrative,
+    )
+
+    rows = context["lly_foundayo"]["wash_vs_distribution"]["rows"]
+    assert len(rows) == 2
+    assert rows[0]["tendency"] == "wash"
+    assert rows[1]["tendency"] == "unconfirmed"
 
 
 def test_render_report_survives_lly_foundayo_without_chart_fields():

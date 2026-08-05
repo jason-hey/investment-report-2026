@@ -955,6 +955,35 @@ canvas { max-width:100%; }
         <canvas id="llyWowChart"></canvas>
       </div>
       {{ lly_foundayo.extra_html | safe }}
+      {% if lly_foundayo.wash_vs_distribution.rows %}
+      <div class="sec-title" style="margin-top:28px;font-size:15px;border-bottom:none;padding-bottom:0;">
+        <span class="sec-title-icon">⚖️</span> LLY 洗盤 vs 出貨七維度快檢
+      </div>
+      {% set wvd_badge = {'wash': ('risk-low', '✅ 洗盤'), 'distribution': ('risk-high', '⚠️ 出貨'), 'neutral': ('risk-med', '⚪ 中性'), 'unconfirmed': ('risk-med', 'W 待確認')} %}
+      <table class="risk-table">
+        <thead>
+          <tr><th>維度</th><th>今日觀察</th><th>傾向</th></tr>
+        </thead>
+        <tbody>
+          {% for row in lly_foundayo.wash_vs_distribution.rows %}
+          <tr>
+            <td><strong>{{ row.dimension }}</strong></td>
+            <td>{{ row.observation }}</td>
+            <td>{% set b = wvd_badge.get(row.tendency) %}<span class="risk-level {{ b[0] }}">{{ b[1] }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if lly_foundayo.wash_vs_distribution.conclusion %}
+      <div class="hero-body" style="margin-top:12px"><strong style="color:var(--text-primary)">結論：</strong>{{ lly_foundayo.wash_vs_distribution.conclusion }}</div>
+      {% endif %}
+      {% if lly_foundayo.wash_vs_distribution.upgrade_condition or lly_foundayo.wash_vs_distribution.downgrade_condition %}
+      <div class="hero-body" style="font-size:12px;color:var(--text-secondary)">
+        {% if lly_foundayo.wash_vs_distribution.upgrade_condition %}升級為洗盤條件：{{ lly_foundayo.wash_vs_distribution.upgrade_condition }}<br>{% endif %}
+        {% if lly_foundayo.wash_vs_distribution.downgrade_condition %}降級為出貨條件：{{ lly_foundayo.wash_vs_distribution.downgrade_condition }}{% endif %}
+      </div>
+      {% endif %}
+      {% endif %}
     </div>
   </div>
 </div>
@@ -1000,6 +1029,7 @@ canvas { max-width:100%; }
     <div class="chart-card">
       <div class="news-tabs">
         <button class="news-tab active" onclick="switchNews('ai',this)">🤖 AI 半導體</button>
+        <button class="news-tab" onclick="switchNews('tw',this)">🇹🇼 台灣財經</button>
         <button class="news-tab" onclick="switchNews('macro',this)">🌐 總體經濟</button>
         <button class="news-tab" onclick="switchNews('geo',this)">⚔️ 地緣政治</button>
         <button class="news-tab" onclick="switchNews('ipo',this)">🚀 IPO / 重大</button>
@@ -1007,6 +1037,19 @@ canvas { max-width:100%; }
 
       <div id="news-ai" class="news-panel active">
         {% for item in news.ai_semi %}
+        <div class="news-item">
+          <div class="news-dot" style="background:var(--accent-blue)"></div>
+          <div class="news-content">
+            <div class="news-headline">{{ item.title }}</div>
+            <div class="news-summary">{{ item.summary }}</div>
+            <div class="news-meta">{{ item.source }} · {{ item.date }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div id="news-tw" class="news-panel">
+        {% for item in news.tw %}
         <div class="news-item">
           <div class="news-dot" style="background:var(--accent-blue)"></div>
           <div class="news-content">
